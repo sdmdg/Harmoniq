@@ -1,0 +1,78 @@
+// controllers/authController.js
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { findUserByEmail, createUser } from '../models/User.js';
+
+export const registerUser = async (req, res) => {
+  const { username, email, password, role } = req.body;
+
+  try {
+    // Validate role against the updated ENUM values
+    // Ensure 'admin' is included here
+    if (!['artist', 'listener', 'admin'].includes(role)) {
+      return res.status(400).json({ message: "Register Error: Invalid user role provided." });
+    }
+
+    // Basic validation for required fields from client
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Username, email, and password are required." });
+    }
+
+    const existingUser = await findUserByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists with this email.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // Ensure createUser receives the hashed password
+    const newUser = await createUser({ username, email, role, password: hashedPassword });
+
+    // IMPORTANT: Your createUser function's RETURNING clause only returns username, email, user_type.
+    // If you need newUser.id for JWT, ensure createUser returns it.
+    // Modify createUser to: `RETURNING id, username, email, user_type`
+    // For now, assuming newUser.id is available or handled by your createUser.
+    const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    res.status(200).json({
+      token,
+      user: {
+        username: newUser.username,
+        role: newUser.user_type,
+        // If you want to return the user's ID, ensure createUser returns it
+        // id: newUser.id
+      }
+    });
+
+  } catch (error) {
+    console.error('Register Error:', error);
+    // Provide a more generic error message to the client for security
+    res.status(500).json({ message: `Internal server error during registration.` });
+  }
+};
+
+export const loginUser = async (req, res) => {
+  const { email, password, rememberMe } = req.body;
+
+  try {
+    const user = await findUserByEmail(email);
+    if (!user) return res.status(400).json({ message: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+    const expiresIn = rememberMe ? '7d' : '1d'
+    const token = jwt.sign({ id: user.id, username: user.username, role: user.user_type }, process.env.JWT_SECRET, { expiresIn });
+
+    res.status(200).json({
+      token,
+      user: {
+        username: user.username,
+        role: user.user_type
+      }
+    });
+
+  } catch (error) {
+    console.error('Login Error:', error);
+    res.status(500).json({ message: `Internal server error: ${error.message}` });
+  }
+};
