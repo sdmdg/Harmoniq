@@ -1,22 +1,23 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import MenuItem from './components/MenuItem.vue';
 import MusicPlayer from './components/MusicPlayer.vue'
 import ChevronUp from 'vue-material-design-icons/ChevronUp.vue';
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
-import ChevronRight from 'vue-material-design-icons/ChevronRight.vue';
-import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue';
 
 import { useSongStore } from './stores/song'
 import { storeToRefs } from 'pinia';
+import apiClient from './utils/axios.js'; // your Axios instance
 
+const router = useRouter();
 const useSong = useSongStore()
 const { isPlaying, currentTrack } = storeToRefs(useSong)
 
-onMounted(() => { isPlaying.value = false })
-
 let openMenu = ref(false)
+const userName = ref('');
+const profileImageUrl = ref('');
+const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER; // adjust if needed
 
 // Get the current route object
 const route = useRoute()
@@ -34,7 +35,44 @@ watch(() => route.params.album_id, async (newAlbumId) => {
   }
 }, { immediate: true });
 
+const fetchUser = async () => {
+    const userData = localStorage.getItem('user_data');
+    if (userData) {
+        const parsedUser = JSON.parse(userData);
+        userName.value = parsedUser.username || ''; 
+        try {
+            const response = await apiClient.get(`api/profile/image/${parsedUser.id}`);
+            profileImageUrl.value = `${fileServerBaseUrl}/public/images/${response.data.pic_path}`;
+        } catch (error) {
+            console.error('Failed to fetch profile image:', error);
+        }
+    } else {
+        router.push('/login');
+    }
+};
+
+const logout = () => {
+    // Remove JWT token
+    localStorage.removeItem('jwt_token');
+
+    // Remove stored user data
+    localStorage.removeItem('song');
+
+    localStorage.removeItem('user_data');
+
+    // Optional: clear session storage too
+    sessionStorage.clear();
+
+    // Redirect to login page
+    window.location.href = '/login';
+};
+
+onMounted(() => { 
+  isPlaying.value = false;
+  fetchUser();
+})
 </script>
+
 
 <template>
   <div class="min-h-screen bg-black">
@@ -93,19 +131,23 @@ watch(() => route.params.album_id, async (newAlbumId) => {
           <img
             class="rounded-full"
             width="27"
-            src="https://yt3.ggpht.com/e9o-24_frmNSSVvjS47rT8qCHgsHNiedqgXbzmrmpsj6H1ketcufR1B9vLXTZRa30krRksPj=s88-c-k-c0x00ffffff-no-rj-mo"
+            :src="profileImageUrl || '/images/default-avatar.png'"
           >
-          <div class="text-white text-[14px] ml-1.5 font-semibold">Malaka</div>
+          <div class="text-white text-[14px] ml-1.5 font-semibold">{{ userName }}</div>
           <ChevronDown v-if="!openMenu" @click="openMenu = true" fillColor="#FFFFFF" :size="25" />
           <ChevronUp v-else @click="openMenu = false" fillColor="#FFFFFF" :size="25" />
         </div>
       </button>
 
+
       <span v-if="openMenu"
         class="fixed w-[190px] bg-[#282828] shadow-2xl z-50 rounded-sm top-[52px] right-[35px] p-1 cursor-pointer">
         <ul class="text-gray-200 font-semibold text-[14px]">
-          <li class="px-3 py-2.5 hover:bg-[#3E3D3D] border-b border-b-gray-600">Profile</li>
-          <li class="px-3 py-2.5 hover:bg-[#3E3D3D]">Log out</li>
+          <RouterLink to="/profile">
+            <li class="px-3 py-2.5 hover:bg-[#3E3D3D] border-b border-b-gray-600">Profile</li>
+          </RouterLink>
+          
+          <li class="px-3 py-2.5 hover:bg-[#3E3D3D]" @click="logout">Log out</li>
         </ul>
       </span>
     </div>

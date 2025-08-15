@@ -1,6 +1,7 @@
 const sampleAlbum = {
     "name": "Different World",
     "albumCover": "DifferentWorld.png",
+    "artist": "Alan Walker",
     "type": "Album",
     "releaseYear": "2018",
     "tracks": [

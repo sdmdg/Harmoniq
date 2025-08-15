@@ -75,7 +75,7 @@ const router = createRouter({
       component: ProfileView,
       meta: {
         hideSidebar: true,
-        hideTopNav: false,
+        hideTopNav: true,
         hidePlayer: true,
         requiresAuth: true,
         allowedRoles: ['artist', 'listener', 'admin']

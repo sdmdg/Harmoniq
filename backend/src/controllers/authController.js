@@ -36,6 +36,7 @@ export const registerUser = async (req, res) => {
     res.status(200).json({
       token,
       user: {
+        id: newUser.id,
         username: newUser.user_name,
         role: newUser.role,
         // If you want to return the user's ID, ensure createUser returns it
@@ -66,6 +67,7 @@ export const loginUser = async (req, res) => {
     res.status(200).json({
       token,
       user: {
+        id: user.id,
         username: user.user_name,
         role: user.role
       }

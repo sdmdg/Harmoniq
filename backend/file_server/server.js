@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         // Determine the upload directory based on file type
         if (file.mimetype.startsWith('image/')) {
-            cb(null, path.join(__dirname, 'public/images/albumCovers'));
+            cb(null, path.join(__dirname, 'public/images'));
         } else if (file.mimetype.startsWith('audio/')) {
             cb(null, path.join(__dirname, 'public/songs'));
         } else {
@@ -49,7 +49,7 @@ internalApp.post('/upload', upload.single('file'), (req, res) => {
     res.status(200).send({
         message: 'File uploaded successfully!',
         filename: req.file.filename,
-        path: `/public/${req.file.mimetype.startsWith('image/') ? 'images/albumCovers' : 'songs'}/${req.file.filename}`
+        path: `/public/${req.file.mimetype.startsWith('image/') ? 'images' : 'songs'}/${req.file.filename}`
     });
 });
 
@@ -61,7 +61,7 @@ internalApp.delete('/delete/:type/:filename', (req, res) => {
     if (type === 'song') {
         filePath = path.join(__dirname, 'public/songs', filename);
     } else if (type === 'image') {
-        filePath = path.join(__dirname, 'public/images/albumCovers', filename);
+        filePath = path.join(__dirname, 'public/images', filename);
     } else {
         return res.status(400).send('Invalid file type specified.');
     }

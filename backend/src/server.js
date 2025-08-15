@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import albumRoutes from "./routes/albumRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 
 import cors from "cors";
 import morgan from "morgan";
@@ -16,6 +17,7 @@ app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/album", albumRoutes);
+app.use("/api/profile", profileRoutes);
 
 const startServer = async () => {
   try {

@@ -108,7 +108,7 @@ watch(() => isTrackTimeCurrent.value, (time) => {
         style="background-color: rgba(24, 24, 24, 0.8); backdrop-filter: blur(10px);" >
         <div class="flex items-center w-1/4">
             <div class="flex items-center ml-4">
-                <img class="rounded-sm shadow-2xl" width="55" :src="`${fileServerBaseUrl}/public/images/album_covers/${currentArtist.albumCover}`">
+                <img class="rounded-sm shadow-2xl" width="55" :src="`${fileServerBaseUrl}/public/images/${currentArtist.albumCover}`">
                 <div class="ml-4">
                     <div class="text-[14px] text-white hover:underline cursor-pointer">
                         {{ currentTrack.name }}

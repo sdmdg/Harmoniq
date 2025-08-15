@@ -55,23 +55,31 @@ onMounted(fetchData);
                 type="button"
                 class="text-white text-2xl font-semibold hover:underline cursor-pointer"
             >
-                {{ collection.name }}
+
             </button>
 
             <div class="py-1.5"></div>
             <div class="flex items-center w-full relative h-full">
                 <img
                     width="140"
-                    :src="`${fileServerBaseUrl}/public/images/album_covers/${collection.albumCover || collection.playlistCover}`"
+                    :src="`${fileServerBaseUrl}/public/images/${collection.albumCover || collection.playlistCover}`"
                 >
 
                 <div class="w-full ml-5">
                     <div
-                        style="font-size: 33px;"
+                        style="font-size: 15px;"
                         class="text-white absolute w-full hover:underline cursor-pointer top-0 font-bosemiboldld"
+                    >
+                        {{ collection.artist }}
+                    </div>
+
+                    <div
+                        style="font-size: 33px;"
+                        class="text-white absolute w-full cursor-pointer top-4 font-bosemiboldld"
                     >
                         {{ collection.name }}
                     </div>
+
 
                     <div class="text-gray-300 text-[13px] flex">
                         <div class="flex capitalize">{{ route.params.type }}</div>

@@ -16,3 +16,29 @@ export async function createUser({ username, email, role, password }) {
   );
   return result.rows[0];
 }
+
+export const ModelgetProPic = async (userId) => {
+    const query = `
+        SELECT pic_path
+        FROM public.users
+        WHERE id = $1
+    `;
+    const values = [userId];
+
+    const result = await pool.query(query, values);
+    return result.rows.length > 0 ? result.rows[0] : null;
+};
+
+
+export const ModelSetProPic = async (userId, picPath) => {
+    const query = `
+        UPDATE public.users
+        SET pic_path = $1
+        WHERE id = $2
+        RETURNING pic_path;
+    `;
+    const values = [picPath, userId];
+
+    const result = await pool.query(query, values);
+    return result.rows.length > 0 ? result.rows[0] : null;
+};

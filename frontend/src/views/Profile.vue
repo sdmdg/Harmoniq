@@ -20,6 +20,8 @@ const profileImageFile = ref(null);
 
 const router = useRouter();
 
+const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
+
 // --- API and Logic Functions ---
 
 // Fetch user data and initial profile image from localStorage and API
@@ -33,14 +35,12 @@ const fetchUser = async () => {
             artistDescription.value = user.value.artist_description || '';
         }
         // Fetch the profile image URL
-        // A placeholder for the API call to get the image URL
-        // In a real application, this would fetch the user's profile image from the backend
-        // try {
-        //     const response = await apiClient.get('api/profile/image');
-        //     profileImageUrl.value = response.data.imageUrl;
-        // } catch (error) {
-        //     console.error('Failed to fetch profile image:', error);
-        // }
+        try {
+            const response = await apiClient.get(`api/profile/image/${user.value.id}`);
+            profileImageUrl.value = `${fileServerBaseUrl}/public/images/${response.data.pic_path}`;
+        } catch (error) {
+            console.error('Failed to fetch profile image:', error);
+        }
     } else {
         // If no user data, redirect to login
         router.push('/login');
@@ -92,7 +92,7 @@ const handleImageUpload = async () => {
     }
 
     const formData = new FormData();
-    formData.append('profileImage', profileImageFile.value);
+    formData.append('file', profileImageFile.value);
 
     try {
         // Assume an endpoint for image upload
@@ -103,8 +103,9 @@ const handleImageUpload = async () => {
         // Update the profile image URL with the new URL from the API response
         profileImageUrl.value = response.data.imageUrl;
         successMessage.value = 'Profile image uploaded successfully!';
-        profileImageFile.value = null; // Clear the file input
-
+        profileImageFile.value = null;
+        fetchUser();
+    
     } catch (error) {
         console.error('Image upload failed:', error);
         errorMessage.value = error.response?.data?.message || 'Failed to upload profile image.';
@@ -180,17 +181,47 @@ watch(user, (newUser) => {
 onMounted(() => {
     fetchUser();
 });
+
+const goBack = () => {
+    router.go(-1);
+};
+
+// Watch for changes in user role to set the active tab
+watch(user, (newUser) => {
+    if (newUser && newUser.role === 'artist') {
+        activeTab.value = 'artist';
+    }
+}, { immediate: true });
+
+onMounted(() => {
+    fetchUser();
+});
 </script>
 
 <template>
-    <div class="relative min-h-screen bg-black overflow-hidden">
-        <!-- Particle background component -->
-        <ParticleBackground />
+  <div class="relative min-h-screen bg-black overflow-hidden">
+    <ParticleBackground />
 
-        <!-- Profile container, positioned above the canvas -->
-        <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
-            <div class="w-full max-w-lg bg-[#181818] rounded-lg shadow-lg p-8 text-white">
-                <h2 class="text-3xl font-bold text-center mb-6">Your Profile</h2>
+    <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+      <div class="w-full max-w-lg bg-[#181818] rounded-lg shadow-lg p-8 text-white">
+        <button
+          @click="goBack"
+          class="absolute top-4 left-4 text-white hover:text-[#1ED760] transition-colors"
+          aria-label="Go back"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <h2 class="text-3xl font-bold text-center mb-6">Your Profile</h2>
 
                 <!-- Tab Navigation -->
                 <div class="flex border-b border-[#535353] mb-6">
