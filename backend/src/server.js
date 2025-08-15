@@ -1,9 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
+import albumRoutes from "./routes/albumRoutes.js";
+
 import cors from "cors";
 import morgan from "morgan";
-import pool from "./config/db.js"; // PostgreSQL pool
+import pool from "./config/db.js";
 
 dotenv.config();
 
@@ -13,6 +15,7 @@ app.use(cors());
 app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/album", albumRoutes);
 
 const startServer = async () => {
   try {

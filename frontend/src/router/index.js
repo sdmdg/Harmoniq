@@ -5,6 +5,9 @@ import RegisterPage from '../views/RegisterPage.vue'
 import HomeView from '../views/HomeView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import ForbiddenView from '../views/ForbiddenView.vue'
+import ProfileView from '../views/Profile.vue'
+import SearchView from '../views/SearchView.vue'
+import LibraryView from '../views/LibraryView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -50,14 +53,38 @@ const router = createRouter({
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
-        requiresAuth: true, // This page requires authentication
-        allowedRoles: ['artist', 'listener', 'admin'] // Example: Both user and admin can access home
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
       }
     },
     {
       path: '/search',
       name: 'search',
-      component: HomeView,
+      component: SearchView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView,
+      meta: {
+        hideSidebar: true,
+        hideTopNav: false,
+        hidePlayer: true,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+    {
+      path: '/:type/:id',
+      name: 'collection',
+      component: LibraryView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
@@ -69,7 +96,7 @@ const router = createRouter({
     {
       path: '/library',
       name: 'library',
-      component: HomeView,
+      component: LibraryView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,

@@ -36,8 +36,8 @@ export const registerUser = async (req, res) => {
     res.status(200).json({
       token,
       user: {
-        username: newUser.username,
-        role: newUser.user_type,
+        username: newUser.user_name,
+        role: newUser.role,
         // If you want to return the user's ID, ensure createUser returns it
         // id: newUser.id
       }
@@ -57,17 +57,17 @@ export const loginUser = async (req, res) => {
     const user = await findUserByEmail(email);
     if (!user) return res.status(400).json({ message: 'User not found' });
 
-    const isMatch = await bcrypt.compare(password, user.password_hash);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
     const expiresIn = rememberMe ? '7d' : '1d'
-    const token = jwt.sign({ id: user.id, username: user.username, role: user.user_type }, process.env.JWT_SECRET, { expiresIn });
+    const token = jwt.sign({ id: user.id, username: user.user_name, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn });
 
     res.status(200).json({
       token,
       user: {
-        username: user.username,
-        role: user.user_type
+        username: user.user_name,
+        role: user.role
       }
     });
 

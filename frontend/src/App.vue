@@ -1,9 +1,20 @@
 <script setup>
-import { ref } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router' // Import useRoute
+import { ref, onMounted, watch } from 'vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 import MenuItem from './components/MenuItem.vue';
+import MusicPlayer from './components/MusicPlayer.vue'
 import ChevronUp from 'vue-material-design-icons/ChevronUp.vue';
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
+import ChevronRight from 'vue-material-design-icons/ChevronRight.vue';
+import ChevronLeft from 'vue-material-design-icons/ChevronLeft.vue';
+
+import { useSongStore } from './stores/song'
+import { storeToRefs } from 'pinia';
+
+const useSong = useSongStore()
+const { isPlaying, currentTrack } = storeToRefs(useSong)
+
+onMounted(() => { isPlaying.value = false })
 
 let openMenu = ref(false)
 
@@ -13,6 +24,15 @@ const route = useRoute()
 // Computed properties to check route meta for hiding elements
 const hideSidebar = () => route.meta.hideSidebar || false;
 const hideTopNav = () => route.meta.hideTopNav || false;
+const hidePlayer = () => route.meta.hidePlayer || false;
+
+// Watch for changes in the URL's album ID and fetch album data
+watch(() => route.params.album_id, async (newAlbumId) => {
+  if (newAlbumId) {
+    console.log(`Route changed to album ID: ${newAlbumId}`);
+    await useSong.fetchAlbum(newAlbumId);
+  }
+}, { immediate: true });
 
 </script>
 
@@ -31,7 +51,7 @@ const hideTopNav = () => route.meta.hideTopNav || false;
           <MenuItem class="ml-[1px]" :iconSize="24" name="Search" iconString="search" pageUrl="/search" />
         </RouterLink>
         <RouterLink to="/library">
-          <MenuItem class="ml-[2px]" :iconSize="23" name="Library" iconString="library" pageUrl="/library" />
+          <MenuItem class="ml-[2px]" :iconSize="23" name="Your Library" iconString="library" pageUrl="/library" />
         </RouterLink>
         <div class="py-3.5"></div>
         <MenuItem :iconSize="24" name="Create Playlist" iconString="playlist" pageUrl="/playlist" />
@@ -40,6 +60,9 @@ const hideTopNav = () => route.meta.hideTopNav || false;
       <div class="border-b border-b-gray-700"></div>
       <ul>
         <li class="font-semibold text-[13px] mt-3 text-gray-300 hover:text-white">My Playlist #1</li>
+        <li class="font-semibold text-[13px] mt-3 text-gray-300 hover:text-white">My Playlist #2</li>
+        <li class="font-semibold text-[13px] mt-3 text-gray-300 hover:text-white">My Playlist #3</li>
+        <li class="font-semibold text-[13px] mt-3 text-gray-300 hover:text-white">My Playlist #4</li>
       </ul>
     </div>
 
@@ -61,7 +84,7 @@ const hideTopNav = () => route.meta.hideTopNav || false;
       style="background-color: rgba(16, 16, 16, 0.8); backdrop-filter: blur(10px);"
     >
       <div class="flex items-center ml-6">
-        <p></p>
+
       </div>
 
       <button @click="openMenu = !openMenu" :class="openMenu ? 'bg-[#282828]' : 'bg-black'"
@@ -104,13 +127,14 @@ const hideTopNav = () => route.meta.hideTopNav || false;
 
       <RouterView />
 
+      <div v-if="!hidePlayer()" class="mb-[100px]"></div>
     </div>
 
-
+    <MusicPlayer v-if="currentTrack && !hidePlayer()" />
 
   </div>
 </template>
 
 <style scoped>
-
+/* No specific custom styles needed for App.vue, Tailwind handles it */
 </style>

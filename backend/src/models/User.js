@@ -9,9 +9,9 @@ export async function findUserByEmail(email) {
 export async function createUser({ username, email, role, password }) {
   console.info(username);
   const result = await pool.query(
-    `INSERT INTO Users (username, email, password_hash, user_type)
+    `INSERT INTO Users (user_name, email, password, role)
      VALUES ($1, $2, $3, $4)
-     RETURNING username, email, user_type`,
+     RETURNING user_name, email, role`,
     [username, email, password, role]
   );
   return result.rows[0];
