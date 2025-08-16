@@ -9,7 +9,6 @@ const username = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
-const role = ref('listener'); // Default role to 'listener'
 const errorMessage = ref(''); // To display any registration errors
 
 const router = useRouter(); // Initialize router
@@ -28,7 +27,6 @@ const handleRegister = async () => {
             username: username.value,
             email: email.value,
             password: password.value,
-            role: role.value,
         });
 
         const { token, user } = response.data;
@@ -117,32 +115,6 @@ const handleRegister = async () => {
                         />
                     </div>
 
-                    <!-- Role Selection -->
-                    <div class="mb-6">
-                        <label class="block text-gray-300 text-sm font-semibold mb-2">Account Type</label>
-                        <div class="flex items-center space-x-4">
-                            <label class="inline-flex items-center">
-                                <input
-                                    type="radio"
-                                    class="form-radio h-4 w-4 text-[#1ED760] focus:ring-[#1ED760]"
-                                    name="accountType"
-                                    value="listener"
-                                    v-model="role"
-                                >
-                                <span class="ml-2 text-gray-300">Listener</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input
-                                    type="radio"
-                                    class="form-radio h-4 w-4 text-[#1ED760] focus:ring-[#1ED760]"
-                                    name="accountType"
-                                    value="artist"
-                                    v-model="role"
-                                >
-                                <span class="ml-2 text-gray-300">Artist</span>
-                            </label>
-                        </div>
-                    </div>
 
                     <p v-if="errorMessage" class="text-red-500 text-sm text-center mb-4">{{ errorMessage }}</p>
 

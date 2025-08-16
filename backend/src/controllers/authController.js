@@ -4,14 +4,9 @@ import jwt from 'jsonwebtoken';
 import { findUserByEmail, createUser } from '../models/User.js';
 
 export const registerUser = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password } = req.body;
 
   try {
-    // Validate role against the updated ENUM values
-    // Ensure 'admin' is included here
-    if (!['artist', 'listener', 'admin'].includes(role)) {
-      return res.status(400).json({ message: "Register Error: Invalid user role provided." });
-    }
 
     // Basic validation for required fields from client
     if (!username || !email || !password) {
@@ -25,7 +20,7 @@ export const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     // Ensure createUser receives the hashed password
-    const newUser = await createUser({ username, email, role, password: hashedPassword });
+    const newUser = await createUser({ username, email, role:"listener", password: hashedPassword });
 
     // IMPORTANT: Your createUser function's RETURNING clause only returns username, email, user_type.
     // If you need newUser.id for JWT, ensure createUser returns it.

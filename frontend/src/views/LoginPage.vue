@@ -108,8 +108,9 @@ const handleLogin = async () => {
                 </form>
 
                 <p class="text-center text-gray-400 text-sm mt-8">
+                    
                     Don't have an account?
-                    <a href="./register" class="font-bold text-[#1ED760] hover:text-[#1DB954]">Sign Up</a>
+                    <router-link to="/register" class="font-bold text-[#1ED760] hover:text-[#1DB954]">Sign Up</router-link>
                 </p>
             </div>
         </div>
