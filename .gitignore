@@ -1,3 +1,5 @@
 /frontend/public/songs
 /backend/file_server/node_modules
 /backend/ai_module/genre/__pycache__
+frontend/.env
+backend/src/.env
