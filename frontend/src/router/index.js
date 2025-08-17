@@ -8,6 +8,8 @@ import ForbiddenView from '../views/ForbiddenView.vue'
 import ProfileView from '../views/Profile.vue'
 import SearchView from '../views/SearchView.vue'
 import LibraryView from '../views/LibraryView.vue'
+import UploadView from '../views/UploadView.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -97,6 +99,18 @@ const router = createRouter({
       path: '/library',
       name: 'library',
       component: LibraryView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+     {
+      path: '/upload',
+      name: 'upload',
+      component: UploadView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,

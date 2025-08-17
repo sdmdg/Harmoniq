@@ -93,6 +93,10 @@ onMounted(() => {
         </RouterLink>
         <div class="py-3.5"></div>
         <MenuItem :iconSize="24" name="Create Playlist" iconString="playlist" pageUrl="/playlist" />
+        <RouterLink to="/upload">
+          <MenuItem :iconSize="24" name="Upload Songs" iconString="playlist" />
+        </RouterLink>
+
         <MenuItem class="-ml-[1px]" :iconSize="27" name="Liked Songs" iconString="liked" pageUrl="/liked" />
       </ul>
       <div class="border-b border-b-gray-700"></div>
