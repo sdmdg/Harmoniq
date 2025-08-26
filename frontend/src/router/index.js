@@ -8,6 +8,7 @@ import ForbiddenView from '../views/ForbiddenView.vue'
 import ProfileView from '../views/Profile.vue'
 import LibraryView from '../views/LibraryView.vue'
 import AlbumView from '../views/AlbumView.vue'
+import ArtistView from '../views/ArtistView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -70,8 +71,44 @@ const router = createRouter({
       }
     },
     {
+      path: '/artist/:id',
+      name: 'artist',
+      component: ArtistView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+    {
       path: '/album/:id',
-      name: 'collection',
+      name: 'album',
+      component: AlbumView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+    {
+      path: '/playlist/:id',
+      name: 'playlist',
+      component: AlbumView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+    {
+      path: '/liked-songs/',
+      name: 'liked',
       component: AlbumView,
       meta: {
         hideSidebar: false,

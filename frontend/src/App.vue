@@ -115,7 +115,6 @@ onMounted(() => {
                 <RouterLink to="/liked-songs">
                     <MenuItem class="-ml-[1px]" :iconSize="27" name="Liked Songs" iconString="liked" pageUrl="/liked-songs" />
                 </RouterLink>
-                
             </ul>
             
             <div class="border-b border-b-gray-700 my-4"></div>
@@ -243,9 +242,9 @@ onMounted(() => {
                 to-black
             "
         >
-            <div v-if="!hideTopNav()" class="mt-[70px]"></div>
+            <div v-if="!hideTopNav()" class="mt-[70px] bg-opacity-0"></div>
             <RouterView />
-            <div v-if="!hidePlayer()" class="mb-[100px]"></div>
+            <div v-if="!hidePlayer()" class="mb-[100px] bg-opacity-0"></div>
         </div>
 
         <MusicPlayer v-if="currentTrack && !hidePlayer()" />
