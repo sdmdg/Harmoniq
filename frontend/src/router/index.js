@@ -6,8 +6,9 @@ import HomeView from '../views/HomeView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import ForbiddenView from '../views/ForbiddenView.vue'
 import ProfileView from '../views/Profile.vue'
-import SearchView from '../views/SearchView.vue'
 import LibraryView from '../views/LibraryView.vue'
+import AlbumView from '../views/AlbumView.vue'
+import ArtistView from '../views/ArtistView.vue'
 import UploadView from '../views/UploadView.vue'
 
 
@@ -60,18 +61,6 @@ const router = createRouter({
       }
     },
     {
-      path: '/search',
-      name: 'search',
-      component: SearchView,
-      meta: {
-        hideSidebar: false,
-        hideTopNav: false,
-        hidePlayer: false,
-        requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
-    },
-    {
       path: '/profile',
       name: 'profile',
       component: ProfileView,
@@ -84,9 +73,45 @@ const router = createRouter({
       }
     },
     {
-      path: '/:type/:id',
-      name: 'collection',
-      component: LibraryView,
+      path: '/artist/:id',
+      name: 'artist',
+      component: ArtistView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+    {
+      path: '/album/:id',
+      name: 'album',
+      component: AlbumView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+    {
+      path: '/playlist/:id',
+      name: 'playlist',
+      component: AlbumView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+    {
+      path: '/liked-songs/',
+      name: 'liked',
+      component: AlbumView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
