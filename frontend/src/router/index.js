@@ -6,8 +6,8 @@ import HomeView from '../views/HomeView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import ForbiddenView from '../views/ForbiddenView.vue'
 import ProfileView from '../views/Profile.vue'
-import SearchView from '../views/SearchView.vue'
 import LibraryView from '../views/LibraryView.vue'
+import AlbumView from '../views/AlbumView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -58,18 +58,6 @@ const router = createRouter({
       }
     },
     {
-      path: '/search',
-      name: 'search',
-      component: SearchView,
-      meta: {
-        hideSidebar: false,
-        hideTopNav: false,
-        hidePlayer: false,
-        requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
-    },
-    {
       path: '/profile',
       name: 'profile',
       component: ProfileView,
@@ -84,7 +72,7 @@ const router = createRouter({
     {
       path: '/:type/:id',
       name: 'collection',
-      component: LibraryView,
+      component: AlbumView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, toRefs, onMounted } from 'vue'
+import { ref, toRefs } from 'vue'
 import Heart from 'vue-material-design-icons/Heart.vue';
 import Play from 'vue-material-design-icons/Play.vue';
 import Pause from 'vue-material-design-icons/Pause.vue';
@@ -10,25 +10,15 @@ const useSong = useSongStore()
 const { isPlaying, currentTrack } = storeToRefs(useSong)
 
 let isHover = ref(false)
-let isTrackTime = ref(null)
 
 const props = defineProps({
     track: Object,
     artist: Object,
     index: Number,
+    duration: String // <-- New prop to accept the formatted duration
 })
 
-const { track, artist, index } = toRefs(props)
-
-onMounted(() => {
-    const audio = new Audio(track.value.path);
-    audio.addEventListener('loadedmetadata', function() {
-        const duration = audio.duration;
-        const minutes = Math.floor(duration / 60);
-        const seconds = Math.floor(duration % 60);
-        isTrackTime.value = minutes+':'+seconds.toString().padStart(2, '0')
-    });
-})
+const { track, artist, index, duration } = toRefs(props)
 </script>
 
 <template>
@@ -51,7 +41,6 @@ onMounted(() => {
                     :size="25"
                     @click="useSong.loadSong(artist, track)"
                 />
-
                 <Pause v-else fillColor="#FFFFFF" :size="25" @click="useSong.playOrPauseSong()"/>
             </div>
             <div v-else class="text-white font-semibold w-[40px] ml-5">
@@ -73,12 +62,8 @@ onMounted(() => {
             <button type="button" v-if="isHover">
                 <Heart fillColor="#1BD760" :size="22"/>
             </button>
-            <div
-                v-if="isTrackTime"
-                class="text-xs mx-5 text-gray-400"
-            >
-                {{ isTrackTime }}
-            </div>
+            <div class="text-xs mx-5 text-gray-400">
+                {{ duration }}             </div>
         </div>
     </li>
 </template>
