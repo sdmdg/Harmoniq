@@ -115,6 +115,10 @@ onMounted(() => {
                 <RouterLink to="/liked-songs">
                     <MenuItem class="-ml-[1px]" :iconSize="27" name="Liked Songs" iconString="liked" pageUrl="/liked-songs" />
                 </RouterLink>
+
+                <RouterLink to="/upload">
+                    <MenuItem :iconSize="24" name="Upload Songs" iconString="playlist" />
+                </RouterLink>
             </ul>
             
             <div class="border-b border-b-gray-700 my-4"></div>
