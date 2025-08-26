@@ -33,11 +33,11 @@ const fetchData = async () => {
     try {
         loading.value = true;
         const { type, id } = route.params; // e.g., type="album" or "playlist"
-        const response = await apiClient.get(`/api/${type}/get/${id}`);
+        const response = await apiClient.get(`/api/album/get/${id}`);
         collection.value = response.data;
     } catch (err) {
-        console.error(`Error fetching ${route.params.type}:`, err);
-        error.value = `Failed to load ${route.params.type}.`;
+        console.error(`Error fetching album:`, err);
+        error.value = `Failed to load album.`;
     } finally {
         loading.value = false;
     }

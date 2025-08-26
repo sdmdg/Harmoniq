@@ -114,7 +114,7 @@ const createPlaylist = async () => {
         };
 
         // Send the playlist data to the backend
-        const response = await apiClient.post('api/playlists', payload);
+        const response = await apiClient.post('api/playlist/add', payload);
 
         emit('playlistCreated', response.data);
         

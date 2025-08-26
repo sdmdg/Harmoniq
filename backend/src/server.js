@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import albumRoutes from "./routes/albumRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
+import playlistRoutes from "./routes/playlistRoutes.js";
 
 import cors from "cors";
 import morgan from "morgan";
@@ -18,6 +19,7 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);
 app.use("/api/album", albumRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/playlist", playlistRoutes);
 
 const startServer = async () => {
   try {

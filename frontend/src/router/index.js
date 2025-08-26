@@ -70,7 +70,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/:type/:id',
+      path: '/album/:id',
       name: 'collection',
       component: AlbumView,
       meta: {

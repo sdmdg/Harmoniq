@@ -15,9 +15,7 @@ import apiClient from './utils/axios.js';
 const router = useRouter();
 const useSong = useSongStore();
 // Use destructuring for isPlaying from storeToRefs for reactivity
-const { isPlaying } = storeToRefs(useSong);
-// Access currentTrack directly from the store instance as it's not a reactive ref from the state
-const { currentTrack } = useSong;
+const { isPlaying, currentTrack } = storeToRefs(useSong);
 
 const isModalOpen = ref(false);
 let openMenu = ref(false);
@@ -63,7 +61,7 @@ const fetchUser = async () => {
 
 const fetchUserPlaylists = async () => {
     try {
-        const response = await apiClient.get('api/playlists');
+        const response = await apiClient.get('api/playlist/get');
         userPlaylists.value = response.data;
     } catch (error) {
         console.error('Failed to fetch user playlists:', error);
@@ -79,6 +77,7 @@ const handlePlaylistCreated = (newPlaylist) => {
     userPlaylists.value.push(newPlaylist);
     // Close the modal
     isModalOpen.value = false;
+    fetchUserPlaylists();
 };
 
 const logout = () => {
@@ -111,33 +110,41 @@ onMounted(() => {
                 <RouterLink to="/library">
                     <MenuItem class="ml-[2px]" :iconSize="23" name="Your Library" iconString="library" pageUrl="/library" />
                 </RouterLink>
-            </ul>
+
                 <div class="py-3.5"></div>
-                <div>`
+                <RouterLink to="/liked-songs">
+                    <MenuItem class="-ml-[1px]" :iconSize="27" name="Liked Songs" iconString="liked" pageUrl="/liked-songs" />
+                </RouterLink>
+                
+            </ul>
+            
+            <div class="border-b border-b-gray-700 my-4"></div>
+
+            <div>
                 <button
-                    @click="createPlaylist"
-                    class="flex items-center text-gray-300 font-semibold text-[13px] hover:text-white mb-4 transition-colors"
+                @click="createPlaylist"
+                class="flex items-center text-gray-300 font-semibold text-[13px] hover:text-white mb-4 transition-colors"
                 >
-                    <div class="bg-white rounded-sm p-1">
-                        <Plus :size="20" fillColor="#101010" />
-                    </div>
-                    <div class="ml-3">Create Playlist</div>
+                <div class="bg-white rounded-sm p-1">
+                    <Plus :size="20" fillColor="#101010" />
+                </div>
+                <div class="ml-3">Create Playlist</div>
                 </button>
 
                 <div class="border-b border-b-gray-700 my-4"></div>
 
                 <div class="overflow-y-auto h-[360px] scrollbar-hidden">
-                    <ul class="space-y-2">
-                        <li
-                            v-for="playlist in userPlaylists"
-                            :key="playlist.id"
-                            class="text-gray-300 font-semibold text-[13px] hover:text-white transition-colors"
-                        >
-                            <RouterLink :to="`/playlist/${playlist.id}`" class="block py-2">
-                                {{ playlist.name }}
-                            </RouterLink>
-                        </li>
-                    </ul>
+                <ul class="space-y-0">
+                    <li
+                    v-for="playlist in userPlaylists"
+                    :key="playlist.id"
+                    class="text-gray-300 font-semibold text-[13px] hover:text-white transition-colors"
+                    >
+                    <RouterLink :to="`/playlist/${playlist.id}`" class="block py-2">
+                        {{ playlist.title }}
+                    </RouterLink>
+                    </li>
+                </ul>
                 </div>
             </div>
 
