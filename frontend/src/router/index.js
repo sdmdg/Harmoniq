@@ -6,10 +6,13 @@ import HomeView from '../views/HomeView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import ForbiddenView from '../views/ForbiddenView.vue'
 import ProfileView from '../views/Profile.vue'
-import SearchView from '../views/SearchView.vue'
 import LibraryView from '../views/LibraryView.vue'
+import AlbumView from '../views/AlbumView.vue'
+import ArtistView from '../views/ArtistView.vue'
 import UploadView from '../views/UploadView.vue'
 import PlaylistView from '../views/PlaylistView.vue'
+
+import ArtistUploadView from '../views/ArtistUploadView.vue'
 
 
 const router = createRouter({
@@ -61,18 +64,6 @@ const router = createRouter({
       }
     },
     {
-      path: '/search',
-      name: 'search',
-      component: SearchView,
-      meta: {
-        hideSidebar: false,
-        hideTopNav: false,
-        hidePlayer: false,
-        requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
-    },
-    {
       path: '/profile',
       name: 'profile',
       component: ProfileView,
@@ -85,9 +76,9 @@ const router = createRouter({
       }
     },
     {
-      path: '/:type/:id',
-      name: 'collection',
-      component: LibraryView,
+      path: '/artist/:id',
+      name: 'artist',
+      component: ArtistView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
@@ -97,9 +88,9 @@ const router = createRouter({
       }
     },
     {
-      path: '/library',
-      name: 'library',
-      component: LibraryView,
+      path: '/album/:id',
+      name: 'album',
+      component: AlbumView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
@@ -108,6 +99,31 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener', 'admin']
       }
     },
+    {
+      path: '/playlist/:id',
+      name: 'playlist',
+      component: AlbumView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+    {
+      path: '/liked-songs/',
+      name: 'liked',
+      component: AlbumView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+
      {
       path: '/get_playlist',
       name: 'get_playlist',
@@ -124,6 +140,18 @@ const router = createRouter({
       path: '/upload',
       name: 'upload',
       component: UploadView,
+       meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+     },
+    {
+      path: '/library',
+      name: 'library',
+      component: LibraryView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
@@ -132,6 +160,52 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener', 'admin']
       }
     },
+    
+{
+  path: '/artist/upload',
+  name: 'artist-upload',
+  component: ArtistUploadView,
+  meta: {
+    hideSidebar: false,
+    hideTopNav: false,
+    hidePlayer: false,
+    requiresAuth: true,
+    allowedRoles: ['artist']
+  }
+},
+    //  {
+    //   path: '/upload',
+    //   name: 'upload',
+    //   component: UploadView,
+    //   meta: {
+    //     hideSidebar: false,
+    //     hideTopNav: false,
+    //     hidePlayer: false,
+    //     requiresAuth: true,
+    //     allowedRoles: ['artist', 'listener', 'admin']
+    //   }
+    // },
+
+    {
+  path: '/upload',
+  name: 'upload',
+  component: UploadView,
+  beforeEnter: (to, from, next) => {
+    // read role the same way your global guard does
+    const data = localStorage.getItem('user_data')
+    let role = null
+    try { role = data ? JSON.parse(data).role : null } catch (_) {}
+    if (role === 'artist') return next({ name: 'artist-upload' })
+    next()
+  },
+  meta: {
+    hideSidebar: false,
+    hideTopNav: false,
+    hidePlayer: false,
+    requiresAuth: true,
+    allowedRoles: ['artist', 'listener', 'admin']
+  }
+},
     // Example of an admin-only route
     {
       path: '/admin-dashboard',

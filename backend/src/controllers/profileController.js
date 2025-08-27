@@ -1,6 +1,12 @@
-import { ModelgetProPic, ModelSetProPic } from '../models/User.js';
+import {ModelgetProPic, 
+        ModelSetProPic,
+        updatePasswordInDb, 
+        findUserById, updateRole,
+        createArtistProfile,
+        findArtistByUserId,
+        updateArtistProfile } from '../models/User.js';
 import { uploadFileToServer } from '../services/fileService.js';
-
+import bcrypt from 'bcryptjs';
 
 export const getProPic = async (req, res) => {
     try {
@@ -18,7 +24,6 @@ export const getProPic = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-
 
 export const setProPic = async (req, res) => {
     const userId = req.user.id;
@@ -38,5 +43,112 @@ export const setProPic = async (req, res) => {
     } catch (err) {
         console.error('Error in setProPic:', err);
         res.status(500).json({ message: 'Failed to update profile.' });
+    }
+};
+
+export const updatePassword = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: 'Current password and new password are required.' });
+        }
+
+        const user = await findUserById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Validate the current password
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Incorrect current password.' });
+        }
+
+        // Hash the new password before saving
+        const salt = await bcrypt.genSalt(10);
+        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update the password in the database
+        await updatePasswordInDb(userId, hashedNewPassword);
+
+        res.status(200).json({ message: 'Password updated successfully!' });
+    } catch (error) {
+        console.error('Password update failed:', error);
+        res.status(500).json({ message: 'Failed to change password.' });
+    }
+};
+
+export const becomeArtist = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { artistName, artistDescription } = req.body;
+
+        if (!artistName) {
+            return res.status(400).json({ message: 'Artist name is required.' });
+        }
+
+        // 1. Update the user's role in the users table
+        await updateRole(userId, 'artist');
+
+        // 2. Create a new entry in the artists table
+        await createArtistProfile(userId, artistName, artistDescription);
+
+        // 3. Send a success response with the updated user data
+        res.status(200).json({
+            id: userId,
+            role: 'artist',
+            artist_name: artistName,
+            artist_description: artistDescription
+        });
+    } catch (error) {
+        console.error('Error in becomeArtist:', error);
+        res.status(500).json({ message: 'Failed to update to artist role.' });
+    }
+};
+
+export const getArtistDetails = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const artist = await findArtistByUserId(userId);
+
+        if (!artist) {
+            return res.status(404).json({ message: 'Artist profile not found.' });
+        }
+
+        res.status(200).json(artist);
+    } catch (error) {
+        console.error('Failed to fetch artist details:', error);
+        res.status(500).json({ message: 'Server error while fetching artist details.' });
+    }
+};
+
+export const updateArtistDetails = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { artistName, artistDescription } = req.body;
+
+        if (!artistName) {
+            return res.status(400).json({ message: 'Artist name is required.' });
+        }
+
+        // Call the model function to update the artist profile
+        const updatedArtist = await updateArtistProfile(userId, artistName, artistDescription);
+
+        if (!updatedArtist) {
+            return res.status(404).json({ message: 'Artist profile not found.' });
+        }
+
+        // The model returns the updated artist data, which we send back to the client
+        res.status(200).json({
+            artist_name: updatedArtist.artist_name,
+            artist_description: updatedArtist.description,
+        });
+
+    } catch (error) {
+        console.error('Failed to update artist details:', error);
+        res.status(500).json({ message: 'Failed to update artist details.' });
     }
 };

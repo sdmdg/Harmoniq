@@ -1,132 +1,89 @@
-<script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import SongRow from '../components/SongRow.vue';
-import Play from 'vue-material-design-icons/Play.vue';
-import Pause from 'vue-material-design-icons/Pause.vue';
-import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
-import ClockTimeThreeOutline from 'vue-material-design-icons/ClockTimeThreeOutline.vue';
-import apiClient from '../utils/axios';
-
-const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
-
-import { useSongStore } from '../stores/song';
-import { storeToRefs } from 'pinia';
-
-const useSong = useSongStore();
-const { isPlaying, currentTrack, currentArtist } = storeToRefs(useSong);
-
-const route = useRoute();
-const collection = ref(null);
-const loading = ref(true);
-const error = ref(null);
-
-const playFunc = () => {
-    if (currentTrack.value) {
-        useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value);
-        return;
-    }
-    useSong.playFromFirst();
-};
-
-const fetchData = async () => {
-    try {
-        loading.value = true;
-        const { type, id } = route.params; // e.g., type="album" or "playlist"
-        const response = await apiClient.get(`/api/${type}/get/${id}`);
-        collection.value = response.data;
-    } catch (err) {
-        console.error(`Error fetching ${route.params.type}:`, err);
-        error.value = `Failed to load ${route.params.type}.`;
-    } finally {
-        loading.value = false;
-    }
-};
-
-onMounted(fetchData);
-</script>
-
 <template>
-    <div class="p-8 overflow-x-hidden">
-        <div v-if="loading" class="text-white">Loading...</div>
-        <div v-else-if="error" class="text-red-500">{{ error }}</div>
-        <div v-else-if="collection">
-            <button
-                type="button"
-                class="text-white text-2xl font-semibold hover:underline cursor-pointer"
-            >
-
-            </button>
-
-            <div class="py-1.5"></div>
-            <div class="flex items-center w-full relative h-full">
-                <img
-                    width="140"
-                    :src="`${fileServerBaseUrl}/public/images/${collection.albumCover || collection.playlistCover}`"
-                >
-
-                <div class="w-full ml-5">
-                    <div
-                        style="font-size: 15px;"
-                        class="text-white absolute w-full hover:underline cursor-pointer top-0 font-bosemiboldld"
-                    >
-                        {{ collection.artist }}
-                    </div>
-
-                    <div
-                        style="font-size: 33px;"
-                        class="text-white absolute w-full cursor-pointer top-4 font-bosemiboldld"
-                    >
-                        {{ collection.name }}
-                    </div>
-
-
-                    <div class="text-gray-300 text-[13px] flex">
-                        <div class="flex capitalize">{{ route.params.type }}</div>
-                        <div v-if="collection.releaseYear" class="ml-2 flex">
-                            <div class="circle mt-2 mr-2" />
-                            <span class="-ml-0.5">{{ collection.releaseYear }}</span>
-                        </div>
-                        <div class="ml-2 flex">
-                            <div class="circle mt-2 mr-2" />
-                            <span class="-ml-0.5">{{ collection.tracks.length }} songs</span>
-                        </div>
-                    </div>
-
-                    <div class="absolute flex gap-4 items-center justify-start bottom-0 mb-1.5">
-                        <button class="p-1 rounded-full bg-white" @click="playFunc()">
-                            <Play v-if="!isPlaying" fillColor="#181818" :size="25"/>
-                            <Pause v-else fillColor="#181818" :size="25"/>
-                        </button>
-                        <button type="button">
-                            <DotsHorizontal fillColor="#FFFFFF" :size="25"/>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-6"></div>
-            <div class="flex items-center justify-between px-5 pt-2">
-                <div class="flex items-center justify-between text-gray-400">
-                    <div class="mr-7">#</div>
-                    <div class="text-sm">Title</div>
-                </div>
-                <div><ClockTimeThreeOutline fillColor="#FFFFFF" :size="18"/></div>
-            </div>
-            <div class="border-b border-b-[#2A2A2A] mt-2"></div>
-            <div class="mb-4"></div>
-            <ul class="w-full" v-for="(track, index) in collection.tracks" :key="track.id">
-                <SongRow :artist="collection" :track="track" :index="index + 1"/>
-            </ul>
+  <div class="p-8">
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-white text-2xl font-semibold">Your Playlists</h2>
+        <RouterLink
+          to="/playlists"
+          class="text-gray-400 hover:text-white text-sm font-semibold transition-colors"
+        >
+          See All
+        </RouterLink>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        <div v-for="playlist in userPlaylists" :key="playlist.id">
+          <PlaylistItem :playlist="playlist" />
         </div>
+      </div>
     </div>
+
+    <div class="mb-8">
+      <h2 class="text-white text-2xl font-semibold mb-4">Liked Songs</h2>
+      <div class="p-6 bg-gradient-to-br from-blue-700 to-indigo-900 rounded-lg shadow-xl relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20" style="background-image: url('https://picsum.photos/id/1040/1000/1000'); background-size: cover; background-position: center;"></div>
+        <div class="relative z-10">
+          <h3 class="text-white text-2xl font-bold mb-2">Liked Songs</h3>
+          <p class="text-white text-sm">
+            {{ likedSongsCount }} liked songs
+          </p>
+          <div class="mt-4">
+            <RouterLink
+              to="/liked-songs"
+              class="inline-block bg-white text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition-transform duration-200"
+            >
+              Play
+            </RouterLink>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-white text-2xl font-semibold">Albums</h2>
+        <RouterLink
+          to="/albums"
+          class="text-gray-400 hover:text-white text-sm font-semibold transition-colors"
+        >
+          See All
+        </RouterLink>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        <div v-for="album in albums" :key="album.id">
+          <AlbumItem :album="album" />
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-.circle {
-    width: 4px;
-    height: 4px;
-    background-color: rgb(189, 189, 189);
-    border-radius: 100%;
-}
-</style>
+<script setup>
+import { ref, onMounted } from 'vue';
+import { RouterLink } from 'vue-router';
+// Import the new components
+import PlaylistItem from '../components/PlaylistItem.vue';
+import AlbumItem from '../components/AlbumItem.vue';
+import Play from 'vue-material-design-icons/Play.vue';
+
+// Dummy data for demonstration
+const userPlaylists = ref([
+  { id: 1, title: 'Chill Vibes', cover: 'https://th.bing.com/th/id/R.db4a2b3b922ba40ddf1dd7ffff1ecc3c?rik=avaRZIRn9KPvhw&pid=ImgRaw&r=0' },
+  { id: 2, title: 'Workout Mix', cover: 'https://tse3.mm.bing.net/th/id/OIP.U-MDyfkOMjUlwXitIWJ2NwHaEK?rs=1&pid=ImgDetMain&o=7&rm=3' },
+  { id: 3, title: 'Road Trip', cover: 'https://tse2.mm.bing.net/th/id/OIP.Kvc5cYF-wO2BpEqmA6ntBQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3' },
+  { id: 4, title: 'Focus Music', cover: 'https://i.ytimg.com/vi/V7CiSaOznLk/maxresdefault.jpg' },
+]);
+
+const albums = ref([
+  { id: 101, title: 'Different World', artist: 'Alan Walker', cover: 'http://localhost:3000/public/images/DifferentWorld.png' },
+]);
+
+const likedSongsCount = ref(0);
+
+// In a real application, you would fetch this data from an API
+onMounted(() => {
+  // fetchUserPlaylists();
+  // fetchAlbums();
+  // fetchLikedSongsCount();
+  likedSongsCount.value = 54; // Placeholder
+});
+</script>

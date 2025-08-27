@@ -8,17 +8,20 @@ const sampleAlbum = {
         {
             "id": 1,
             "name": "Alone",
-            "path": "Alan Walker - Alone.mp3"
+            "path": "Alan Walker - Alone.mp3",
+            "duration": "1;30"
         },
         {
             "id": 2,
             "name": "Faded",
-            "path": "Alan Walker - Faded.mp3"
+            "path": "Alan Walker - Faded.mp3",
+            "duration": "1;30"
         },
         {
             "id": 3,
             "name": "Intro",
-            "path": "Alan Walker - Intro.mp3"
+            "path": "Alan Walker - Intro.mp3",
+            "duration": "1;30"
         }
     ]
 };
