@@ -8,7 +8,9 @@ import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
 import Plus from 'vue-material-design-icons/Plus.vue';
 import CreatePlaylistModal from './components/CreatePlaylistModal.vue';
 
+
 import { useSongStore } from './stores/song';
+
 import { storeToRefs } from 'pinia';
 import apiClient from './utils/axios.js';
 
@@ -123,6 +125,7 @@ onMounted(() => {
 </script>
 
 <template>
+
     <div class="min-h-screen bg-black">
         <div v-if="!hideSidebar()" id="SideNav" class="h-[100%] p-6 w-[240px] fixed z-50 bg-black">
             <RouterLink to="/home">
@@ -150,7 +153,9 @@ onMounted(() => {
                     <MenuItem :iconSize="24" name="Upload Songs" iconString="playlist" />
                 </RouterLink>
 
-
+                <RouterLink v-if="userRole !== 'admin'" to="/get_playlist">
+                    <MenuItem :iconSize="24" name="View playlist" iconString="playlist"  pageUrl="/get_playlist"/>
+                </RouterLink>
             </ul>
             
             <div v-if="userRole !== 'admin'" class="border-b border-b-gray-700 my-4"></div>
@@ -167,6 +172,7 @@ onMounted(() => {
                 </button>
 
                 <div v-if="userRole !== 'admin'" class="border-b border-b-gray-700 my-4"></div>
+
 
                 <div class="overflow-y-auto h-[360px] scrollbar-hidden">
                 <ul class="space-y-0">

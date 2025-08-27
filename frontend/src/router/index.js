@@ -10,6 +10,11 @@ import LibraryView from '../views/LibraryView.vue'
 import AlbumView from '../views/AlbumView.vue'
 import ArtistView from '../views/ArtistView.vue'
 import UploadView from '../views/UploadView.vue'
+import PlaylistView from '../views/PlaylistView.vue'
+
+import ArtistUploadView from '../views/ArtistUploadView.vue'
+
+import ReportView from '../views/ReportView.vue'
 
 
 const router = createRouter({
@@ -60,6 +65,19 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener']
       }
     },
+    {
+  path: '/reports',
+  name: 'reports',
+  component: ReportView,
+  meta: {
+    hideSidebar: false,
+    hideTopNav: false,
+    hidePlayer: false,
+    requiresAuth: true,
+    allowedRoles: ['admin']   // <-- only admins can view
+  }
+},
+
     {
       path: '/profile',
       name: 'profile',
@@ -120,10 +138,11 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener']
       }
     },
-    {
-      path: '/library',
-      name: 'library',
-      component: LibraryView,
+
+     {
+      path: '/get_playlist',
+      name: 'get_playlist',
+      component: PlaylistView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
@@ -136,6 +155,18 @@ const router = createRouter({
       path: '/upload',
       name: 'upload',
       component: UploadView,
+       meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+     },
+    {
+      path: '/library',
+      name: 'library',
+      component: LibraryView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
@@ -144,6 +175,52 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener']
       }
     },
+    
+{
+  path: '/artist/upload',
+  name: 'artist-upload',
+  component: ArtistUploadView,
+  meta: {
+    hideSidebar: false,
+    hideTopNav: false,
+    hidePlayer: false,
+    requiresAuth: true,
+    allowedRoles: ['artist']
+  }
+},
+    //  {
+    //   path: '/upload',
+    //   name: 'upload',
+    //   component: UploadView,
+    //   meta: {
+    //     hideSidebar: false,
+    //     hideTopNav: false,
+    //     hidePlayer: false,
+    //     requiresAuth: true,
+    //     allowedRoles: ['artist', 'listener', 'admin']
+    //   }
+    // },
+
+    {
+  path: '/upload',
+  name: 'upload',
+  component: UploadView,
+  beforeEnter: (to, from, next) => {
+    // read role the same way your global guard does
+    const data = localStorage.getItem('user_data')
+    let role = null
+    try { role = data ? JSON.parse(data).role : null } catch (_) {}
+    if (role === 'artist') return next({ name: 'artist-upload' })
+    next()
+  },
+  meta: {
+    hideSidebar: false,
+    hideTopNav: false,
+    hidePlayer: false,
+    requiresAuth: true,
+    allowedRoles: ['artist', 'listener', 'admin']
+  }
+},
     // Example of an admin-only route
     {
       path: '/admin-dashboard',
