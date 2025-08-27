@@ -10,6 +10,7 @@ import LibraryView from '../views/LibraryView.vue'
 import AlbumView from '../views/AlbumView.vue'
 import ArtistView from '../views/ArtistView.vue'
 import UploadView from '../views/UploadView.vue'
+import PlaylistView from '../views/PlaylistView.vue'
 
 import ArtistUploadView from '../views/ArtistUploadView.vue'
 
@@ -122,6 +123,31 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener', 'admin']
       }
     },
+
+     {
+      path: '/get_playlist',
+      name: 'get_playlist',
+      component: PlaylistView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+     {
+      path: '/upload',
+      name: 'upload',
+      component: UploadView,
+       meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+     },
     {
       path: '/library',
       name: 'library',
