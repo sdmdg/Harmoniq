@@ -249,6 +249,7 @@ onMounted(() => {
                         General
                     </button>
                     <button
+                        v-if="user && user.role !== 'admin'"
                         @click="activeTab = 'artist'"
                         :class="{ 'border-[#1ED760] text-[#1ED760]': activeTab === 'artist', 'border-transparent text-gray-400': activeTab !== 'artist' }"
                         class="flex-1 py-2 text-center text-lg font-semibold border-b-2 hover:border-[#1ED760] transition-colors"

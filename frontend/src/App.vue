@@ -25,6 +25,7 @@ const userName = ref('');
 const profileImageUrl = ref('');
 const userPlaylists = ref([]);
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER;
+const userRole = ref(''); // Reactive variable for the user's role
 
 const route = useRoute();
 
@@ -40,6 +41,30 @@ const fetchAlbumData = async (albumId) => {
     }
 };
 
+
+const updateUserData = () => {
+    // Check if the user is authenticated (e.g., by checking for user data in localStorage)
+    const userData = localStorage.getItem('user_data');
+    if (userData) {
+        // Only fetch data if the user is logged in
+        fetchUser();
+        fetchUserPlaylists();
+    }
+};
+
+// Watch for any change in the route's path
+watch(() => route.fullPath, () => {
+    updateUserData();
+});
+
+// Initial data fetch on component mount
+onMounted(() => {
+    isPlaying.value = false;
+    updateUserData();
+});
+
+
+
 // Watch for changes to the album_id route parameter and fetch album data
 watch(() => route.params.album_id, (newAlbumId) => {
     fetchAlbumData(newAlbumId);
@@ -50,6 +75,7 @@ const fetchUser = async () => {
     if (userData) {
         const parsedUser = JSON.parse(userData);
         userName.value = parsedUser.username || '';
+        userRole.value = parsedUser.role || 'user';
         try {
             const response = await apiClient.get(`api/profile/image/${parsedUser.id}`);
             profileImageUrl.value = `${fileServerBaseUrl}/public/images/${response.data.pic_path}`;
@@ -107,30 +133,35 @@ onMounted(() => {
             </RouterLink>
             <div class="my-8"></div>
             <ul>
-                <RouterLink to="/home">
+                <RouterLink v-if="userRole !== 'admin'" to="/home">
                     <MenuItem class="ml-[1px]" :iconSize="23" name="Home" iconString="home" pageUrl="/home" />
                 </RouterLink>
-                <RouterLink to="/library">
+                <RouterLink v-if="userRole !== 'admin'" to="/library">
                     <MenuItem class="ml-[2px]" :iconSize="23" name="Your Library" iconString="library" pageUrl="/library" />
                 </RouterLink>
-
-                <div class="py-3.5"></div>
-                <RouterLink to="/liked-songs">
+<!--     -->
+                <RouterLink v-if="userRole == 'admin'" to="/admin-dashboard">
+                    <MenuItem :iconSize="24" name="Dashboard" iconString="home" />
+                </RouterLink>
+<!--     -->
+                
+                <RouterLink v-if="userRole !== 'admin'" to="/liked-songs">
                     <MenuItem class="-ml-[1px]" :iconSize="27" name="Liked Songs" iconString="liked" pageUrl="/liked-songs" />
                 </RouterLink>
 
-                <RouterLink to="/upload">
+                <RouterLink v-if="userRole !== 'admin'" to="/upload">
                     <MenuItem :iconSize="24" name="Upload Songs" iconString="playlist" />
                 </RouterLink>
-                <RouterLink to="/get_playlist">
+
+                <RouterLink v-if="userRole !== 'admin'" to="/get_playlist">
                     <MenuItem :iconSize="24" name="View playlist" iconString="playlist"  pageUrl="/get_playlist"/>
                 </RouterLink>
             </ul>
             
-            <div class="border-b border-b-gray-700 my-4"></div>
+            <div v-if="userRole !== 'admin'" class="border-b border-b-gray-700 my-4"></div>
 
             <div>
-                <button
+                <button v-if="userRole !== 'admin'"
                 @click="createPlaylist"
                 class="flex items-center text-gray-300 font-semibold text-[13px] hover:text-white mb-4 transition-colors"
                 >
@@ -140,7 +171,7 @@ onMounted(() => {
                 <div class="ml-3">Create Playlist</div>
                 </button>
 
-                <div class="border-b border-b-gray-700 my-4"></div>
+                <div v-if="userRole !== 'admin'" class="border-b border-b-gray-700 my-4"></div>
 
 
                 <div class="overflow-y-auto h-[360px] scrollbar-hidden">

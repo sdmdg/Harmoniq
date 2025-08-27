@@ -30,8 +30,13 @@ const handleLogin = async () => {
         // Store user information
         localStorage.setItem('user_data', JSON.stringify(user));
 
-        // Redirect to home page after successful login
-        router.push('/home');
+        // Check the user's role and redirect accordingly
+        if (user.role === 'admin') {
+            router.push('/admin-dashboard');
+        } else {
+            // Default redirection
+            router.push('/home');
+        }
 
         console.log('Login successful!', { token, user });
 
