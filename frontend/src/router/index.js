@@ -10,6 +10,8 @@ import SearchView from '../views/SearchView.vue'
 import LibraryView from '../views/LibraryView.vue'
 import UploadView from '../views/UploadView.vue'
 
+import ArtistUploadView from '../views/ArtistUploadView.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -107,18 +109,52 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener', 'admin']
       }
     },
-     {
-      path: '/upload',
-      name: 'upload',
-      component: UploadView,
-      meta: {
-        hideSidebar: false,
-        hideTopNav: false,
-        hidePlayer: false,
-        requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
-    },
+    
+{
+  path: '/artist/upload',
+  name: 'artist-upload',
+  component: ArtistUploadView,
+  meta: {
+    hideSidebar: false,
+    hideTopNav: false,
+    hidePlayer: false,
+    requiresAuth: true,
+    allowedRoles: ['artist']
+  }
+},
+    //  {
+    //   path: '/upload',
+    //   name: 'upload',
+    //   component: UploadView,
+    //   meta: {
+    //     hideSidebar: false,
+    //     hideTopNav: false,
+    //     hidePlayer: false,
+    //     requiresAuth: true,
+    //     allowedRoles: ['artist', 'listener', 'admin']
+    //   }
+    // },
+
+    {
+  path: '/upload',
+  name: 'upload',
+  component: UploadView,
+  beforeEnter: (to, from, next) => {
+    // read role the same way your global guard does
+    const data = localStorage.getItem('user_data')
+    let role = null
+    try { role = data ? JSON.parse(data).role : null } catch (_) {}
+    if (role === 'artist') return next({ name: 'artist-upload' })
+    next()
+  },
+  meta: {
+    hideSidebar: false,
+    hideTopNav: false,
+    hidePlayer: false,
+    requiresAuth: true,
+    allowedRoles: ['artist', 'listener', 'admin']
+  }
+},
     // Example of an admin-only route
     {
       path: '/admin-dashboard',
