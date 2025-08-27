@@ -6,6 +6,7 @@ import MusicPlayer from './components/MusicPlayer.vue'
 import ChevronUp from 'vue-material-design-icons/ChevronUp.vue';
 import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
 
+
 import { useSongStore } from './stores/song'
 import { storeToRefs } from 'pinia';
 import apiClient from './utils/axios.js'; // your Axios instance
@@ -95,6 +96,9 @@ onMounted(() => {
         <MenuItem :iconSize="24" name="Create Playlist" iconString="playlist" pageUrl="/playlist" />
         <RouterLink to="/upload">
           <MenuItem :iconSize="24" name="Upload Songs" iconString="playlist" />
+        </RouterLink>
+        <RouterLink to="/get_playlist">
+          <MenuItem :iconSize="24" name="View playlist" iconString="playlist"  pageUrl="/get_playlist"/>
         </RouterLink>
 
         <MenuItem class="-ml-[1px]" :iconSize="27" name="Liked Songs" iconString="liked" pageUrl="/liked" />
