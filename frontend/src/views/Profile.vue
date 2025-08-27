@@ -29,11 +29,7 @@ const fetchUser = async () => {
     const userData = localStorage.getItem('user_data');
     if (userData) {
         user.value = JSON.parse(userData);
-        // Set initial artist details if user is an artist
-        if (user.value.role === 'artist') {
-            artistName.value = user.value.artist_name || '';
-            artistDescription.value = user.value.artist_description || '';
-        }
+        
         // Fetch the profile image URL
         try {
             const response = await apiClient.get(`api/profile/image/${user.value.id}`);
@@ -41,8 +37,28 @@ const fetchUser = async () => {
         } catch (error) {
             console.error('Failed to fetch profile image:', error);
         }
+
+        // Conditionally fetch artist details if the user is an artist
+        if (user.value.role === 'artist') {
+            try {
+                // Call the new backend endpoint to get artist details
+                const artistResponse = await apiClient.get(`api/profile/artist-details/${user.value.id}`);
+                const artistData = artistResponse.data;
+                
+                // Update the reactive variables with the fetched data
+                artistName.value = artistData.artist_name || '';
+                artistDescription.value = artistData.description || '';
+
+                // Optionally, update the local storage and reactive user object
+                const updatedUser = { ...user.value, artist_name: artistData.artist_name, artist_description: artistData.description };
+                localStorage.setItem('user_data', JSON.stringify(updatedUser));
+                user.value = updatedUser;
+
+            } catch (error) {
+                console.error('Failed to fetch artist details:', error);
+            }
+        }
     } else {
-        // If no user data, redirect to login
         router.push('/login');
     }
 };
@@ -134,7 +150,7 @@ const handleArtistPublish = async () => {
         localStorage.setItem('user_data', JSON.stringify(updatedUser));
         user.value = updatedUser;
         
-        successMessage.value = 'Congratulations! You are now an artist.';
+        successMessage.value = 'Congratulations! Your role has been successfully updated. Please log out and log back in to access your new artist features.';
 
     } catch (error) {
         console.error('Failed to become an artist:', error);
@@ -332,7 +348,7 @@ onMounted(() => {
                 <!-- Artist Content -->
                 <div v-if="activeTab === 'artist'" class="mt-4">
                     <!-- If user is an artist, show the update form. If a listener, show the 'become an artist' form -->
-                    <h3 class="text-xl font-bold mb-4">{{ user && user.role === 'artist' ? 'Update Artist Profile' : 'Become an Artist' }}</h3>
+                    <h3 class="text-xl font-bold mb-4">{{ user && user.role === 'artist' ? 'Update Profile' : 'Become an Artist' }}</h3>
                     <form @submit.prevent="user && user.role === 'artist' ? handleArtistUpdate() : handleArtistPublish()">
                         <div class="mb-4">
                             <label for="artistName" class="block text-gray-300 text-sm font-semibold mb-2">Artist Name</label>
