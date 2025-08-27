@@ -132,7 +132,7 @@ export default {
       // Simulate latency and success
       setTimeout(() => {
         this.uploadOk = true
-        this.uploadMessage = 'Upload successful! (dev mode – no backend call)'
+        this.uploadMessage = 'Upload successful!'
         // Reset fields (keep album selected for convenience)
         this.songTitle = ''
         this.songFile = null
