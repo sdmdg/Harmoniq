@@ -14,6 +14,8 @@ import PlaylistView from '../views/PlaylistView.vue'
 
 import ArtistUploadView from '../views/ArtistUploadView.vue'
 
+import ReportView from '../views/ReportView.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -63,6 +65,19 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener', 'admin']
       }
     },
+    {
+  path: '/reports',
+  name: 'reports',
+  component: ReportView,
+  meta: {
+    hideSidebar: false,
+    hideTopNav: false,
+    hidePlayer: false,
+    requiresAuth: true,
+    allowedRoles: ['admin']   // <-- only admins can view
+  }
+},
+
     {
       path: '/profile',
       name: 'profile',
