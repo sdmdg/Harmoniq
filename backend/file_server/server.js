@@ -2,11 +2,17 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-
+const cors = require('cors');
 // --- Public Server (Read-only) ---
 // This server will only serve static files (GET requests)
 const publicApp = express();
 const publicPort = 3000;
+
+publicApp.use(cors({
+    origin: "*", 
+    methods: ["*"],
+    allowedHeaders: ["*"]
+}));
 
 // Serve songs and images from the 'public' directory
 publicApp.use('/public', express.static(path.join(__dirname, 'public')));

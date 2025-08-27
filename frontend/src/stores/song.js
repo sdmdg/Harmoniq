@@ -1,91 +1,218 @@
 import { defineStore } from 'pinia'
 
-// Define the base URL for your file server.
-const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
+// --- Config ---
+const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000'
+
+// AES-256-CBC (hex from your Python script)
+const ENCRYPTION_KEY_HEX = 'e2797ff1c1bca2b5056d20aba421f69a31b115b8f68537ffc46783404a23cfc2'
+const ENCRYPTION_IV_HEX  = 'ce0b1f79486e0bead826238530d543f0'
+
+// --- Utils ---
+function hexToBytes (hex) {
+  const bytes = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16)
+  return bytes
+}
+
+async function decryptAesCbcToArrayBuffer (encryptedArrayBuffer) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    hexToBytes(ENCRYPTION_KEY_HEX),
+    { name: 'AES-CBC' },
+    false,
+    ['decrypt']
+  )
+  const iv = hexToBytes(ENCRYPTION_IV_HEX)
+  return crypto.subtle.decrypt({ name: 'AES-CBC', iv }, key, encryptedArrayBuffer)
+}
 
 export const useSongStore = defineStore('song', {
-    state: () => ({
-        isPlaying: false,
-        audio: null,
-        currentArtist: null,
-        currentTrack: null
-    }),
-    actions: {
-        loadSong(artist, track) {
-            this.currentArtist = artist;
-            this.currentTrack = track;
+  state: () => ({
+    isPlaying: false,
+    isBuffering: false,
+    downloadProgress: 0,       // 0..100 (best-effort; only if server sends Content-Length)
+    audio: null,               // HTMLAudioElement
+    objectUrl: null,           // current blob URL to revoke
+    currentArtist: null,
+    currentTrack: null,
+    _fetchAbort: null          // AbortController for the active download
+  }),
 
-            if (this.audio && this.audio.src) {
-                this.audio.pause();
-                this.isPlaying = false;
-                this.audio.src = '';
+  actions: {
+    async loadSong (artist, track) {
+      // remember selection early (so UI can render titles/covers)
+      this.currentArtist = artist
+      this.currentTrack = track
+
+      // cancel any in-flight download and clean current audio
+      this._abortFetchIfAny()
+      this._teardownAudio()
+
+      // build encrypted file path safely
+      const baseName = (track.path || '').replace(/\.mp3$/i, '')
+      const url = `${fileServerBaseUrl}/public/songs/${baseName}.mp3.encrypted`
+
+      this.isBuffering = true
+      this.downloadProgress = 0
+
+      try {
+        // ---- 1) Download (with optional progress) ----
+        const controller = new AbortController()
+        this._fetchAbort = controller
+
+        const res = await fetch(url, { signal: controller.signal })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+        // stream read for progress (falls back gracefully if not supported)
+        const contentLength = Number(res.headers.get('content-length')) || 0
+        let encryptedBuffer
+
+        if (res.body && 'getReader' in res.body) {
+          const reader = res.body.getReader()
+          const chunks = []
+          let received = 0
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            chunks.push(value)
+            received += value.byteLength
+            if (contentLength) {
+              this.downloadProgress = Math.round((received / contentLength) * 100)
             }
-
-            this.audio = new Audio();
-            this.audio.src = `${fileServerBaseUrl}/public/songs/${track.path}`;
-            console.log(this.audio.src);
-
-            setTimeout(() => {
-                this.isPlaying = true;
-                this.audio.play();
-            }, 200);
-        },
-
-        playOrPauseSong() {
-            if (this.audio.paused) {
-                this.isPlaying = true;
-                this.audio.play();
-            } else {
-                this.isPlaying = false;
-                this.audio.pause();
-            }
-        },
-
-        playOrPauseThisSong(artist, track) {
-            if (!this.audio || !this.audio.src || (this.currentTrack.id !== track.id)) {
-                this.loadSong(artist, track);
-                return;
-            }
-
-            this.playOrPauseSong();
-        },
-
-        // Corrected prevSong to use the dynamic currentArtist object
-        prevSong() {
-            if (!this.currentArtist || !this.currentTrack) return;
-            const currentTrackIndex = this.currentArtist.tracks.findIndex(t => t.id === this.currentTrack.id);
-            const prevTrackIndex = currentTrackIndex > 0 ? currentTrackIndex - 1 : this.currentArtist.tracks.length - 1;
-            const track = this.currentArtist.tracks[prevTrackIndex];
-            this.loadSong(this.currentArtist, track);
-        },
-
-        // Corrected nextSong to use the dynamic currentArtist object
-        nextSong() {
-            if (!this.currentArtist || !this.currentTrack) return;
-            const currentTrackIndex = this.currentArtist.tracks.findIndex(t => t.id === this.currentTrack.id);
-            const nextTrackIndex = (currentTrackIndex + 1) % this.currentArtist.tracks.length;
-            const track = this.currentArtist.tracks[nextTrackIndex];
-            this.loadSong(this.currentArtist, track);
-        },
-
-        // Corrected playFromFirst to use the dynamic currentArtist object
-        playFromFirst() {
-            if (!this.currentArtist) return;
-            this.resetState();
-            let track = this.currentArtist.tracks[0];
-            this.loadSong(this.currentArtist, track);
-        },
-
-        resetState() {
-            this.isPlaying = false;
-            if (this.audio) {
-                this.audio.pause();
-                this.audio.src = '';
-            }
-            this.audio = null;
-            this.currentArtist = null;
-            this.currentTrack = null;
+          }
+          const merged = new Uint8Array(received)
+          let offset = 0
+          for (const c of chunks) {
+            merged.set(c, offset)
+            offset += c.byteLength
+          }
+          encryptedBuffer = merged.buffer
+        } else {
+          // fallback (no visible progress)
+          encryptedBuffer = await res.arrayBuffer()
+          this.downloadProgress = 100
         }
+
+        // If user switched tracks mid-download
+        if (controller.signal.aborted) return
+
+        // ---- 2) Decrypt fully in memory ----
+        const decryptedArrayBuffer = await decryptAesCbcToArrayBuffer(encryptedBuffer)
+
+        // ---- 3) Create Blob URL and play ----
+        const blob = new Blob([decryptedArrayBuffer], { type: 'audio/mpeg' })
+        const objectUrl = URL.createObjectURL(blob)
+        this.objectUrl = objectUrl
+
+        const audio = new Audio(objectUrl)
+        audio.preload = 'auto'
+        audio.onended = () => this.nextSong()
+        audio.onplay = () => { this.isPlaying = true }
+        audio.onpause = () => { this.isPlaying = false }
+
+        this.audio = audio
+
+        try {
+          await audio.play()
+          this.isPlaying = true
+        } catch (e) {
+          // Autoplay blocked: keep audio ready; UI should show a play button
+          console.warn('Autoplay prevented; waiting for user gesture.', e)
+          this.isPlaying = false
+        }
+      } catch (err) {
+        if (err?.name === 'AbortError') return // harmless: we switched tracks
+        console.error('Failed to load/decrypt song:', err)
+        this.resetState()
+      } finally {
+        this.isBuffering = false
+        this._fetchAbort = null
+      }
     },
-    persist: true
-});
+
+    playOrPauseSong () {
+      if (!this.audio) return
+      if (this.audio.paused) {
+        this.audio.play().then(() => { this.isPlaying = true }).catch(() => {})
+      } else {
+        this.audio.pause()
+        this.isPlaying = false
+      }
+    },
+
+    playOrPauseThisSong (artist, track) {
+      if (!this.audio || !this.audio.src || (this.currentTrack && this.currentTrack.id !== track.id)) {
+        this.loadSong(artist, track)
+        return
+      }
+      this.playOrPauseSong()
+    },
+
+    prevSong () {
+      if (!this.currentArtist || !this.currentTrack) return
+      const idx = this.currentArtist.tracks.findIndex(t => t.id === this.currentTrack.id)
+      const prevIdx = idx > 0 ? idx - 1 : this.currentArtist.tracks.length - 1
+      this.loadSong(this.currentArtist, this.currentArtist.tracks[prevIdx])
+    },
+
+    nextSong () {
+      if (!this.currentArtist || !this.currentTrack) return
+      const idx = this.currentArtist.tracks.findIndex(t => t.id === this.currentTrack.id)
+      const nextIdx = (idx + 1) % this.currentArtist.tracks.length
+      this.loadSong(this.currentArtist, this.currentArtist.tracks[nextIdx])
+    },
+
+    playFromFirst () {
+      if (!this.currentArtist) return
+      this.resetState()
+      this.loadSong(this.currentArtist, this.currentArtist.tracks[0])
+    },
+
+    seekTo (seconds) {
+      if (!this.audio || Number.isNaN(this.audio.duration)) return
+      this.audio.currentTime = Math.max(0, Math.min(seconds, this.audio.duration))
+    },
+
+    seekToPercent (p0to100) {
+      if (!this.audio || Number.isNaN(this.audio.duration)) return
+      const sec = (Math.max(0, Math.min(100, p0to100)) / 100) * this.audio.duration
+      this.audio.currentTime = sec
+    },
+
+    stop () {
+      if (!this.audio) return
+      this.audio.pause()
+      this.audio.currentTime = 0
+      this.isPlaying = false
+    },
+
+    resetState () {
+      this.isPlaying = false
+      this.isBuffering = false
+      this.downloadProgress = 0
+      this._abortFetchIfAny()
+      this._teardownAudio()
+      this.currentArtist = null
+      this.currentTrack = null
+    },
+
+    // --- internals ---
+    _abortFetchIfAny () {
+      try { this._fetchAbort?.abort() } catch (_) {}
+      this._fetchAbort = null
+    },
+    _teardownAudio () {
+      if (this.audio) {
+        try { this.audio.pause() } catch (_) {}
+        try { this.audio.src = '' } catch (_) {}
+        this.audio = null
+      }
+      if (this.objectUrl) {
+        try { URL.revokeObjectURL(this.objectUrl) } catch (_) {}
+        this.objectUrl = null
+      }
+    }
+  },
+
+  persist: true
+})

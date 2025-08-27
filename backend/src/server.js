@@ -14,7 +14,12 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+// Allow requests from your frontend
+app.use(cors({
+  origin: "*",   // or "*" for all origins
+  methods: ["*"],
+  allowedHeaders: ["*"]
+}));
 app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);

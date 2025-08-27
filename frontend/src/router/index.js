@@ -57,7 +57,7 @@ const router = createRouter({
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
+        allowedRoles: ['artist', 'listener']
       }
     },
     {
@@ -105,7 +105,7 @@ const router = createRouter({
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
+        allowedRoles: ['artist', 'listener']
       }
     },
     {
@@ -117,7 +117,7 @@ const router = createRouter({
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
+        allowedRoles: ['artist', 'listener']
       }
     },
     {
@@ -129,7 +129,7 @@ const router = createRouter({
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
+        allowedRoles: ['artist', 'listener']
       }
     },
      {
@@ -141,7 +141,7 @@ const router = createRouter({
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
+        allowedRoles: ['artist', 'listener']
       }
     },
     // Example of an admin-only route
