@@ -109,7 +109,7 @@ export const updateArtistProfile = async (userId, artistName, description) => {
 };
 
 export const ModelSetSong = async (
-  songId,  
+  id,
   albumId,
   title,
   durationSeconds,
@@ -141,7 +141,7 @@ export const ModelSetSong = async (
   const durationInterval = `${durationSeconds} seconds`;
 
   const values = [
-    songId,
+    id,
     albumId,
     title,
     durationInterval,

@@ -11,6 +11,7 @@ import AlbumView from '../views/AlbumView.vue'
 import ArtistView from '../views/ArtistView.vue'
 import UploadView from '../views/UploadView.vue'
 import PlaylistView from '../views/PlaylistView.vue'
+import AdminDash from '../views/AdminDash.vue'
 
 import ArtistUploadView from '../views/ArtistUploadView.vue'
 
@@ -66,17 +67,17 @@ const router = createRouter({
       }
     },
     {
-  path: '/reports',
-  name: 'reports',
-  component: ReportView,
-  meta: {
-    hideSidebar: false,
-    hideTopNav: false,
-    hidePlayer: false,
-    requiresAuth: true,
-    allowedRoles: ['admin']   // <-- only admins can view
-  }
-},
+      path: '/reports',
+      name: 'reports',
+      component: ReportView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['admin']
+      }
+    },
 
     {
       path: '/profile',
@@ -117,7 +118,7 @@ const router = createRouter({
     {
       path: '/playlist/:id',
       name: 'playlist',
-      component: AlbumView,
+      component: PlaylistView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
@@ -129,7 +130,7 @@ const router = createRouter({
     {
       path: '/liked-songs/',
       name: 'liked',
-      component: AlbumView,
+      component: PlaylistView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
@@ -226,7 +227,7 @@ const router = createRouter({
       path: '/admin-dashboard',
       name: 'admin-dashboard',
       // component: AdminDashboardView,
-      component: HomeView, // Using HomeView as a placeholder for now
+      component: AdminDash, // Using HomeView as a placeholder for now
       meta: {
         hideSidebar: false,
         hideTopNav: false,
