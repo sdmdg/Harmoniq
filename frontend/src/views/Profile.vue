@@ -112,7 +112,7 @@ const handleImageUpload = async () => {
 
     try {
         // Assume an endpoint for image upload
-        const response = await apiClient.post('api/profile/upload-image', formData, {
+        const response = await apiClient.post('api/profile/upload-image', formData, {  
             headers: { 'Content-Type': 'multipart/form-data' },
         });
 

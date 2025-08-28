@@ -109,6 +109,7 @@ export const updateArtistProfile = async (userId, artistName, description) => {
 };
 
 export const ModelSetSong = async (
+  songId,  
   albumId,
   title,
   durationSeconds,
@@ -121,6 +122,7 @@ export const ModelSetSong = async (
 ) => {
   const query = `
     INSERT INTO public.songs (
+      id,
       album_id,
       title,
       duration,
@@ -131,7 +133,7 @@ export const ModelSetSong = async (
       genre,
       mood
     )
-    VALUES ($1, $2, $3::interval, $4, $5, $6, $7, $8, $9)
+    VALUES ($1, $2, $3, $4::interval, $5, $6, $7, $8, $9, $10)
     RETURNING *;
   `;
 
@@ -139,6 +141,7 @@ export const ModelSetSong = async (
   const durationInterval = `${durationSeconds} seconds`;
 
   const values = [
+    songId,
     albumId,
     title,
     durationInterval,
@@ -150,7 +153,7 @@ export const ModelSetSong = async (
     mood
   ];
 
-  const result = await pool.query(query, values);
+  const result = await db.query(query, values);
   return result.rows.length > 0 ? result.rows[0] : null;
 };
 
