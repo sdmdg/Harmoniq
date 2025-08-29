@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="submit" class="max-w-xl w-full space-y-6 p-6 rounded-2xl bg-neutral-900 border border-neutral-800">
     <header class="space-y-1">
-      <h2 class="text-lg font-semibold text-white">Report an issue</h2>
+      <h2 class="text-lg font-semibold text-white">Report an Issue</h2>
       <p class="text-sm text-neutral-400">Help us keep the platform accurate and safe.</p>
     </header>
 
