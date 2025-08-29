@@ -1,148 +1,185 @@
 <template>
-  <div class="min-h-screen bg-black text-white">
-    <div class="max-w-3xl mx-auto px-6 py-14">
-      <h1 class="text-4xl font-extrabold text-center mb-8">Artist: Upload a Song</h1>
+  <div class="artist-upload-view min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center">
+    <h1 class="text-3xl font-bold mb-6 text-[#1ED760] drop-shadow-lg">Upload a Song</h1>
 
-      <div class="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-8 space-y-6">
-        <!-- Title -->
-        <div class="space-y-2">
-          <label class="text-sm text-zinc-300">Song Title</label>
-          <input
-            v-model="songTitle"
-            type="text"
-            placeholder="Enter song title"
-            class="w-full bg-zinc-800/60 border border-emerald-500/40 focus:border-emerald-400 rounded-lg px-4 py-3 outline-none"
-          />
-        </div>
-
-        <!-- File -->
-        <div class="space-y-2">
-          <label class="text-sm text-zinc-300">Select File</label>
-          <input
-            type="file"
-            accept="audio/*"
-            @change="handleFileChange"
-            class="w-full bg-zinc-800/60 border border-zinc-700 rounded-lg px-4 py-2"
-          />
-        </div>
-
-        <!-- Album chooser (hardcoded + local create) -->
-        <div class="space-y-2">
-          <label class="text-sm text-zinc-300">Save to Album</label>
-
-          <div class="flex gap-3 items-center">
-            <select
-              v-model="selectedAlbumId"
-              class="flex-1 bg-zinc-800/60 border border-zinc-700 rounded-lg px-4 py-3"
-            >
-              <option disabled value="">-- Select an album --</option>
-              <option v-for="a in albums" :key="a._id" :value="a._id">
-                {{ a.title }}
-              </option>
-            </select>
-
-            <button
-              type="button"
-              class="px-4 py-3 rounded-lg bg-zinc-800 border border-zinc-700 hover:bg-zinc-700"
-              @click="showCreateAlbum = !showCreateAlbum"
-            >
-              {{ showCreateAlbum ? 'Cancel' : '+ New Album' }}
-            </button>
-          </div>
-
-          <!-- Local-only 'create album' (no API) -->
-          <div v-if="showCreateAlbum" class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <input
-              v-model="newAlbumTitle"
-              type="text"
-              placeholder="Album title"
-              class="md:col-span-2 bg-zinc-800/60 border border-zinc-700 rounded-lg px-4 py-3"
-            />
-            <button
-              type="button"
-              class="px-4 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-semibold"
-              :disabled="!newAlbumTitle"
-              @click="createLocalAlbum"
-            >
-              Create
-            </button>
-          </div>
-        </div>
-
-        <button
-          class="w-full rounded-full py-4 text-lg font-semibold bg-emerald-500 hover:bg-emerald-600 text-black disabled:opacity-60 disabled:cursor-not-allowed"
-          :disabled="isUploading || !songFile || !songTitle || !selectedAlbumId"
-          @click="handleUpload"
-        >
-          {{ isUploading ? 'Uploading…' : 'Upload Song' }}
-        </button>
-
-        <p v-if="uploadMessage" class="text-center text-sm" :class="uploadOk ? 'text-emerald-400' : 'text-red-400'">
-          {{ uploadMessage }}
-        </p>
+    <!-- Upload Form -->
+    <form
+      @submit.prevent="handleUpload"
+      class="bg-gray-800 p-6 rounded-xl shadow-xl w-full max-w-lg space-y-5"
+    >
+      <!-- Song File -->
+      <div class="flex flex-col">
+        <label class="font-semibold mb-2 text-[#1ED760]">Select Song:</label>
+        <input
+          type="file"
+          @change="handleFileChange"
+          accept="audio/*"
+          class="file:py-2 file:px-4 file:border-0 file:rounded file:text-white file:bg-[#1ED760] file:cursor-pointer hover:file:bg-green-400"
+          required
+        />
       </div>
-    </div>
+
+      <!-- Song Title -->
+      <div class="flex flex-col">
+        <label class="font-semibold mb-2 text-[#1ED760]">Song Title:</label>
+        <input
+          type="text"
+          v-model="songTitle"
+          placeholder="Enter song title"
+          class="border border-gray-600 rounded-lg px-3 py-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
+          required
+        />
+      </div>
+
+      <!-- Album Selection -->
+      <div class="flex flex-col">
+        <label class="font-semibold mb-2 text-[#1ED760]">Select Album:</label>
+        <select
+          v-model="selectedAlbumId"
+          class="border border-gray-600 rounded-lg px-3 py-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
+        >
+          <option v-for="album in albums" :key="album.id" :value="album.id">
+            {{ album.title }}
+          </option>
+          <option value="new">+ Create New Album</option>
+        </select>
+      </div>
+
+      <!-- New Album Fields -->
+      <div v-if="selectedAlbumId === 'new'" class="space-y-3 mt-3">
+        <div class="flex flex-col">
+          <label class="font-semibold mb-1 text-[#1ED760]">New Album Title:</label>
+          <input
+            type="text"
+            v-model="newAlbum.title"
+            placeholder="Enter album title"
+            class="border border-gray-600 rounded-lg px-3 py-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="font-semibold mb-1 text-[#1ED760]">Release Date:</label>
+          <input
+            type="date"
+            v-model="newAlbum.releaseDate"
+            class="border border-gray-600 rounded-lg px-3 py-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
+          />
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        :disabled="isUploading"
+        class="w-full bg-[#1ED760] text-gray-900 font-bold py-2 px-4 rounded-lg hover:bg-green-400 transition duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {{ isUploading ? "Uploading..." : "Upload Song" }}
+      </button>
+    </form>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ArtistUploadView',
-  data() {
-    return {
-      // normal upload state
-      songTitle: '',
-      songFile: null,
-      isUploading: false,
-      uploadMessage: '',
-      uploadOk: false,
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import apiClient from '../utils/axios.js';
 
-      // hardcoded albums + local create state
-      albums: [
-        { _id: 'a1', title: 'My Debut Album' },
-        { _id: 'a2', title: 'Chill Vibes' },
-        { _id: 'a3', title: 'Live at Home' },
-      ],
-      selectedAlbumId: '',
-      showCreateAlbum: false,
-      newAlbumTitle: '',
+const router = useRouter();
+
+const albums = ref([]);
+const selectedAlbumId = ref(null);
+const songFile = ref(null);
+const songTitle = ref('');
+const isUploading = ref(false);
+
+const newAlbum = ref({
+  title: '',
+  releaseDate: '',
+});
+
+// Fetch user albums, redirect if not logged in
+const fetchAlbums = async () => {
+  const userData = localStorage.getItem('user_data');
+  if (!userData) {
+    console.error('No user ID found. Redirecting to login...');
+    router.push('/login');
+    return;
+  }
+
+  const user = JSON.parse(userData);
+
+  try {
+    const response = await apiClient.get(`/api/album/user/${user.id}`);
+    albums.value = response.data || [];
+  } catch (error) {
+    console.error('Error fetching albums:', error);
+  }
+};
+
+const handleFileChange = (e) => {
+  songFile.value = e.target.files[0];
+};
+
+const handleUpload = async () => {
+  if (!songFile.value || !songTitle.value) return;
+
+  isUploading.value = true;
+
+  const userData = localStorage.getItem('user_data');
+  if (!userData) {
+    alert('You must be logged in to upload songs.');
+    router.push('/login');
+    return;
+  }
+  const user = JSON.parse(userData);
+
+  try {
+    let albumId = selectedAlbumId.value;
+
+    if (albumId === 'new') {
+      const albumResponse = await apiClient.post('api/album/add', {
+        title: newAlbum.value.title,
+        artist: user.id,
+        releaseDate: newAlbum.value.releaseDate,
+      });
+      albumId = albumResponse.data.id;
+      albums.value.push(albumResponse.data);
     }
-  },
-  methods: {
-    handleFileChange(e) {
-      this.songFile = e.target.files[0]
-    },
-    // purely local create: add to dropdown, select it, no API calls
-    createLocalAlbum() {
-      const title = this.newAlbumTitle?.trim()
-      if (!title) return
-      const newId = `local_${Date.now()}`
-      this.albums.unshift({ _id: newId, title })
-      this.selectedAlbumId = newId
-      this.newAlbumTitle = ''
-      this.showCreateAlbum = false
-    },
-    // DEV: simulate a successful upload with no network calls
-    async handleUpload() {
-      if (!this.songFile || !this.songTitle || !this.selectedAlbumId) return
-      this.isUploading = true
-      this.uploadMessage = ''
-      this.uploadOk = false
 
-      // Simulate latency and success
-      setTimeout(() => {
-        this.uploadOk = true
-        this.uploadMessage = 'Upload successful!'
-        // Reset fields (keep album selected for convenience)
-        this.songTitle = ''
-        this.songFile = null
-        this.isUploading = false
-      }, 700)
-    },
-  },
-}
+    const formData = new FormData();
+    formData.append('title', songTitle.value);
+    formData.append('file', songFile.value);
+    formData.append('albumId', albumId);
+
+    await apiClient.post('/songs/add', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    alert('Song uploaded successfully!');
+    songFile.value = null;
+    songTitle.value = '';
+    selectedAlbumId.value = null;
+    newAlbum.value = { title: '', releaseDate: '' };
+  } catch (error) {
+    console.error('Error uploading song:', error);
+    alert('Failed to upload song.');
+  } finally {
+    isUploading.value = false;
+  }
+};
+
+onMounted(fetchAlbums);
 </script>
 
 <style scoped>
-/* Tailwind utility classes are used inline */
+.artist-upload-view::-webkit-scrollbar {
+  width: 6px;
+}
+.artist-upload-view::-webkit-scrollbar-thumb {
+  background-color: #1ED760;
+  border-radius: 10px;
+}
+.artist-upload-view::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
 </style>
