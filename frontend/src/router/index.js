@@ -16,7 +16,7 @@ import AdminDash from '../views/AdminDash.vue'
 import ArtistUploadView from '../views/ArtistUploadView.vue'
 
 import ReportView from '../views/ReportView.vue'
-
+import ReportIssue from '../views/ReportIssue.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -76,6 +76,18 @@ const router = createRouter({
         hidePlayer: false,
         requiresAuth: true,
         allowedRoles: ['admin']
+      }
+    },
+    {
+      path: '/reportIssue',
+      name: 'reportIssue',
+      component: ReportIssue,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['listener', 'artist']
       }
     },
 

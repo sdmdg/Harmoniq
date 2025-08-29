@@ -143,9 +143,9 @@ onMounted(() => {
                 <RouterLink v-if="userRole == 'admin'" to="/admin-dashboard">
                     <MenuItem :iconSize="24" name="Dashboard" iconString="home" />
                 </RouterLink>
-
+               
                 <RouterLink v-if="userRole == 'admin'" to="/reports">
-                    <MenuItem :iconSize="24" name="Reports" iconString="home" />
+                    <MenuItem :iconSize="24" name="Report" iconString="home" />
                 </RouterLink>
 <!--     -->
                 
@@ -156,6 +156,13 @@ onMounted(() => {
                 <RouterLink v-if="userRole !== 'admin'" to="/upload">
                     <MenuItem :iconSize="24" name="Upload Songs" iconString="playlist" />
                 </RouterLink>
+                  <RouterLink v-if="userRole !== 'admin'" to="/reportIssue">
+                    <MenuItem :iconSize="24" name="Report an Issue" iconString="playlist" />
+                </RouterLink>
+
+
+             
+
             </ul>
             
             <div v-if="userRole !== 'admin'" class="border-b border-b-gray-700 my-4"></div>
