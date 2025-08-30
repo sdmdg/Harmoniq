@@ -17,6 +17,7 @@ import ArtistUploadView from '../views/ArtistUploadView.vue'
 
 import ReportView from '../views/ReportView.vue'
 import ReportIssue from '../views/ReportIssue.vue'
+import ReportingGuide from '../views/ReportingGuide.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -90,6 +91,11 @@ const router = createRouter({
         allowedRoles: ['listener', 'artist']
       }
     },
+     {
+    path: '/support/reporting-guidelines',
+    name: 'ReportingGuidelines',
+    component: ReportingGuide
+  },
 
     {
       path: '/profile',
