@@ -71,26 +71,27 @@ export const listReports = async (req, res) => {
   }
 };
 
-// controllers/reportController.js
 export const setReportStatus = async (req, res) => {
-  const { id } = req.params
-  const { status } = req.body
-  const allowed = ['in_progress', 'rejected', 'completed']
+  const { id } = req.params;
+  const { status } = req.body;
+
+  // only allow these
+  
+const allowed = ['pending', 'in_progress', 'rejected', 'completed'];
+
   if (!allowed.includes(status)) {
-    return res.status(400).json({ message: 'Invalid status' })
+    return res.status(400).json({ message: 'Invalid status' });
   }
+
   try {
-    const { rows } = await pool.query(
-      `UPDATE reports SET status = $1 WHERE id = $2 RETURNING id, status`,
-      [status, id]
-    )
-    if (!rows.length) return res.status(404).json({ message: 'Report not found' })
-    res.json(rows[0])
+    const row = await updateReportStatus(id, status); // ✅ call model
+    if (!row) return res.status(404).json({ message: 'Report not found' });
+    return res.json(row);
   } catch (e) {
-    console.error('Error updating status:', e)
-    res.status(500).json({ message: 'Failed to update status' })
+    console.error('Error updating status:', e);
+    return res.status(500).json({ message: 'Failed to update status' });
   }
-}
+};
 
 
 export const removeReport = async (req, res) => {

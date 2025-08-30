@@ -6,7 +6,7 @@ const router=express.Router();
 router.post('/',protect(['listener','admin','artist']),postReport);
 
 router.get('/',protect(['admin']),listReports);
-router.patch('/:id',protect(['admin']),setReportStatus);
+router.put('/:id/status', protect(['admin']), setReportStatus);
 router.delete('/:id',protect(['admin']),removeReport);
 router.put('/:id/status', protect(['admin']), setReportStatus)
 
