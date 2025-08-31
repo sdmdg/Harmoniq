@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/axios';
 
@@ -9,37 +9,61 @@ const totalArtists = ref(0);
 const totalSongs = ref(0);
 const totalPlaylists = ref(0);
 
-const fetchDashboardData = async () => {
-    try {
-        // Assume you have a new API endpoint for admin dashboard data
-        const response = await apiClient.get('/api/admin/dashboard');
-        const data = response.data;
-        totalUsers.value = data.totalUsers;
-        totalArtists.value = data.totalArtists;
-        totalSongs.value = data.totalSongs;
-        totalPlaylists.value = data.totalPlaylists;
-    } catch (error) {
-        console.error('Failed to fetch admin dashboard data:', error);
-        // Handle unauthorized access, e.g., redirect to login
-        if (error.response && error.response.status === 403) {
-            router.push('/home'); // Or a dedicated unauthorized page
-        }
+const loading = ref(false);
+const err = ref('');
+
+async function fetchDashboardData() {
+  loading.value = true;
+  err.value = '';
+  try {
+    const { data } = await apiClient.get('/api/admin/dashboard');
+    totalUsers.value = data.totalUsers ?? 0;
+    totalArtists.value = data.totalArtists ?? 0;
+    totalSongs.value = data.totalSongs ?? 0;
+    totalPlaylists.value = data.totalPlaylists ?? 0;
+  } catch (error) {
+    console.error('Failed to fetch admin dashboard data:', error);
+    const status = error?.response?.status;
+
+    if (status === 401) {
+      // not authenticated or token expired
+      router.push('/login');
+      return;
     }
-};
+    if (status === 403) {
+      // authenticated but not admin
+      router.push('/home');
+      return;
+    }
+    err.value = error?.response?.data?.message || 'Something went wrong.';
+  } finally {
+    loading.value = false;
+  }
+}
+
+// optional: refetch when tab becomes active again
+function onVisibility() {
+  if (document.visibilityState === 'visible') fetchDashboardData();
+}
 
 onMounted(() => {
-    fetchDashboardData();
+  fetchDashboardData();
+  document.addEventListener('visibilitychange', onVisibility);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', onVisibility);
 });
 </script>
 
+
 <template>
     <div class="p-8">
-        <h1 class="text-3xl font-bold text-white mb-6">Admin Dashboard</h1>
+        <h1 class="text-3xl font-bold text-green-500 mb-6">Admin Dashboard</h1>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-[#181818] p-6 rounded-lg shadow-md">
                 <h2 class="text-lg font-semibold text-gray-300">Total Users</h2>
-                <p class="text-4xl font-bold text-white mt-2">{{ totalUsers }}</p>
+                <p class="text-4xl font-bold text-white mt-2">{{ totalUsers}}</p>
             </div>
             <div class="bg-[#181818] p-6 rounded-lg shadow-md">
                 <h2 class="text-lg font-semibold text-gray-300">Total Artists</h2>
