@@ -10,7 +10,7 @@ import reportRoutes from "./routes/reportRoutes.js";
 import cors from "cors";
 import morgan from "morgan";
 import pool from "./config/db.js";
-
+import adminRoutes from "./routes/adminRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -29,6 +29,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/playlist", playlistRoutes);
 app.use("/api/songs", songsRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/admin", adminRoutes);
 const startServer = async () => {
   try {
     // Check database connection
