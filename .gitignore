@@ -4,4 +4,5 @@
 frontend/.env
 backend/src/.env
 
-
+backend/ai_module/venv
+backend/ai_module/__pycache__   
