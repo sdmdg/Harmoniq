@@ -128,8 +128,8 @@ def predict_mood(file_name):
             print(results)
             return {
                 "prediction": str(results),
-                "confidence": str(ensemble_conf),
-            }
+                "confidence": str(round(ensemble_conf, 2)),
+            }, float(avg_valence_predicted), float(avg_arousal_predicted)
 
         else:
             print("Failed to preprocess the song. Prediction aborted.")

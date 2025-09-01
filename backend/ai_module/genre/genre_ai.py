@@ -167,7 +167,7 @@ def predict_genre(audio_path, model_path=MODEL_PATH, chunk_duration=30, overlap_
 
     return {
         "prediction": str(ensemble_genre),
-        "confidence": str(ensemble_conf),
+        "confidence": str(round(ensemble_conf, 2)),
     }
 
 
