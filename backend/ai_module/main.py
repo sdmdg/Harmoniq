@@ -13,7 +13,8 @@ async def predict(filename: str):
 
     return {
         "genre": json.loads(json.dumps(genre_results)),
-        "mood": mood_results
+        "mood": mood_results,
+        "bpm": 60
     }
 
 
