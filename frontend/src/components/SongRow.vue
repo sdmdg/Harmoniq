@@ -9,6 +9,8 @@ import { storeToRefs } from 'pinia';
 const useSong = useSongStore()
 const { isPlaying, currentTrack } = storeToRefs(useSong)
 
+const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
+
 let isHover = ref(false)
 
 const props = defineProps({
@@ -43,19 +45,27 @@ const { track, artist, index, duration } = toRefs(props)
                 />
                 <Pause v-else fillColor="#FFFFFF" :size="25" @click="useSong.playOrPauseSong()"/>
             </div>
-            <div v-else class="text-white font-semibold w-[40px] ml-5">
-                <span :class="{'text-green-500': currentTrack && currentTrack.name === track.name}">
+                <div v-else class="relative w-[40px] ml-5 flex items-center justify-center">
+                <img 
+                    class="absolute w-[30px] h-[30px] rounded-sm -z-10 brightness-[0.5]" 
+                    :src="`${fileServerBaseUrl}/public/images/${track.albumCover || artist.albumCover || 'default_album.png'}`"
+                    alt="Album Cover"
+                >
+                <span 
+                    :class="{'text-green-500': currentTrack && currentTrack.id === track.id, 'text-white': !isHover}"
+                    class="font-semibold z-10"
+                >
                     {{ index }}
                 </span>
             </div>
             <div>
                 <div
-                    :class="{'text-green-500': currentTrack && currentTrack.name === track.name}"
+                    :class="{'text-green-500': currentTrack && currentTrack.id === track.id}"
                     class="text-white font-semibold"
                 >
                     {{ track.name }}
                 </div>
-                <div class="text-sm font-semibold text-gray-400">{{ artist.name }}</div>
+                <div class="text-sm font-semibold text-gray-400">{{ track.artist || artist.name }}</div>
             </div>
         </div>
         <div class="flex items-center">

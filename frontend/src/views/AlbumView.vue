@@ -22,11 +22,20 @@ const loading = ref(true);
 const error = ref(null);
 
 const playFunc = () => {
-    if (currentTrack.value) {
-        useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value);
-        return;
+  // Check if a track is already loaded
+  if (currentTrack.value) {
+    // If a track is loaded, simply toggle play/pause for that track
+    useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value);
+  } else {
+    // If no track is loaded, find the first track and play it
+    if (collection.value && collection.value.tracks && collection.value.tracks.length > 0) {
+      const firstTrack = collection.value.tracks[0];
+      console.log(firstTrack);
+      const artist = collection.value.artist;
+
+      useSong.playOrPauseThisSong(artist, firstTrack); 
     }
-    useSong.playFromFirst();
+  }
 };
 
 const fetchData = async () => {
@@ -68,7 +77,7 @@ const formatDuration = (durationString) => {
             <div class="flex items-center w-full relative h-full">
                 <img
                     width="140"
-                    :src="`${fileServerBaseUrl}/public/images/${collection.albumCover || collection.playlistCover}`"
+                    :src="`${fileServerBaseUrl}/public/images/${collection.albumCover || collection.playlistCover || 'default_album.png'}`"
                 >
 
                 <div class="w-full ml-5">
@@ -100,10 +109,10 @@ const formatDuration = (durationString) => {
                     </div>
 
                     <div class="absolute flex gap-4 items-center justify-start bottom-0 mb-1.5">
-                        <button class="p-1 rounded-full bg-white" @click="playFunc()">
+      <!--                   <button class="p-1 rounded-full bg-white" @click="playFunc()">
                             <Play v-if="!isPlaying" fillColor="#181818" :size="25"/>
                             <Pause v-else fillColor="#181818" :size="25"/>
-                        </button>
+                        </button> -->
                         <button type="button">
                             <DotsHorizontal fillColor="#FFFFFF" :size="25"/>
                         </button>

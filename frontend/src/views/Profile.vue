@@ -187,12 +187,6 @@ const handleArtistUpdate = async () => {
     }
 }
 
-// Watch for changes in user role to set the active tab
-watch(user, (newUser) => {
-    if (newUser && newUser.role === 'artist') {
-        activeTab.value = 'artist';
-    }
-}, { immediate: true });
 
 onMounted(() => {
     fetchUser();
@@ -202,16 +196,10 @@ const goBack = () => {
     router.go(-1);
 };
 
-// Watch for changes in user role to set the active tab
-watch(user, (newUser) => {
-    if (newUser && newUser.role === 'artist') {
-        activeTab.value = 'artist';
-    }
-}, { immediate: true });
-
 onMounted(() => {
     fetchUser();
 });
+
 </script>
 
 <template>

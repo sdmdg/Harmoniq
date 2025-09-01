@@ -84,11 +84,11 @@ watch(currentTrack, () => {
         <img
           class="rounded-sm shadow-2xl"
           width="55"
-          :src="`${fileServerBaseUrl}/public/images/${currentArtist.albumCover}`"
+          :src="`${fileServerBaseUrl}/public/images/${currentTrack.albumCover || currentArtist.albumCover || 'default_album.png'}`"
         />
         <div class="ml-4">
           <div class="text-[14px] text-white hover:underline cursor-pointer">{{ currentTrack.name }}</div>
-          <div class="text-[11px] text-gray-500 hover:underline hover:text-white cursor-pointer">{{ currentArtist.name }}</div>
+          <div class="text-[11px] text-gray-500 hover:underline hover:text-white cursor-pointer">{{ currentTrack.artist || currentArtist.artist }}</div>
         </div>
       </div>
       <div class="flex items-center ml-8">

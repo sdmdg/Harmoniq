@@ -4,26 +4,28 @@ const sampleAlbum = {
     "name": "Different World",
     "albumCover": "DifferentWorld.png",
     "artist": "Alan Walker",
-    "type": "Album",
     "releaseYear": "2018",
     "tracks": [
         {
-            "id": 1,
+            "id": 'cc99f3c4-eeca-4db4-85eb-0db94a99ba31',
             "name": "Alone",
             "path": "Alan Walker - Alone.mp3",
-            "duration": "1;30"
+            "duration": "1;30",
+            "key": "e2797ff1c1bca2b5056d20aba421f69a31b115b8f68537ffc46783404a23cfc2",
         },
         {
-            "id": 2,
+            "id": 'cc99f3c4-eeca-4db4-85eb-0db94a99ba3a',
             "name": "Faded",
             "path": "Alan Walker - Faded.mp3",
-            "duration": "1;30"
+            "duration": "1;30",
+            "key": "e2797ff1c1bca2b5056d20aba421f69a31b115b8f68537ffc46783404a23cfc2",
         },
         {
-            "id": 3,
+            "id": 'cc99f3c4-eeca-4db4-85eb-0db94a99ba33',
             "name": "Intro",
             "path": "Alan Walker - Intro.mp3",
-            "duration": "1;30"
+            "duration": "1;30",
+            "key": "e2797ff1c1bca2b5056d20aba421f69a31b115b8f68537ffc46783404a23cfc2",
         }
     ]
 };
