@@ -11,3 +11,6 @@ backend/src/.env
 /backend/ai_module/mood/models
 /backend/ai_module/tracks
 /backend/ai_module/mood/__pycache__
+/backend/ai_module/__pycache__
+
+
