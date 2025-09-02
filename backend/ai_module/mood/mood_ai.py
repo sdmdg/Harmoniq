@@ -4,8 +4,8 @@ import numpy as np
 import os
 import joblib
 
-MODEL_PATH = "./src/mood/models/best_cnn_model.keras"
-LABEL_SCALAR_PATH = "./src/mood/models/fitted_label_scaler.pkl"
+MODEL_PATH = "./backend/ai_module/mood/models/best_cnn_model.keras"
+LABEL_SCALAR_PATH = "./backend/ai_module/mood/models/fitted_label_scaler.pkl"
 
 # --- 1. Load the Trained Model ---
 try:

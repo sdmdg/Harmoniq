@@ -5,3 +5,9 @@ frontend/.env
 backend/src/.env
 
 
+/backend/ai_module/venv
+/backend/ai_module/bpm/__pycache__
+/backend/ai_module/genre/models
+/backend/ai_module/mood/models
+/backend/ai_module/tracks
+/backend/ai_module/mood/__pycache__
