@@ -137,8 +137,11 @@ export const ModelSetSong = async (
     RETURNING *;
   `;
 
-  // Convert duration from seconds → interval string
-  const durationInterval = `${durationSeconds} seconds`;
+  // Convert durationSeconds → PostgreSQL interval, or null if unknown
+  const durationInterval =
+    durationSeconds !== null && durationSeconds !== undefined
+      ? `${durationSeconds} seconds`
+      : null;
 
   const values = [
     id,
@@ -150,10 +153,9 @@ export const ModelSetSong = async (
     valence,
     arousal,
     genre,
-    mood
+    mood,
   ];
 
   const result = await db.query(query, values);
   return result.rows.length > 0 ? result.rows[0] : null;
 };
-
