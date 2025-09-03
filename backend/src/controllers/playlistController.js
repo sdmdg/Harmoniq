@@ -62,6 +62,15 @@ const sampleAlbum = {
             "artist": "Taylor Swift",
             "albumCover": "SpeakNow.png",
             "key": "e2797ff1c1bca2b5056d20aba421f69a31b115b8f68537ffc46783404a23cfc2",
+        },
+        {
+            "id": 'a8ea5548-156b-4500-a819-33bcda6e6710',
+            "name": "Let Me Down Slowly",
+            "path": "a8ea5548-156b-4500-a819-33bcda6e6710.mp3",
+            "duration": "1;30",
+            "artist": "Alec Benjamin",
+            
+            "key": "43c7f154e5646c1d40edcb25d86777c2b190bb1c4d90c15d9f9c33c3cbc72f46",
         }
     ]
 };

@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+const crypto = require('crypto');
 // --- Public Server (Read-only) ---
 // This server will only serve static files (GET requests)
 const publicApp = express();
@@ -79,6 +80,52 @@ internalApp.delete('/delete/:type/:filename', (req, res) => {
         }
         res.status(200).send('File deleted successfully.');
     });
+});
+
+internalApp.post('/encrypt/:filename', (req, res) => {
+    const { filename } = req.params;
+    const filePath = path.join(__dirname, 'public/songs', filename);
+
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).send({ error: 'File not found' });
+    }
+
+    try {
+        // Generate random key
+        const key = crypto.randomBytes(32); // AES-256
+        const iv = Buffer.from('zgsfeUhuC+rYJiOFMNVD8A==', 'base64');
+
+        // Read file
+        const data = fs.readFileSync(filePath);
+
+        // Encrypt
+        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+        const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
+
+        // Write encrypted file
+        const encryptedPath = filePath + '.encrypted';
+        fs.writeFileSync(encryptedPath, encrypted);
+
+        console.log(`Encrypted ${filename} -> ${path.basename(encryptedPath)}`);
+
+        fs.unlink(filePath, (err) => {
+        if (err) console.error('Error deleting original file:', err);
+        });
+
+        // Respond with key/iv (hex or base64 for DB)
+        res.status(200).send({
+            message: 'File encrypted successfully',
+            original: filename,
+            encrypted: path.basename(encryptedPath),
+            key_hex: key.toString('hex'),
+            iv_hex: iv.toString('hex'),
+            key_base64: key.toString('base64'),
+            iv_base64: iv.toString('base64')
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ error: 'Error encrypting file' });
+    }
 });
 
 internalApp.listen(internalPort, () => {

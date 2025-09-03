@@ -5,7 +5,7 @@ from fastapi import FastAPI
 import uvicorn
 from genre.genre_ai import predict_genre
 from mood.mood_ai import predict_mood
-from bpm.bpm import detect_bpm
+from bpm.bpm import detect_bpm, get_duration
 import json
 
 app = FastAPI()
@@ -86,6 +86,8 @@ async def predict(file_url: str):
         print("Error in detect_bpm:", e)
         bpm = 0
 
+    duration = get_duration(tmp_path)
+
     # 3. Cleanup
     try:
         if tmp_path and os.path.exists(tmp_path):
@@ -101,6 +103,7 @@ async def predict(file_url: str):
         "bpm": round(bpm),
         "valence": round(avg_valence_predicted, 2),
         "arousal": round(avg_arousal_predicted, 2),
+        "duration": duration
     }
     print("Returning result:", result)
     return result

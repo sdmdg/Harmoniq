@@ -24,3 +24,16 @@ export const uploadFileToServer = async (file) => {
         return null;
     }
 };
+
+
+export const encryptFile = async (fileName) => {
+    try {
+        const response = await axios.post(`${VITE_FILE_SERVER}/encrypt/${fileName}`);
+        
+        // Response contains encrypted filename + key/iv
+        return response.data; 
+    } catch (error) {
+        console.error('Error encrypting file:', error);
+        return null;
+    }
+};
