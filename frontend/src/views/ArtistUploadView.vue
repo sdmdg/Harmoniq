@@ -1,99 +1,184 @@
 <template>
-  <div class="artist-upload-view min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center">
-    <h1 class="text-3xl font-bold mb-6 text-[#1ED760] drop-shadow-lg">Upload a Song</h1>
+  <div class="artist-upload-view min-h-screen bg-[#121212] text-white">
+    <header class="mx-auto max-w-6xl px-6 pt-10">
+      <nav class="text-sm text-neutral-400 mb-3" aria-label="Breadcrumb">
+        <ol class="flex items-center gap-2">
+          <li class="hover:text-white cursor-default">Artist</li>
+          <li class="opacity-60">/</li>
+          <li class="text-white font-medium">Upload a Song</li>
+        </ol>
+      </nav>
 
-    <!-- Upload Form -->
-    <form
-      v-if="!songFeatures || isEditing"
-      @submit.prevent="handleUpload"
-      class="bg-gray-800 p-6 rounded-xl shadow-xl w-full max-w-lg space-y-5"
-    >
-      <!-- Song File -->
-      <div class="flex flex-col">
-        <label class="font-semibold mb-2 text-[#1ED760]">Select Song:</label>
-        <input
-          type="file"
-          ref="fileInput"
-          @change="handleFileChange"
-          accept="audio/*"
-          :required="!isEditing"
-          class="file:py-2 file:px-4 file:border-0 file:rounded file:text-white file:bg-[#1ED760] file:cursor-pointer hover:file:bg-green-400"
-        />
-      </div>
-
-      <!-- Song Title -->
-      <div class="flex flex-col">
-        <label class="font-semibold mb-2 text-[#1ED760]">Song Title:</label>
-        <input
-          type="text"
-          v-model="songTitle"
-          placeholder="Enter song title"
-          class="border border-gray-600 rounded-lg px-3 py-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
-          required
-        />
-      </div>
-
-      <!-- Album Selection -->
-      <div class="flex flex-col">
-        <label class="font-semibold mb-2 text-[#1ED760]">Select Album:</label>
-        <select
-          v-model="selectedAlbumId"
-          class="border border-gray-600 rounded-lg px-3 py-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
-        >
-          <option v-for="album in albums" :key="album.id" :value="album.id">
-            {{ album.title }}
-          </option>
-          <option value="new">+ Create New Album</option>
-        </select>
-      </div>
-
-      <!-- New Album Fields -->
-      <div v-if="selectedAlbumId === 'new'" class="space-y-3 mt-3">
-        <div class="flex flex-col">
-          <label class="font-semibold mb-1 text-[#1ED760]">New Album Title:</label>
-          <input
-            type="text"
-            v-model="newAlbum.title"
-            placeholder="Enter album title"
-            class="border border-gray-600 rounded-lg px-3 py-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
-          />
-        </div>
-
-        <div class="flex flex-col">
-          <label class="font-semibold mb-1 text-[#1ED760]">Release Date:</label>
-          <input
-            type="date"
-            v-model="newAlbum.releaseDate"
-            class="border border-gray-600 rounded-lg px-3 py-2 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
-          />
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-white">Upload a Song</h1>
+          <p class="text-neutral-400 mt-1">
+            Get your music on the platform. Upload a song and fill in the details.
+          </p>
         </div>
       </div>
 
-      <!-- Submit Button -->
-      <button
-        type="submit"
-        :disabled="isUploading"
-        class="w-full bg-[#1ED760] text-gray-900 font-bold py-2 px-4 rounded-lg hover:bg-green-400 transition duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {{ isUploading ? "Uploading..." : isEditing ? "Save Changes" : "Upload Song" }}
-      </button>
-    </form>
+      <div class="border-t border-neutral-800 my-6"></div>
+    </header>
 
-    <!-- Display extracted features -->
-    <div v-if="songFeatures && !isEditing" class="relative z-10 w-full mt-10 bg-[#111] py-8 rounded-lg">
-      <h2 class="text-2xl font-bold text-white text-center mb-6">Extracted Song Features</h2>
-      <div class="flex justify-center flex-wrap gap-4 px-4">
-        <div v-for="(value, key) in songFeatures" :key="key" class="bg-[#1ED760] text-black rounded-lg shadow-md px-6 py-6 flex flex-col items-center min-w-[150px]">
-          <span class="text-sm font-medium">{{ key.replace(/([A-Z])/g, ' $1').toUpperCase() }}</span>
-          <span class="text-lg font-bold">{{ value }}</span>
-        </div>
-      </div>
+    <main class="mx-auto max-w-6xl px-6 pb-16">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <section class="lg:col-span-2">
+          <div class="mx-auto max-w-3xl">
+            <div class="rounded-2xl bg-neutral-900 border border-neutral-800 p-6 shadow-lg">
+              <h2 class="text-lg font-semibold text-white mb-4 text-center">
+                {{ songFeatures ? 'Review & Edit Features' : 'New Song Details' }}
+              </h2>
 
-      <div class="flex justify-center mt-6 gap-4">
-        <button @click="startEdit" class="bg-[#FFD700] hover:bg-[#E6C200] text-black font-bold py-2 px-6 rounded-full transition duration-200">Edit Song</button>
-        <button @click="resetUpload" class="bg-[#FF4747] hover:bg-[#E63939] text-white font-bold py-2 px-6 rounded-full transition duration-200">Upload Another Song</button>
+              <form
+                v-if="!songFeatures"
+                @submit.prevent="handleUpload"
+                class="space-y-5"
+              >
+                <div class="flex flex-col">
+                  <label class="font-semibold mb-2 text-gray-400">Song Title:</label>
+                  <input
+                    type="text"
+                    v-model="songTitle"
+                    placeholder="Enter song title"
+                    class="form-input"
+                    required
+                  />
+                </div>
+
+                <div class="flex flex-col">
+                  <label class="font-semibold mb-2 text-gray-400">Select Album:</label>
+                  <select
+                    v-model="selectedAlbumId"
+                    class="form-select"
+                  >
+                    <option v-for="album in albums" :key="album.id" :value="album.id">
+                      {{ album.title }}
+                    </option>
+                    <option value="new">+ Create New Album</option>
+                  </select>
+                </div>
+
+                <div v-if="selectedAlbumId === 'new'" class="space-y-3 mt-3">
+                  <div class="flex flex-col">
+                    <label class="font-semibold mb-1 text-gray-400">New Album Title:</label>
+                    <input
+                      type="text"
+                      v-model="newAlbum.title"
+                      placeholder="Enter album title"
+                      class="form-input"
+                      :required="selectedAlbumId === 'new'"
+                    />
+                  </div>
+
+                  <div class="flex flex-col">
+                    <label class="font-semibold mb-1 text-gray-400">Release Date:</label>
+                    <input
+                      type="date"
+                      v-model="newAlbum.releaseDate"
+                      class="form-input"
+                      :required="selectedAlbumId === 'new'"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex flex-col">
+                  <label class="font-semibold mb-2 text-gray-400">Select Song:</label>
+                  <input
+                    type="file"
+                    ref="fileInput"
+                    @change="handleFileChange"
+                    accept="audio/*"
+                    required
+                    class="file-input"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  :disabled="isUploading"
+                  class="w-full btn-primary"
+                >
+                  <span v-if="isUploading" class="flex items-center justify-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </span>
+                  <span v-else>Upload Song</span>
+                </button>
+              </form>
+
+              <div v-if="songFeatures" class="space-y-5">
+                <div class="grid grid-cols-2 gap-4">
+                  <div v-for="(value, key) in songFeatures" :key="key" class="feature-card">
+                    <label class="font-semibold mb-1 text-gray-400">{{ formatFeatureName(key) }}:</label>
+
+                    <select
+                      v-if="key === 'genre'"
+                      v-model="songFeatures[key]"
+                      class="form-select"
+                    >
+                      <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
+                    </select>
+
+                    <select
+                      v-else-if="key === 'mood'"
+                      v-model="songFeatures[key]"
+                      class="form-select"
+                    >
+                      <option v-for="mood in moods" :key="mood" :value="mood">{{ mood }}</option>
+                    </select>
+
+                    <input
+                      v-else-if="editableFields.includes(key)"
+                      type="text"
+                      v-model="songFeatures[key]"
+                      class="form-input"
+                      :placeholder="`Enter new ${formatFeatureName(key)}`"
+                    />
+
+                    <p v-else class="feature-value">{{ value }}</p>
+                  </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                  <button
+                    type="button"
+                    @click="publishSong"
+                    :disabled="isUploading"
+                    class="flex-1 btn-primary"
+                  >
+                    Publish Song
+                  </button>
+                  <button
+                    type="button"
+                    @click="resetUpload"
+                    :disabled="isUploading"
+                    class="flex-1 btn-secondary"
+                  >
+                    Cancel & Upload New
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="lg:col-span-1">
+          <div class="rounded-2xl bg-neutral-900 border border-neutral-800 p-5">
+            <h3 class="text-white font-semibold">Tips for a fast upload</h3>
+            <ul class="mt-3 list-disc pl-5 text-sm text-neutral-300 space-y-2">
+              <li>Use high-quality audio for best results.</li>
+              <li>Ensure your song title is accurate and free of typos.</li>
+              <li>Provide accurate album details for better organization.</li>
+              <li>Review the extracted features and make any necessary corrections before publishing.</li>
+            </ul>
+          </div>
+        </aside>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -110,12 +195,20 @@ const songFile = ref(null);
 const songTitle = ref("");
 const isUploading = ref(false);
 const songFeatures = ref(null);
-const isEditing = ref(false);
+const songId = ref(null);
+const fileUrl = ref(null);
 
 const newAlbum = ref({
   title: "",
   releaseDate: "",
 });
+
+const fileInput = ref(null);
+
+const genres = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock'];
+const moods = ['Angry / Tense', 'Sad / Calm', 'Calm / Relaxed', 'Mixed / Uncertain Mood'];
+
+const editableFields = ['bpm'];
 
 const fetchAlbums = async () => {
   const userData = localStorage.getItem("user_data");
@@ -125,6 +218,9 @@ const fetchAlbums = async () => {
   try {
     const response = await apiClient.get(`/api/album/user/${user.id}`);
     albums.value = response.data || [];
+    if (albums.value.length > 0) {
+      selectedAlbumId.value = albums.value[0].id;
+    }
   } catch (error) {
     console.error("Error fetching albums:", error);
   }
@@ -133,17 +229,32 @@ const fetchAlbums = async () => {
 const handleFileChange = (e) => {
   songFile.value = e.target.files[0];
 };
-const handleUpload = async () => {
-  if (!songFile.value && !isEditing.value) return;
-  isUploading.value = true;
 
+const formatFeatureName = (key) => {
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+};
+
+const handleUpload = async () => {
+  if (!songFile.value || !songTitle.value || !selectedAlbumId.value) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+  if (selectedAlbumId.value === 'new' && (!newAlbum.value.title || !newAlbum.value.releaseDate)) {
+      alert("Please provide a title and release date for the new album.");
+      return;
+  }
+
+  isUploading.value = true;
   const userData = localStorage.getItem("user_data");
-  if (!userData) return router.push("/login");
+  if (!userData) {
+    router.push("/login");
+    isUploading.value = false;
+    return;
+  }
   const user = JSON.parse(userData);
 
   try {
     let albumId = selectedAlbumId.value;
-
     if (albumId === "new") {
       const albumResponse = await apiClient.post("api/album/add", {
         title: newAlbum.value.title,
@@ -155,9 +266,10 @@ const handleUpload = async () => {
     }
 
     const formData = new FormData();
-    if (songFile.value) formData.append("file", songFile.value);
+    formData.append("file", songFile.value);
     formData.append("title", songTitle.value);
     formData.append("albumId", albumId);
+    formData.append("artistId", user.id);
 
     const uploadResponse = await apiClient.post(
       "/api/songs/upload-song",
@@ -165,17 +277,52 @@ const handleUpload = async () => {
       { headers: { "Content-Type": "multipart/form-data" } }
     );
 
-    // Use features returned from backend
     songFeatures.value = uploadResponse.data.features || {};
+    songId.value = uploadResponse.data.song.id;
+    fileUrl.value = uploadResponse.data.file_url;
+    
+    alert("Song uploaded and features extracted! Please review and publish.");
 
-    isEditing.value = false;
-    songFile.value = null;
-    songTitle.value = "";
-    selectedAlbumId.value = null;
-    newAlbum.value = { title: "", releaseDate: "" };
   } catch (error) {
-    console.error(error);
-    alert("Failed to upload song.");
+    console.error("Error during song upload or feature extraction:", error);
+    alert("Failed to upload song or extract features. Please try again.");
+  } finally {
+    isUploading.value = false;
+  }
+};
+
+const publishSong = async () => {
+  if (!songId.value) {
+    alert("No song to publish.");
+    return;
+  }
+  
+  if (!confirm("Are you sure you want to publish this song?")) {
+    return;
+  }
+
+  isUploading.value = true;
+  const userData = localStorage.getItem("user_data");
+  if (!userData) {
+    router.push("/login");
+    isUploading.value = false;
+    return;
+  }
+  const user = JSON.parse(userData);
+
+  try {
+    await apiClient.post(`/api/songs/publish`, {
+      features: songFeatures.value,
+      file_url: fileUrl.value,
+      artistId: user.id,
+    });
+    
+    alert("Song published successfully!");
+    resetUpload();
+    router.push('/artist/upload');
+  } catch (error) {
+    console.error("Error publishing song:", error);
+    alert("Failed to publish song. Please try again.");
   } finally {
     isUploading.value = false;
   }
@@ -185,24 +332,54 @@ const resetUpload = () => {
   songTitle.value = "";
   songFile.value = null;
   songFeatures.value = null;
-  isEditing.value = false;
-  if (refs.fileInput) refs.fileInput.value = null;
-};
-
-const startEdit = () => {
-  isEditing.value = true;
-  songTitle.value = songFeatures.value?.title || songTitle.value;
+  songId.value = null;
+  fileUrl.value = null;
+  selectedAlbumId.value = (albums.value.length > 0) ? albums.value[0].id : null;
+  newAlbum.value = { title: "", releaseDate: "" };
+  if (fileInput.value) fileInput.value.value = null;
 };
 
 onMounted(fetchAlbums);
 </script>
 
 <style scoped>
+/* Main Containers & Layout */
+.artist-upload-view {
+  background-color: #000;
+}
+
+/* Form Elements Styling */
+.form-input, .form-select {
+  @apply border border-neutral-700 rounded-lg px-3 py-2 bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#1DB954] focus:ring-offset-2 focus:ring-offset-neutral-900 transition-all duration-200;
+}
+
+.file-input {
+  @apply w-full file:py-2 file:px-4 file:border-0 file:rounded-full file:font-semibold file:text-white file:bg-[#1DB954] file:cursor-pointer hover:file:bg-green-500 transition-colors duration-300;
+}
+
+/* Button Styling */
+.btn-primary {
+  @apply w-full bg-[#1DB954] text-gray-900 font-bold py-3 px-4 rounded-full shadow-lg hover:bg-green-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105;
+}
+
+.btn-secondary {
+  @apply w-full bg-neutral-700 hover:bg-neutral-600 text-white font-bold py-3 px-4 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.feature-card {
+  @apply flex flex-col p-3 bg-neutral-800 rounded-lg shadow-inner;
+}
+
+.feature-value {
+  @apply py-2 px-3 text-white font-medium;
+}
+
+/* Custom Scrollbar */
 .artist-upload-view::-webkit-scrollbar {
   width: 6px;
 }
 .artist-upload-view::-webkit-scrollbar-thumb {
-  background-color: #1ED760;
+  background-color: #1DB954;
   border-radius: 10px;
 }
 .artist-upload-view::-webkit-scrollbar-track {
