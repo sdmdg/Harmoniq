@@ -4,7 +4,7 @@ import {
   updateReportStatus,
   deleteReportById
 } from "../models/Report.js";
-
+import { getReportById as getReportByIdModel } from '../models/Report.js'
 const ALLOWED_STATUSES = ["pending", "completed", "rejected"];
 const CATEGORIES = ['Content Issues', 'User & Safety', 'Technical Issues']
 const ISSUE_TYPES = {
@@ -104,3 +104,15 @@ export const removeReport = async (req, res) => {
     return res.status(500).json({ message: "Failed to delete report" });
   }
 };
+
+
+export async function getReportById(req, res) {
+  try {
+    const report = await getReportByIdModel(req.params.id)
+    if (!report) return res.status(404).json({ message: 'Report not found' })
+    res.json(report)
+  } catch (err) {
+    console.error('Error fetching report:', err)
+    res.status(500).json({ message: 'Failed to fetch report' })
+  }
+}

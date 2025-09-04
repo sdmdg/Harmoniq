@@ -50,3 +50,22 @@ export async function deleteReportById(id) {
   const result = await pool.query(`DELETE FROM Reports WHERE id = $1`, [id]);
   return result.rowCount > 0;
 }
+export async function getReportById(id) {
+  const { rows } = await pool.query(
+    `SELECT
+       r.id,
+       r.user_id,
+       u.user_name AS reporter_name,
+       u.email     AS reporter_email,
+       r.description,
+       r.category,
+       r.issue_type,
+       r.status,
+       r.created_at
+     FROM Reports r
+     LEFT JOIN users u ON u.id = r.user_id
+     WHERE r.id = $1`,
+    [id]
+  )
+  return rows[0] || null
+}
