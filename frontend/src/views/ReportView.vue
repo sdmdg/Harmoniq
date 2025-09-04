@@ -102,109 +102,109 @@
               :disabled="page===totalPages" @click="page++">Next</button>
     </div>
 
-  <!-- MODAL -->
-<transition name="fade">
-  <div
-    v-if="showModal"
-    class="fixed inset-0 z-50 flex items-center justify-center"
-    @keydown.esc="closeModal"
-  >
-    <!-- Backdrop -->
-    <div class="absolute inset-0 bg-black/70" @click="closeModal"></div>
+    <!-- MODAL -->
+    <transition name="fade">
+      <div
+        v-if="showModal"
+        class="fixed inset-0 z-50 flex items-center justify-center"
+        @keydown.esc="closeModal"
+      >
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/70" @click="closeModal"></div>
 
-    <!-- Dialog -->
-    <div
-      class="relative z-10 w-[92vw] max-w-3xl rounded-2xl bg-neutral-900 border border-neutral-700 p-5 shadow-xl"
-      role="dialog" aria-modal="true" aria-label="Report details"
-    >
-      <!-- Header -->
-      <header class="flex items-start justify-between mb-4">
-        <div class="min-w-0">
-          <h2 class="text-lg font-semibold text-neutral-100">Report details</h2>
-          <div class="text-xs text-neutral-400">
-            Created: <span class="text-neutral-300">{{ formatDate(active.created_at) }}</span>
+        <!-- Dialog -->
+        <div
+          class="relative z-10 w-[92vw] max-w-3xl rounded-2xl bg-neutral-900 border border-neutral-700 p-5 shadow-xl"
+          role="dialog" aria-modal="true" aria-label="Report details"
+        >
+          <!-- Header -->
+          <header class="flex items-start justify-between mb-4">
+            <div class="min-w-0">
+              <h2 class="text-lg font-semibold text-neutral-100">Report details</h2>
+              <div class="text-xs text-neutral-400">
+                Created: <span class="text-neutral-300">{{ formatDate(active.created_at) }}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span :class="badgeClass(active.status)">{{ labelStatus(active.status) }}</span>
+              <button
+                class="p-1 rounded-lg bg-neutral-800 hover:bg-neutral-700"
+                @click="closeModal" aria-label="Close"
+              >✕</button>
+            </div>
+          </header>
+
+          <!-- Summary grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
+              <div class="text-[11px] text-neutral-400 mb-0.5">Reporter</div>
+              <div class="text-neutral-100 truncate">{{ active.reporter_name || 'Unknown' }}</div>
+            </div>
+
+            <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
+              <div class="text-[11px] text-neutral-400 mb-0.5">Email</div>
+              <a
+                :href="active.reporter_email ? `mailto:${active.reporter_email}` : '#'"
+                class="text-neutral-100 underline decoration-neutral-600 hover:decoration-neutral-300 truncate"
+              >{{ active.reporter_email || '—' }}</a>
+            </div>
+
+            <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
+              <div class="text-[11px] text-neutral-400 mb-0.5">Report ID</div>
+              <div class="text-neutral-100 truncate">{{ active.id }}</div>
+            </div>
+
+            <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
+              <div class="text-[11px] text-neutral-400 mb-0.5">Category</div>
+              <div class="text-neutral-100">{{ active.category }}</div>
+            </div>
+
+            <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
+              <div class="text-[11px] text-neutral-400 mb-0.5">Issue type</div>
+              <div class="text-neutral-100">{{ active.issue_type }}</div>
+            </div>
+
+            <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
+              <div class="text-[11px] text-neutral-400 mb-0.5">Current status</div>
+              <div class="text-neutral-100">{{ labelStatus(active.status) }}</div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <div class="text-xs text-neutral-400 mb-1">Description</div>
+            <div
+              class="rounded-xl border border-neutral-800 bg-neutral-950 p-3 max-h-64 overflow-auto text-neutral-100 whitespace-pre-wrap"
+            >
+              {{ active.description || '—' }}
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-2">
+            <select
+              v-model="statusDraft[active.id]"
+              class="rounded-lg bg-neutral-800 border border-neutral-700 px-3 py-2 text-sm text-neutral-100"
+            >
+              <option v-for="s in STATUSES" :key="s" :value="s">{{ labelStatus(s) }}</option>
+            </select>
+            <button
+              class="px-3 py-2 rounded-lg bg-green-600 text-white disabled:opacity-50"
+              :disabled="statusDraft[active.id] === active.status || saving[active.id]"
+              @click="updateStatus(active)"
+            >
+              {{ saving[active.id] ? 'Saving…' : 'Save status' }}
+            </button>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <span :class="badgeClass(active.status)">{{ labelStatus(active.status) }}</span>
-          <button
-            class="p-1 rounded-lg bg-neutral-800 hover:bg-neutral-700"
-            @click="closeModal" aria-label="Close"
-          >✕</button>
-        </div>
-      </header>
-
-      <!-- Summary grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-        <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
-          <div class="text-[11px] text-neutral-400 mb-0.5">Reporter</div>
-          <div class="text-neutral-100 truncate">{{ active.reporter_name || 'Unknown' }}</div>
-        </div>
-
-        <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
-          <div class="text-[11px] text-neutral-400 mb-0.5">Email</div>
-          <a
-            :href="active.reporter_email ? `mailto:${active.reporter_email}` : '#'"
-            class="text-neutral-100 underline decoration-neutral-600 hover:decoration-neutral-300 truncate"
-          >{{ active.reporter_email || '—' }}</a>
-        </div>
-
-        <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
-          <div class="text-[11px] text-neutral-400 mb-0.5">Report ID</div>
-          <div class="text-neutral-100 truncate">{{ active.id }}</div>
-        </div>
-
-        <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
-          <div class="text-[11px] text-neutral-400 mb-0.5">Category</div>
-          <div class="text-neutral-100">{{ active.category }}</div>
-        </div>
-
-        <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
-          <div class="text-[11px] text-neutral-400 mb-0.5">Issue type</div>
-          <div class="text-neutral-100">{{ active.issue_type }}</div>
-        </div>
-
-        <div class="rounded-xl bg-neutral-800/40 border border-neutral-800 p-3">
-          <div class="text-[11px] text-neutral-400 mb-0.5">Current status</div>
-          <div class="text-neutral-100">{{ labelStatus(active.status) }}</div>
-        </div>
       </div>
-
-      <!-- Description -->
-      <div class="mb-4">
-        <div class="text-xs text-neutral-400 mb-1">Description</div>
-        <div
-          class="rounded-xl border border-neutral-800 bg-neutral-950 p-3 max-h-64 overflow-auto text-neutral-100 whitespace-pre-wrap"
-        >
-          {{ active.description || '—' }}
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex items-center justify-end gap-2">
-        <select
-          v-model="statusDraft[active.id]"
-          class="rounded-lg bg-neutral-800 border border-neutral-700 px-3 py-2 text-sm text-neutral-100"
-        >
-          <option v-for="s in STATUSES" :key="s" :value="s">{{ labelStatus(s) }}</option>
-        </select>
-        <button
-          class="px-3 py-2 rounded-lg bg-green-600 text-white disabled:opacity-50"
-          :disabled="statusDraft[active.id] === active.status || saving[active.id]"
-          @click="updateStatus(active)"
-        >
-          {{ saving[active.id] ? 'Saving…' : 'Save status' }}
-        </button>
-      </div>
-    </div>
-  </div>
-</transition>
-
+    </transition>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch, defineComponent } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import api from '@/utils/axios.js'
 
 /** Small presentational row used in the modal */
@@ -229,8 +229,17 @@ const categories = ['Content Issues', 'User & Safety', 'Technical Issues']
 // ✅ Include 'pending'
 const STATUSES = ['pending', 'in_progress', 'rejected', 'completed']
 
+// Router (for deep-link open/close)
+const route = useRoute()
+const router = useRouter()
+
 // Fetch
-onMounted(fetchReports)
+onMounted(async () => {
+  await fetchReports()
+  const idToOpen = route.query.open
+  if (idToOpen) await openReportById(idToOpen)
+})
+
 async function fetchReports () {
   loading.value = true
   try {
@@ -248,6 +257,34 @@ async function fetchReports () {
     loading.value = false
   }
 }
+
+// Deep-link open helper: find in list, else fetch single
+async function openReportById (id) {
+  if (!id) return
+  let r = Array.isArray(rows.value)
+    ? rows.value.find(x => String(x.id) === String(id))
+    : null
+
+  if (!r) {
+    try {
+      const { data } = await api.get(`/api/reports/${id}`)
+      r = data
+    } catch (e) {
+      console.error('openReportById fetch failed', e)
+      return
+    }
+  }
+  openReport(r)
+}
+
+// react if ?open= changes while staying on page
+watch(() => route.query.open, async (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    await openReportById(newId)
+  } else if (!newId && showModal.value) {
+    closeModal()
+  }
+})
 
 // Search + filter + pagination
 const page = ref(1)
@@ -304,10 +341,15 @@ function openReport (r) {
     statusDraft.value[r.id] = r.status || 'pending'
   }
   showModal.value = true
+  // reflect selection in URL so /reports?open=<id> survives refresh/share
+  router.replace({ path: route.path, query: { open: r.id } })
 }
+
 function closeModal () {
   showModal.value = false
   active.value = null
+  // clear the query so it doesn't re-open on refresh
+  router.replace({ path: route.path, query: {} })
 }
 
 // UI helpers
