@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/axios';
-
+import admin_Recentactivity from '../components/admin_Recentactivity.vue';
 const router = useRouter();
 const totalUsers = ref(0);
 const totalArtists = ref(0);
@@ -91,7 +91,7 @@ onBeforeUnmount(() => {
 
         <div class="bg-[#181818] p-6 rounded-lg shadow-md">
             <h2 class="text-xl font-bold text-white mb-4">Recent Activity</h2>
-            <p class="text-gray-400">Recent user sign-ups, song uploads, and other activities will be displayed here.</p>
+          <admin_-recentactivity :initialLimit="10" />
         </div>
     </div>
 </template>
