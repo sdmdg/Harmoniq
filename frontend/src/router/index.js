@@ -18,7 +18,8 @@ import ArtistUploadView from '../views/ArtistUploadView.vue'
 import ReportView from '../views/ReportView.vue'
 import ReportIssue from '../views/ReportIssue.vue'
 import ReportingGuide from '../views/ReportingGuide.vue'
-
+import ReportDetail from '../views/ReportDetail.vue'
+import AdminUserDetail from '../views/AdminUserDetail.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -146,6 +147,13 @@ const router = createRouter({
       }
     },
     {
+  path: '/reports/:id',
+  name: 'report-detail',
+  component: ReportDetail,
+  meta: { requiresAuth: true, allowedRoles: ['admin'], hideSidebar:false, hideTopNav:false, hidePlayer:false }
+}
+,
+    {
       path: '/liked-songs/',
       name: 'liked',
       component: PlaylistView,
@@ -170,6 +178,21 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener']
       }
     },
+    // src/router/index.js
+
+
+ {
+      path: '/usersignup/:id',
+      name: 'AdminUserDetail',
+      component: AdminUserDetail,
+       meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+     },
      {
       path: '/upload',
       name: 'upload',
