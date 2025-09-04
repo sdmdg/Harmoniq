@@ -4,8 +4,8 @@ import numpy as np
 import os
 import joblib
 
-MODEL_PATH = "./src/mood/models/best_cnn_model.keras"
-LABEL_SCALAR_PATH = "./src/mood/models/fitted_label_scaler.pkl"
+MODEL_PATH = "./backend/ai_module/mood/models/best_cnn_model.keras"
+LABEL_SCALAR_PATH = "./backend/ai_module/mood/models/fitted_label_scaler.pkl"
 
 # --- 1. Load the Trained Model ---
 try:
@@ -128,8 +128,8 @@ def predict_mood(file_name):
             print(results)
             return {
                 "prediction": str(results),
-                "confidence": str(ensemble_conf),
-            }
+                "confidence": str(round(ensemble_conf, 2)),
+            }, float(avg_valence_predicted), float(avg_arousal_predicted)
 
         else:
             print("Failed to preprocess the song. Prediction aborted.")

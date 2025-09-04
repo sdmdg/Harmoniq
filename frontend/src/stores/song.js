@@ -4,7 +4,6 @@ import { defineStore } from 'pinia'
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000'
 
 // AES-256-CBC (hex from your Python script)
-const ENCRYPTION_KEY_HEX = 'e2797ff1c1bca2b5056d20aba421f69a31b115b8f68537ffc46783404a23cfc2'
 const ENCRYPTION_IV_HEX  = 'ce0b1f79486e0bead826238530d543f0'
 
 // --- Utils ---
@@ -14,7 +13,7 @@ function hexToBytes (hex) {
   return bytes
 }
 
-async function decryptAesCbcToArrayBuffer (encryptedArrayBuffer) {
+async function decryptAesCbcToArrayBuffer (encryptedArrayBuffer, ENCRYPTION_KEY_HEX) {
   const key = await crypto.subtle.importKey(
     'raw',
     hexToBytes(ENCRYPTION_KEY_HEX),
@@ -97,7 +96,7 @@ export const useSongStore = defineStore('song', {
         if (controller.signal.aborted) return
 
         // ---- 2) Decrypt fully in memory ----
-        const decryptedArrayBuffer = await decryptAesCbcToArrayBuffer(encryptedBuffer)
+        const decryptedArrayBuffer = await decryptAesCbcToArrayBuffer(encryptedBuffer, track.key)
 
         // ---- 3) Create Blob URL and play ----
         const blob = new Blob([decryptedArrayBuffer], { type: 'audio/mpeg' })

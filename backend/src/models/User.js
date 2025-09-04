@@ -108,52 +108,5 @@ export const updateArtistProfile = async (userId, artistName, description) => {
     }
 };
 
-export const ModelSetSong = async (
-  id,
-  albumId,
-  title,
-  durationSeconds,
-  trackNumber,
-  bpm,
-  valence,
-  arousal,
-  genre,
-  mood
-) => {
-  const query = `
-    INSERT INTO public.songs (
-      id,
-      album_id,
-      title,
-      duration,
-      track_number,
-      bpm,
-      valence,
-      arousal,
-      genre,
-      mood
-    )
-    VALUES ($1, $2, $3, $4::interval, $5, $6, $7, $8, $9, $10)
-    RETURNING *;
-  `;
 
-  // Convert duration from seconds → interval string
-  const durationInterval = `${durationSeconds} seconds`;
-
-  const values = [
-    id,
-    albumId,
-    title,
-    durationInterval,
-    trackNumber,
-    bpm,
-    valence,
-    arousal,
-    genre,
-    mood
-  ];
-
-  const result = await db.query(query, values);
-  return result.rows.length > 0 ? result.rows[0] : null;
-};
 

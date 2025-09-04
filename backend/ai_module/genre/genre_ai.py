@@ -10,7 +10,7 @@ from PIL import Image
 import tempfile
 
 # === Configuration ===
-MODEL_PATH = "./src/genre/models/genre_classifier_model_final.keras"
+MODEL_PATH = "./backend/ai_module/genre/models/genre_classifier_model_final.keras"
 TARGET_SHAPE = (288, 288)
 CLASSES = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
 
@@ -167,7 +167,7 @@ def predict_genre(audio_path, model_path=MODEL_PATH, chunk_duration=30, overlap_
 
     return {
         "prediction": str(ensemble_genre),
-        "confidence": str(ensemble_conf),
+        "confidence": str(round(ensemble_conf, 2)),
     }
 
 

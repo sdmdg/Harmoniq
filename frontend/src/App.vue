@@ -89,7 +89,7 @@ const fetchUser = async () => {
 
 const fetchUserPlaylists = async () => {
     try {
-        const response = await apiClient.get('api/playlist/get');
+        const response = await apiClient.get('api/playlist/get/all');
         userPlaylists.value = response.data;
     } catch (error) {
         console.error('Failed to fetch user playlists:', error);

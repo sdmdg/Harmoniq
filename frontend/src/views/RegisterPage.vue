@@ -35,8 +35,8 @@ const handleRegister = async () => {
         localStorage.setItem('jwt_token', token);
         localStorage.setItem('user_data', JSON.stringify(user));
 
-        // Redirect to home page after successful registration
-        router.push('/home');
+        // Redirect to login page after successful registration
+        router.push('/login');
 
         console.log('Registration successful!', { token, user });
 
