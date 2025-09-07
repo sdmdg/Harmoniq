@@ -20,6 +20,7 @@ import ReportIssue from '../views/ReportIssue.vue'
 import ReportingGuide from '../views/ReportingGuide.vue'
 import ReportDetail from '../views/ReportDetail.vue'
 import AdminUserDetail from '../views/AdminUserDetail.vue'
+import AdminSongManage from '../views/AdminSongManage.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -269,6 +270,19 @@ const router = createRouter({
       name: 'admin-dashboard',
       // component: AdminDashboardView,
       component: AdminDash, // Using HomeView as a placeholder for now
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['admin'] // Only admin can access this route
+      }
+    },
+    {
+      path: '/adminSongsManage',
+      name: 'Songs Management',
+      // component: AdminDashboardView,
+      component:AdminSongManage, // Using HomeView as a placeholder for now
       meta: {
         hideSidebar: false,
         hideTopNav: false,

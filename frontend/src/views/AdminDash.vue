@@ -94,4 +94,4 @@ onBeforeUnmount(() => {
           <admin_-recentactivity :initialLimit="10" />
         </div>
     </div>
-</template>
+</template>    
