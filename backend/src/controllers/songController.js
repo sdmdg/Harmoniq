@@ -1,6 +1,45 @@
-import { ModelSetSong, ModelUpdateSong } from "../models/Song.js";
-import { uploadFileToServer, encryptFile } from "../services/fileService.js";
+import { ModelSetSong, ModelUpdateSong,ModelDeleteSong } from "../models/Song.js";
+import { uploadFileToServer,deleteFileOnServer, encryptFile } from "../services/fileService.js";
 import axios from "axios";
+
+import { ModelListSongs, ModelCountSongs,ModelGetSongById } from "../models/Song.js";
+
+
+export const listSongsAdmin = async (req, res) => {
+  try {
+    const { query, page = 1, limit = 10 } = req.query;
+
+    const [items, total] = await Promise.all([
+      ModelListSongs({ query, page, limit }),
+      ModelCountSongs({ query })
+    ]);
+
+    res.status(200).json({
+      items,
+      total,
+      page: Number(page),
+      limit: Number(limit)
+    });
+  } catch (err) {
+    console.error("listSongsAdmin error:", err);
+    res.status(500).json({ message: "Failed to load songs." });
+  }
+};
+export const getSongById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const song = await ModelGetSongById(id);
+    if (!song) {
+      return res.status(404).json({ message: "Song not found" });
+    }
+
+    res.status(200).json(song);
+  } catch (err) {
+    console.error("Error in getSongById:", err);
+    res.status(500).json({ message: "Failed to fetch song." });
+  }
+};
 
 export const setSong = async (req, res) => {
   const userId = req.user.id;
@@ -142,5 +181,44 @@ export const updateSong = async (req, res) => {
   } catch (err) {
     console.error("Error in updateSong:", err);
     res.status(500).json({ message: "Failed to update the song." });
+  }
+};
+export const deleteSong = async (req, res) => {
+  const { id } = req.params;  // UUID
+
+  try {
+    // 1) Fetch the song (so we know stored filenames if available)
+    const song = await ModelGetSongById(id);
+    if (!song) return res.status(404).json({ message: "Song not found" });
+
+    // 2) Decide which filenames to delete on the file server
+    // If your DB has these columns, prefer them:
+    const candidates = [];
+    if (song.stored_filename) candidates.push(song.stored_filename);
+    if (song.encrypted_filename) candidates.push(song.encrypted_filename);
+
+    // Fallback if filenames aren’t stored: try common patterns
+    if (candidates.length === 0) {
+      candidates.push(`${id}.mp3.encrypted`, `${id}.mp3`);
+    }
+
+    // 3) Ask file server to delete (best-effort on each candidate)
+    const fileResults = {};
+    for (const name of candidates) {
+      const resDel = await deleteFileOnServer("song", name);
+      fileResults[name] = resDel.ok ? "deleted" : `not deleted: ${resDel.error}`;
+    }
+
+    // 4) Delete from DB
+    await ModelDeleteSong(id);
+
+    return res.status(200).json({
+      message: "Song deleted",
+      file_server: fileResults,
+      db_deleted: true,
+    });
+  } catch (err) {
+    console.error("deleteSong error:", err);
+    return res.status(500).json({ message: "Failed to delete song." });
   }
 };

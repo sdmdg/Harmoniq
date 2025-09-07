@@ -25,6 +25,16 @@ export const uploadFileToServer = async (file) => {
     }
 };
 
+export const deleteFileOnServer = async (type, filename) => {
+  try {
+    const url = `${VITE_FILE_SERVER}/delete/${type}/${encodeURIComponent(filename)}`;
+    const { data } = await axios.delete(url, { timeout: 10_000 });
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, error: err?.response?.data || err.message };
+  }
+};
+
 
 export const encryptFile = async (fileName) => {
     try {

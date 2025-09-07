@@ -1,5 +1,66 @@
 import db from '../config/db.js';
+import pool from "../config/db.js";  // <-- add this
 
+
+
+export async function ModelListSongs({ query, page = 1, limit = 10 }) {
+  const params = [];
+  let i = 1;
+
+  const where = [];
+  if (query) {
+    where.push(`(s.title ILIKE $${i})`);
+    params.push(`%${query}%`);
+    i++;
+  }
+  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+  const l = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+  const p = Math.max(1, parseInt(page, 10) || 1);
+  const offset = (p - 1) * l;
+
+  const sql = `
+    SELECT
+      s.id,
+      s.album_id,
+      s.title,
+      s.duration,
+      s.track_number,
+      s.bpm,
+      s.valence,
+      s.arousal,
+      s.genre,
+      s.mood,
+      s.created_at
+    FROM songs s
+    ${whereSql}
+    ORDER BY s.created_at DESC NULLS LAST
+    LIMIT $${i} OFFSET $${i + 1}
+  `;
+  params.push(l, offset);
+
+  const { rows } = await pool.query(sql, params);
+  return rows;
+}
+
+export async function ModelCountSongs({ query }) {
+  const params = [];
+  let i = 1;
+
+  const where = [];
+  if (query) {
+    where.push(`(s.title ILIKE $${i})`);
+    params.push(`%${query}%`);
+    i++;
+  }
+  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+  const { rows } = await pool.query(
+    `SELECT COUNT(*)::int AS count FROM songs s ${whereSql}`,
+    params
+  );
+  return rows[0].count;
+}
 export const ModelSetSong = async (
   id,
   albumId,
@@ -134,3 +195,7 @@ export const ModelGetSongById = async (songId) => {
   const result = await db.query(query, values);
   return result.rows.length > 0 ? result.rows[0] : null;
 };
+export async function ModelDeleteSong(id) {
+  await pool.query(`DELETE FROM songs WHERE id = $1`, [id]);
+  return true;
+}
