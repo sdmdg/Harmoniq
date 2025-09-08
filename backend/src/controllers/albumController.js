@@ -1,5 +1,6 @@
 // controller.js
 import { findAlbumsByUserId, createAlbum } from '../models/Artist.js';
+import { uploadFileToServer } from '../services/fileService.js';
 const sampleAlbum = {
     "name": "Different World",
     "albumCover": "DifferentWorld.png",
@@ -61,17 +62,42 @@ export const getAlbumsByUserId = async (req, res) => {
 
 // POST create new album
 export const addAlbum = async (req, res) => {
-    const { title, artist, releaseDate, albumArtId } = req.body;
+  const { title, artist, releaseDate, albumArtId } = req.body;
 
-    if (!title || !artist) {
-        return res.status(400).json({ message: 'Title and artist are required' });
-    }
+  if (!title || !artist) {
+    return res.status(400).json({ message: "Title and artist are required" });
+  }
 
-    try {
-        const newAlbum = await createAlbum({ title, artist, releaseDate, albumArtId });
-        res.status(201).json(newAlbum);
-    } catch (error) {
-        console.error('Controller error (addAlbum):', error);
-        res.status(500).json({ message: 'Server error while creating album' });
-    }
+  try {
+    // Strip the extension from the uploaded file name
+    const albumArtUuid = albumArtId.split('.')[0];
+
+    const newAlbum = await createAlbum({
+      title,
+      artist,
+      releaseDate,
+      albumArtId: albumArtUuid, // store UUID only
+    });
+
+    res.status(201).json(newAlbum);
+  } catch (error) {
+    console.error("Controller error (addAlbum):", error);
+    res.status(500).json({ message: "Server error while creating album" });
+  }
+};
+
+
+// POST upload album art
+
+
+export const uploadAlbumArt = async (req, res) => {
+  try {
+    // req.file.buffer contains the file data in memory
+    const albumArtId = await uploadFileToServer(req.file); // This sends to file server
+    if (!albumArtId) throw new Error('Upload failed');
+    res.status(201).json({ albumArtId });
+  } catch (err) {
+    console.error('Album art upload error:', err);
+    res.status(500).json({ message: 'Album art upload failed' });
+  }
 };
