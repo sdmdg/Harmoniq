@@ -206,7 +206,7 @@ const newAlbum = ref({
 const fileInput = ref(null);
 
 const genres = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock'];
-const moods = ['Angry / Tense', 'Sad / Calm', 'Calm / Relaxed', 'Mixed / Uncertain Mood'];
+const moods = ['Happy / Excited', 'Angry / Tense', 'Sad / Calm', 'Calm / Relaxed', 'Mixed / Uncertain Mood'];
 
 const editableFields = ['bpm'];
 
