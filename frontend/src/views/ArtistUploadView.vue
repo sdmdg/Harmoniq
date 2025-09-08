@@ -81,7 +81,16 @@
                     />
                   </div>
                 </div>
-
+                <div class="flex flex-col">
+                    <label class="font-semibold mb-1 text-gray-400">Upload Album Image:</label>
+                    <input
+                      type="file"
+                      @change="handleAlbumImageChange"
+                      accept="image/*"
+                      class="file-input"
+                      :required="selectedAlbumId === 'new'"
+                    />
+                </div>
                 <div class="flex flex-col">
                   <label class="font-semibold mb-2 text-gray-400">Select Song:</label>
                   <input
@@ -229,6 +238,38 @@ const fetchAlbums = async () => {
 const handleFileChange = (e) => {
   songFile.value = e.target.files[0];
 };
+const albumArtFile = ref(null);
+const albumArtId = ref(null);
+
+const handleAlbumImageChange = async (e) => {
+  console.log("Album image selected:", e.target.files[0]);
+
+  albumArtFile.value = e.target.files[0];
+  if (!albumArtFile.value) {
+    console.warn(" No album art file selected");
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("file", albumArtFile.value);
+
+    console.log("Sending album art to backend...");
+
+    const res = await apiClient.post("/api/album/upload-art", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    console.log("Album art upload response:", res.data);
+
+    albumArtId.value = res.data.albumArtId;
+    newAlbum.value.albumArtId = albumArtId.value;
+
+  } catch (error) {
+    console.error("Album art upload failed:", error);
+  }
+};
+
 
 const formatFeatureName = (key) => {
   return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
@@ -260,6 +301,7 @@ const handleUpload = async () => {
         title: newAlbum.value.title,
         artist: user.id,
         releaseDate: newAlbum.value.releaseDate,
+        albumArtId: newAlbum.value.albumArtId,
       });
       albumId = albumResponse.data.id;
       albums.value.push(albumResponse.data);
