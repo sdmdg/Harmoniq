@@ -80,8 +80,7 @@
                       :required="selectedAlbumId === 'new'"
                     />
                   </div>
-                </div>
-                <div class="flex flex-col">
+                  <div class="flex flex-col">
                     <label class="font-semibold mb-1 text-gray-400">Upload Album Image:</label>
                     <input
                       type="file"
@@ -91,6 +90,8 @@
                       :required="selectedAlbumId === 'new'"
                     />
                 </div>
+                </div>
+                
                 <div class="flex flex-col">
                   <label class="font-semibold mb-2 text-gray-400">Select Song:</label>
                   <input
