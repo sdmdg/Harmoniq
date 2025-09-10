@@ -21,7 +21,7 @@ const seeker = ref(null)
 const seekerContainer = ref(null)
 let timeUpdateInterval = null
 
-// --- Helpers ---
+
 const formatTime = (sec) => {
   if (!sec || isNaN(sec)) return '0:00'
   const m = Math.floor(sec / 60)
@@ -29,7 +29,7 @@ const formatTime = (sec) => {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-// --- Seek handlers ---
+
 const onSeekChange = () => {
   if (!audio.value) return
   useSong.seekToPercent(range.value)
@@ -45,7 +45,7 @@ const onSeekEnd = () => {
   audio.value.play().catch(() => {})
 }
 
-// --- Time update loop ---
+
 const startTimeUpdates = () => {
   if (timeUpdateInterval) clearInterval(timeUpdateInterval)
   timeUpdateInterval = setInterval(() => {
@@ -96,7 +96,7 @@ watch(currentTrack, () => {
       </div>
     </div>
 
-    <!-- Center: Controls + seeker -->
+    
     <div class="max-w-[35%] mx-auto w-2/4 mb-3">
       <div class="flex-col items-center justify-center">
         <!-- Buttons -->
