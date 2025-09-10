@@ -45,10 +45,8 @@ apiClient.interceptors.response.use(
     // If it's a 403 Forbidden error (insufficient permissions)
     else if (error.response && error.response.status === 403) {
         console.warn('Forbidden access. User does not have sufficient permissions.');
-        // Optionally redirect to an access denied page or home
-        // router.push({ name: 'home' }); // Or a custom '/access-denied' route
     }
-    return Promise.reject(error); // Important: re-throw the error so component can catch it
+    return Promise.reject(error);
   }
 );
 

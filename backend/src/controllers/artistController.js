@@ -54,7 +54,7 @@ export const getArtist = async (req, res) => {
         name: artistFromDB.user_name,
         email: artistFromDB.email,
         role: artistFromDB.role,
-        image: artistFromDB.image, // pulled from users table
+        image: artistFromDB.image,
       },
       monthlyAudience: hardcodedData.monthlyAudience,
       topSongs: hardcodedData.topSongs,

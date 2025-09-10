@@ -127,7 +127,7 @@ const router = createRouter({
     },
     {
       path: '/album/:id',
-      name: 'album',
+      name: 'AlbumView',
       component: AlbumView,
       meta: {
         hideSidebar: false,
