@@ -132,6 +132,18 @@ onMounted(() => {
         class="bg-[#181818] rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
         @click="toggleAlbum(album.id)"
       >
+          <!-- Delete Button at top-right -->
+      <button
+        @click.stop="deleteAlbum(album.id)"
+        class="absolute top-2 right-2 flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-all duration-300 hover:scale-105"
+      >
+        <!-- Optional Trash Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Delete
+      </button>
+
         <img
           :src="album.coverUrl || 'https://via.placeholder.com/300x300?text=No+Cover'"
           alt="Album Cover"
