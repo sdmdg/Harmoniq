@@ -102,7 +102,7 @@ def predict_genre_chunk(model, chunk, sr, classes):
 # === 4. Main Genre Prediction Function ===
 def predict_genre(audio_path, model_path=MODEL_PATH, chunk_duration=30, overlap_duration=15):
     print("=" * 60)
-    print("🎵 MUSIC GENRE PREDICTION")
+    print("MUSIC GENRE PREDICTION")
     print("=" * 60)
 
     if not os.path.exists(audio_path):
@@ -121,7 +121,7 @@ def predict_genre(audio_path, model_path=MODEL_PATH, chunk_duration=30, overlap_
     confidences = []
     all_probs = []
 
-    print("\n🔍 Analyzing Chunks:")
+    print("\nAnalyzing Chunks:")
     for i, chunk in enumerate(chunks):
         genre, confidence, prob = predict_genre_chunk(model, chunk, sr, CLASSES)
         if genre:
@@ -130,10 +130,10 @@ def predict_genre(audio_path, model_path=MODEL_PATH, chunk_duration=30, overlap_
             all_probs.append(prob)
             print(f"Chunk {i+1:2d}: {genre:>10} ({confidence:.3f})")
         else:
-            print(f"Chunk {i+1:2d}: ❌ Failed")
+            print(f"Chunk {i+1:2d}: Failed")
 
     if not predictions:
-        print("❌ No valid predictions.")
+        print("No valid predictions.")
         return None
 
     print("-" * 60)
@@ -155,12 +155,12 @@ def predict_genre(audio_path, model_path=MODEL_PATH, chunk_duration=30, overlap_
     ensemble_conf = avg_probs[np.argmax(avg_probs)]
 
     # === Final Result ===
-    print("🎧 FINAL PREDICTION")
+    print("FINAL PREDICTION")
     print(f"Majority Vote:     {majority_genre} ({majority_count}/{len(predictions)} chunks)")
     print(f"Confidence Weight: {weighted_genre}")
     print(f"Average Ensemble:  {ensemble_genre} (confidence: {ensemble_conf:.3f})")
 
-    print("\n📊 Probability Distribution:")
+    print("\nProbability Distribution:")
     for genre, prob in sorted(zip(CLASSES, avg_probs), key=lambda x: x[1], reverse=True):
         bar = "█" * int(prob * 30)
         print(f"{genre:>10}: {bar:<30} {prob:.3f}")

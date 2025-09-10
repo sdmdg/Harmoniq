@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 const crypto = require('crypto');
+
 // --- Public Server (Read-only) ---
 // This server will only serve static files (GET requests)
 const publicApp = express();
@@ -15,7 +16,33 @@ publicApp.use(cors({
     allowedHeaders: ["*"]
 }));
 
-// Serve songs and images from the 'public' directory
+// Middleware to serve files without extension
+publicApp.get('/public/:type/:filename', (req, res, next) => {
+    const { type, filename } = req.params;
+
+    let dir;
+    if (type === 'images') {
+        dir = path.join(__dirname, 'public/images');
+    } else if (type === 'songs') {
+        dir = path.join(__dirname, 'public/songs');
+    } else {
+        return res.status(404).send('Invalid type');
+    }
+
+    // Possible extensions to check
+    const extensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.mp3', '.wav', '.ogg', ''];
+
+    for (const ext of extensions) {
+        const filePath = path.join(dir, filename + ext);
+        if (fs.existsSync(filePath)) {
+            return res.sendFile(filePath);
+        }
+    }
+
+    next(); // If not found, pass to static middleware
+});
+
+// Serve songs and images from the 'public' directory (fallback for normal requests)
 publicApp.use('/public', express.static(path.join(__dirname, 'public')));
 
 publicApp.listen(publicPort, () => {

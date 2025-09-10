@@ -22,10 +22,6 @@ export const registerUser = async (req, res) => {
     // Ensure createUser receives the hashed password
     const newUser = await createUser({ username, email, role:"listener", password: hashedPassword });
 
-    // IMPORTANT: Your createUser function's RETURNING clause only returns username, email, user_type.
-    // If you need newUser.id for JWT, ensure createUser returns it.
-    // Modify createUser to: `RETURNING id, username, email, user_type`
-    // For now, assuming newUser.id is available or handled by your createUser.
     const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
     res.status(200).json({
@@ -34,8 +30,6 @@ export const registerUser = async (req, res) => {
         id: newUser.id,
         username: newUser.user_name,
         role: newUser.role,
-        // If you want to return the user's ID, ensure createUser returns it
-        // id: newUser.id
       }
     });
 
