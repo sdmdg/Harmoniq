@@ -37,3 +37,31 @@ export const createAlbum = async ({ title, artist, releaseDate, albumArtId }) =>
         throw error;
     }
 };
+
+export const findArtistById = async (id) => {
+  const result = await db.query(
+    `SELECT a.id,
+            a.artist_name,
+            a.description,
+            a.created_at,
+            u.user_name,
+            u.email,
+            u.role,
+            u.pic_path
+     FROM artists a
+     JOIN users u ON a.user_id = u.id
+     WHERE a.id = $1`,
+    [id]
+  );
+  return result.rows[0];
+};
+
+export const findArtistByName = async (name) => {
+  const result = await db.query(
+    `SELECT id, artist_name, description, created_at
+     FROM artists
+     WHERE id = $1`,
+    [id]
+  );
+  return result.rows[0];
+};
