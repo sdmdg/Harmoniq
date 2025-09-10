@@ -68,9 +68,9 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import api from '@/utils/axios.js' // axios instance with baseURL + token
+import api from '@/utils/axios.js' 
 
-// ---- Taxonomy (no Payment Issues, no pickers) ----
+
 const TAXONOMY = {
   'Content Issues': [
     { value: 'mislabel',  label: 'Wrong or mislabeled track/album' },
