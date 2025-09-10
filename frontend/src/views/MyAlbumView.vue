@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/axios';
+import SongRow from '../components/SongRow.vue'; // ✅ use SongRow instead
 
 const albums = ref([]);
 const loading = ref(true);
@@ -25,6 +26,16 @@ const fetchUser = () => {
   }
 };
 
+// Check if an image exists by trying to load it
+function imageExists(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
+
 // Fetch albums using apiClient
 const fetchAlbums = async () => {
   if (!user.value) return;
@@ -32,14 +43,34 @@ const fetchAlbums = async () => {
   errorMessage.value = '';
   try {
     const response = await apiClient.get(`api/album/user/${user.value.id}`);
-       console.log('Albums API response:', response.data);
-    albums.value = response.data.map(album => {
-      const ext = album.extension || '.jpeg';
-      return {
-        ...album,
-        coverUrl: `${VITE_FILE_SERVER}/public/images/${album.album_art_id}${ext}`
-      };
-    });
+    console.log('Albums API response:', response.data);
+
+    const base = `${VITE_FILE_SERVER}/public/images`;
+    const exts = ['.png', '.jpg', '.jpeg'];
+
+    albums.value = await Promise.all(
+      response.data.map(async (album) => {
+        let coverUrl = null;
+
+        for (const ext of exts) {
+          const url = `${base}/${album.album_art_id}${ext}`;
+          console.log(`Trying URL: ${url}`);
+          // eslint-disable-next-line no-await-in-loop
+          if (await imageExists(url)) {
+            coverUrl = url;
+            console.log(`✅ Found cover for "${album.title}": ${url}`);
+            break;
+          }
+        }
+
+        if (!coverUrl) {
+          console.warn(`⚠️ No cover found for "${album.title}", using placeholder`);
+          coverUrl = 'https://via.placeholder.com/300x300?text=No+Cover';
+        }
+
+        return { ...album, coverUrl };
+      })
+    );
   } catch (error) {
     console.error('Error fetching albums:', error);
     errorMessage.value = error.response?.data?.message || 'Failed to fetch albums.';
@@ -63,12 +94,12 @@ const toggleAlbum = async (albumId) => {
       const response = await apiClient.get(`/api/album/album_songs/${albumId}`);
       console.log(`Songs fetched for album ${albumId}:`, response.data);
 
-      albumSongs.value[albumId] = response.data.map(song => {
-        const songUrl = `${VITE_FILE_SERVER}/public/songs/${song.id}.mp3`;
-        console.log(`Song ${song.title} URL:`, songUrl);
+      albumSongs.value[albumId] = response.data.map((song) => {
         return {
-          ...song,
-          songUrl
+          id: song.id,
+          name: song.title,
+          key: song.encryption_key,     
+          path: song.id,     
         };
       });
     } catch (err) {
@@ -104,7 +135,7 @@ onMounted(() => {
         <img
           :src="album.coverUrl || 'https://via.placeholder.com/300x300?text=No+Cover'"
           alt="Album Cover"
-          class="w-full h-48 object-cover"
+          class="w-50 h-50 object-cover"
         />
         <div class="p-4">
           <h3 class="text-white font-semibold text-lg truncate">{{ album.title }}</h3>
@@ -112,15 +143,18 @@ onMounted(() => {
 
           <!-- Songs Section -->
           <ul v-if="expandedAlbumId === album.id" class="mt-3 space-y-2">
-            <li
-              v-for="song in albumSongs[album.id] || []"
+            <SongRow
+              v-for="(song, index) in albumSongs[album.id] || []"
               :key="song.id"
-              class="text-gray-300 text-sm flex items-center justify-between"
+              :track="song"
+              :artist="album"
+              :index="index + 1"
+              duration="3:45"
+            />
+            <li
+              v-if="(albumSongs[album.id] || []).length === 0"
+              class="text-gray-500 text-sm"
             >
-              <span>🎵 {{ song.title }}</span>
-              <audio :src="song.songUrl" controls class="w-30"></audio>
-            </li>
-            <li v-if="(albumSongs[album.id] || []).length === 0" class="text-gray-500 text-sm">
               No songs found.
             </li>
           </ul>

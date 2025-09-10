@@ -12,7 +12,7 @@ export const findAlbumsByUserId = async (userId) => {
 };
 export const findSongsByAlbumId = async (albumId) => {
     try {
-        const query = 'SELECT id, title FROM songs WHERE album_id = $1;';
+        const query = 'SELECT id, title, encryption_key FROM songs WHERE album_id = $1;';
         const result = await db.query(query, [albumId]);
         return result.rows; 
     } catch (error) {
