@@ -1,5 +1,5 @@
 import db from '../config/db.js';
-import pool from "../config/db.js";  // <-- add this
+import pool from "../config/db.js";  
 
 
 
@@ -8,11 +8,7 @@ export async function ModelListSongs({ query, page = 1, limit = 10 }) {
   let i = 1;
 
   const where = [];
-  if (query) {
-    where.push(`(s.title ILIKE $${i})`);
-    params.push(`%${query}%`);
-    i++;
-  }
+  if (query) { where.push(`(s.title ILIKE $${i})`); params.push(`%${query}%`); i++; }
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
   const l = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
@@ -22,17 +18,14 @@ export async function ModelListSongs({ query, page = 1, limit = 10 }) {
   const sql = `
     SELECT
       s.id,
-      s.album_id,
       s.title,
       s.duration,
-      s.track_number,
-      s.bpm,
-      s.valence,
-      s.arousal,
+      s.album_id,
       s.genre,
       s.mood,
-      s.created_at
+      a.title  AS album_name         -- if your column is "title", use a.title AS album_name
     FROM songs s
+    LEFT JOIN albums a ON a.id = s.album_id
     ${whereSql}
     ORDER BY s.created_at DESC NULLS LAST
     LIMIT $${i} OFFSET $${i + 1}
