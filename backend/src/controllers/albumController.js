@@ -1,5 +1,5 @@
 // controller.js
-import { findAlbumsByUserId, createAlbum } from '../models/Artist.js';
+import { findAlbumsByUserId, createAlbum , findSongsByAlbumId} from '../models/Artist.js';
 import { uploadFileToServer } from '../services/fileService.js';
 const sampleAlbum = {
     "name": "Different World",
@@ -57,6 +57,23 @@ export const getAlbumsByUserId = async (req, res) => {
     } catch (error) {
         console.error('Controller error (getAlbumsByUserId):', error);
         res.status(500).json({ message: 'Server error while fetching albums' });
+    }
+};
+
+export const getSongsByAlbumId = async (req, res) => {
+    const { albumId } = req.params;
+
+    try {
+        const songs = await findSongsByAlbumId(albumId);
+
+        if (!songs || songs.length === 0) {
+            return res.status(404).json({ message: 'No songs found for this album' });
+        }
+
+        res.status(200).json(songs);
+    } catch (error) {
+        console.error('Controller error (getSongsByAlbumId):', error);
+        res.status(500).json({ message: 'Server error while fetching songs' });
     }
 };
 
