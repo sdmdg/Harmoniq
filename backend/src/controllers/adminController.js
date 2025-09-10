@@ -1,4 +1,4 @@
-// controllers/adminController.js
+
 import pool from '../config/db.js';
 import { findUserById } from '../models/User.js';
 
@@ -6,8 +6,7 @@ import { findUserById } from '../models/User.js';
 
 
 function timeClause(range) {
-  // Since we don't rely on per-table created_at, we map ranges to a no-op filter.
-  // (All rows get 'created_at = now()' so filters still "work" but aren't meaningful yet.)
+
   switch ((range || '').toLowerCase()) {
     case 'today':
     case '7d':
@@ -20,7 +19,7 @@ function timeClause(range) {
 export const getRecentActivity = async (req, res) => {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN READ ONLY'); // safety: prevent writes
+    await client.query('BEGIN READ ONLY'); 
 
     const limit  = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 100);
     const offset = Math.max(parseInt(req.query.offset || '0', 10), 0);
@@ -28,8 +27,7 @@ export const getRecentActivity = async (req, res) => {
     const q      = (req.query.q || '').trim();
     const range  = req.query.range || '';
 
-    // 👇 Ultra-safe UNION: only uses `id` from each table. No optional columns.
-    // `created_at` is synthesized with `now()` so the query is stable and sortable.
+    
     const baseCte = `
       WITH events AS (
         SELECT 'user_signup'::text AS type,
@@ -125,8 +123,7 @@ export const getDashboardStats = async (req, res) => {
     const [usersResult, artistsResult, songsResult, playlistsResult] =
       await Promise.all([
         pool.query('SELECT COUNT(*) FROM users'),
-        // If you prefer counting artists by role in users:
-        // pool.query("SELECT COUNT(*) FROM users WHERE role = 'artist'"),
+      
         pool.query('SELECT COUNT(*) FROM artists'),
         pool.query('SELECT COUNT(*) FROM songs'),
         pool.query('SELECT COUNT(*) FROM playlist'),
@@ -143,7 +140,7 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch admin dashboard stats' });
   }
 };
-// controllers/userController.js
+
 
 export const getUsersignupById = async (req, res) => {
   try {
