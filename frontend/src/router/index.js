@@ -1,4 +1,4 @@
-// src/router/index.js
+
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from '../views/LoginPage.vue'
 import RegisterPage from '../views/RegisterPage.vue'
@@ -193,7 +193,7 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener']
       }
     },
-    // src/router/index.js
+   
 
 
  {
@@ -245,18 +245,7 @@ const router = createRouter({
     allowedRoles: ['artist']
   }
 },
-    //  {
-    //   path: '/upload',
-    //   name: 'upload',
-    //   component: UploadView,
-    //   meta: {
-    //     hideSidebar: false,
-    //     hideTopNav: false,
-    //     hidePlayer: false,
-    //     requiresAuth: true,
-    //     allowedRoles: ['artist', 'listener', 'admin']
-    //   }
-    // },
+    
 
     {
   path: '/upload',
@@ -295,8 +284,8 @@ const router = createRouter({
     {
       path: '/adminSongsManage',
       name: 'Songs Management',
-      // component: AdminDashboardView,
-      component:AdminSongManage, // Using HomeView as a placeholder for now
+      
+      component:AdminSongManage, 
       meta: {
         hideSidebar: false,
         hideTopNav: false,
