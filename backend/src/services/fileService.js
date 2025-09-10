@@ -36,6 +36,21 @@ export const deleteFileOnServer = async (type, filename) => {
 };
 
 
+export const getFileById = async (id) => {
+  const exts = ['.jpeg', '.png', '.mp3'];
+  for (const ext of exts) {
+    try {
+      const url = `${VITE_FILE_SERVER}/files/${id}${ext}`;
+      const response = await axios.get(url, { responseType: 'arraybuffer' });
+      return { ok: true, data: response.data, ext };
+    } catch (err) {
+      continue; // try next extension
+    }
+  }
+  return { ok: false, error: 'File not found with known extensions' };
+};
+
+
 export const encryptFile = async (fileName) => {
     try {
         const response = await axios.post(`${VITE_FILE_SERVER}/encrypt/${fileName}`);
