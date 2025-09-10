@@ -22,6 +22,7 @@ import ReportDetail from '../views/ReportDetail.vue'
 import AdminUserDetail from '../views/AdminUserDetail.vue'
 import AdminSongManage from '../views/AdminSongManage.vue'
 import MyAlbumView from '../views/MyAlbumView.vue'
+import LikedSongs from '../views/LikedSongs.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -171,7 +172,7 @@ const router = createRouter({
     {
       path: '/liked-songs/',
       name: 'liked',
-      component: PlaylistView,
+      component: LikedSongs,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
