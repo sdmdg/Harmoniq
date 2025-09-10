@@ -25,6 +25,16 @@ const fetchUser = () => {
   }
 };
 
+// Check if an image exists by trying to load it
+function imageExists(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
+
 // Fetch albums using apiClient
 const fetchAlbums = async () => {
   if (!user.value) return;
@@ -32,14 +42,34 @@ const fetchAlbums = async () => {
   errorMessage.value = '';
   try {
     const response = await apiClient.get(`api/album/user/${user.value.id}`);
-       console.log('Albums API response:', response.data);
-    albums.value = response.data.map(album => {
-      const ext = album.extension || '.jpeg';
-      return {
-        ...album,
-        coverUrl: `${VITE_FILE_SERVER}/public/images/${album.album_art_id}${ext}`
-      };
-    });
+    console.log('Albums API response:', response.data);
+
+    const base = `${VITE_FILE_SERVER}/public/images`;
+    const exts = ['.png', '.jpg', '.jpeg'];
+
+    albums.value = await Promise.all(
+      response.data.map(async (album) => {
+        let coverUrl = null;
+
+        for (const ext of exts) {
+          const url = `${base}/${album.album_art_id}${ext}`;
+          console.log(`Trying URL: ${url}`);
+          // eslint-disable-next-line no-await-in-loop
+          if (await imageExists(url)) {
+            coverUrl = url;
+            console.log(`✅ Found cover for "${album.title}": ${url}`);
+            break;
+          }
+        }
+
+        if (!coverUrl) {
+          console.warn(`⚠️ No cover found for "${album.title}", using placeholder`);
+          coverUrl = 'https://via.placeholder.com/300x300?text=No+Cover';
+        }
+
+        return { ...album, coverUrl };
+      })
+    );
   } catch (error) {
     console.error('Error fetching albums:', error);
     errorMessage.value = error.response?.data?.message || 'Failed to fetch albums.';
@@ -63,13 +93,10 @@ const toggleAlbum = async (albumId) => {
       const response = await apiClient.get(`/api/album/album_songs/${albumId}`);
       console.log(`Songs fetched for album ${albumId}:`, response.data);
 
-      albumSongs.value[albumId] = response.data.map(song => {
+      albumSongs.value[albumId] = response.data.map((song) => {
         const songUrl = `${VITE_FILE_SERVER}/public/songs/${song.id}.mp3`;
         console.log(`Song ${song.title} URL:`, songUrl);
-        return {
-          ...song,
-          songUrl
-        };
+        return { ...song, songUrl };
       });
     } catch (err) {
       console.error('Error fetching songs:', err);
@@ -85,6 +112,7 @@ onMounted(() => {
   fetchAlbums();
 });
 </script>
+
 
 <template>
   <div class="min-h-screen bg-black p-6">
@@ -104,7 +132,7 @@ onMounted(() => {
         <img
           :src="album.coverUrl || 'https://via.placeholder.com/300x300?text=No+Cover'"
           alt="Album Cover"
-          class="w-full h-48 object-cover"
+          class="w-50 h-50 object-cover"
         />
         <div class="p-4">
           <h3 class="text-white font-semibold text-lg truncate">{{ album.title }}</h3>

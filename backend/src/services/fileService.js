@@ -37,7 +37,7 @@ export const deleteFileOnServer = async (type, filename) => {
 
 
 export const getFileById = async (id) => {
-  const exts = ['.jpeg', '.png', '.mp3'];
+  const exts = ['.jpeg', '.png', '.mp3', '.mp3.encrypted','.jpg'];
   for (const ext of exts) {
     try {
       const url = `${VITE_FILE_SERVER}/files/${id}${ext}`;
