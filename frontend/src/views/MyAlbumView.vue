@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/axios';
+import SongRow from '../components/SongRow.vue'; // ✅ use SongRow instead
 
 const albums = ref([]);
 const loading = ref(true);
@@ -94,9 +95,12 @@ const toggleAlbum = async (albumId) => {
       console.log(`Songs fetched for album ${albumId}:`, response.data);
 
       albumSongs.value[albumId] = response.data.map((song) => {
-        const songUrl = `${VITE_FILE_SERVER}/public/songs/${song.id}.mp3`;
-        console.log(`Song ${song.title} URL:`, songUrl);
-        return { ...song, songUrl };
+        return {
+          id: song.id,
+          name: song.title,
+          key: song.encryption_key,     
+          path: song.id,     
+        };
       });
     } catch (err) {
       console.error('Error fetching songs:', err);
@@ -112,7 +116,6 @@ onMounted(() => {
   fetchAlbums();
 });
 </script>
-
 
 <template>
   <div class="min-h-screen bg-black p-6">
@@ -140,15 +143,18 @@ onMounted(() => {
 
           <!-- Songs Section -->
           <ul v-if="expandedAlbumId === album.id" class="mt-3 space-y-2">
-            <li
-              v-for="song in albumSongs[album.id] || []"
+            <SongRow
+              v-for="(song, index) in albumSongs[album.id] || []"
               :key="song.id"
-              class="text-gray-300 text-sm flex items-center justify-between"
+              :track="song"
+              :artist="album"
+              :index="index + 1"
+              duration="3:45"
+            />
+            <li
+              v-if="(albumSongs[album.id] || []).length === 0"
+              class="text-gray-500 text-sm"
             >
-              <span>🎵 {{ song.title }}</span>
-              <audio :src="song.songUrl" controls class="w-30"></audio>
-            </li>
-            <li v-if="(albumSongs[album.id] || []).length === 0" class="text-gray-500 text-sm">
               No songs found.
             </li>
           </ul>
