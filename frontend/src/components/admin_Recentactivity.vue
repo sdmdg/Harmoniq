@@ -87,7 +87,7 @@ onMounted(()=>load(true))
       <h2 class="text-xl font-bold text-white">Recent Activity</h2>
 
       <div class="flex items-center gap-2">
-        <!-- Time filter (single-select) -->
+        <!-- Time filter  -->
         <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-1 flex">
           <button class="px-3 py-1 rounded-md text-sm"
                   :class="range==='today' ? 'bg-neutral-800 text-white' : 'text-gray-300'"
@@ -115,7 +115,7 @@ onMounted(()=>load(true))
       </div>
     </div>
 
-    <!-- Type chips (SINGLE-SELECT + All) -->
+   
     <div class="flex flex-wrap gap-2 mb-4">
       <button
         class="px-3 py-1 rounded-full text-xs border"
@@ -148,7 +148,7 @@ onMounted(()=>load(true))
                 'bg-green-500': a.type==='user_signup' || a.type==='playlist_created',
                 'bg-blue-500' : a.type==='song_upload' || a.type==='artist_added',
                 'bg-yellow-500': a.type==='report_submitted',
-                // 'bg-purple-500': a.type==='report_status_changed'
+              
               }"></span>
 
         <div class="flex-1">
