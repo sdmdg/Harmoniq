@@ -52,6 +52,7 @@ const updateUserData = () => {
     }
 };
 
+
 // Watch for any change in the route's path
 watch(() => route.fullPath, () => {
     updateUserData();
@@ -159,12 +160,13 @@ onMounted(() => {
                 <RouterLink v-if="userRole !== 'admin'" to="/upload">
                     <MenuItem :iconSize="24" name="Upload Songs" iconString="playlist" />
                 </RouterLink>
-                  <RouterLink v-if="userRole !== 'admin'" to="/reportIssue">
+                <RouterLink v-if="userRole !== 'admin'" to="/reportIssue">
                     <MenuItem :iconSize="24" name="Report an Issue" iconString="playlist" />
                 </RouterLink>
+                <RouterLink v-if="userRole !== 'admin' && userRole !== 'listener'" to="/albums">
+                    <MenuItem :iconSize="24" name="Albums" iconString="playlist" />
+                </RouterLink>
 
-
-             
 
             </ul>
             
@@ -186,19 +188,19 @@ onMounted(() => {
 
                 <div class="overflow-y-auto h-[360px] scrollbar-hidden">
                 <ul class="space-y-0">
-                    <li
-                    v-for="playlist in userPlaylists"
-                    :key="playlist.id"
-                    class="text-gray-300 font-semibold text-[13px] hover:text-white transition-colors"
-                    >
-                    <RouterLink :to="`/playlist/${playlist.id}`" class="block py-2">
-                        {{ playlist.title }}
-                    </RouterLink>
+                   <li v-for="playlist in userPlaylists" :key="playlist.id">
+                        <RouterLink :to="`/playlist/${playlist.id}`">
+                            <MenuItem
+                                :iconSize="24"
+                                :name="playlist.title"
+                                iconString="playlist"
+                            />
+                        </RouterLink>
                     </li>
                 </ul>
                 </div>
             </div>
-
+            
             <CreatePlaylistModal
                 :isOpen="isModalOpen"
                 @close="isModalOpen = false"

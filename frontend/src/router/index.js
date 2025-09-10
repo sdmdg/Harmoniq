@@ -21,6 +21,7 @@ import ReportingGuide from '../views/ReportingGuide.vue'
 import ReportDetail from '../views/ReportDetail.vue'
 import AdminUserDetail from '../views/AdminUserDetail.vue'
 import AdminSongManage from '../views/AdminSongManage.vue'
+import MyAlbumView from '../views/MyAlbumView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -135,6 +136,19 @@ const router = createRouter({
         allowedRoles: ['artist', 'listener', 'admin']
       }
     },
+    {
+      path: '/albums',
+      name: 'album',
+      component: MyAlbumView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'admin']
+      }
+    },
+
     {
       path: '/playlist/:id',
       name: 'playlist',
