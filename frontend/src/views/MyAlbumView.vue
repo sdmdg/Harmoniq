@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/axios';
-import SongRow from '../components/SongRow.vue'; // ✅ use SongRow instead
+import SongRow from '../components/SongRow.vue'; 
 
 const albums = ref([]);
 const loading = ref(true);
@@ -10,7 +10,7 @@ const errorMessage = ref('');
 const user = ref(null);
 const router = useRouter();
 
-const VITE_FILE_SERVER = import.meta.env.VITE_FILE_SERVER; // e.g., http://localhost:3000
+const VITE_FILE_SERVER = import.meta.env.VITE_FILE_SERVER; 
 
 // Track which album is expanded
 const expandedAlbumId = ref(null);
@@ -58,13 +58,13 @@ const fetchAlbums = async () => {
           // eslint-disable-next-line no-await-in-loop
           if (await imageExists(url)) {
             coverUrl = url;
-            console.log(`✅ Found cover for "${album.title}": ${url}`);
+            console.log(`Found cover for "${album.title}": ${url}`);
             break;
           }
         }
 
         if (!coverUrl) {
-          console.warn(`⚠️ No cover found for "${album.title}", using placeholder`);
+          console.warn(`No cover found for "${album.title}", using placeholder`);
           coverUrl = 'https://via.placeholder.com/300x300?text=No+Cover';
         }
 
@@ -83,7 +83,7 @@ const fetchAlbums = async () => {
 // Toggle album expansion + fetch songs if not loaded
 const toggleAlbum = async (albumId) => {
   if (expandedAlbumId.value === albumId) {
-    expandedAlbumId.value = null; // collapse
+    expandedAlbumId.value = null; 
     return;
   }
   expandedAlbumId.value = albumId;
