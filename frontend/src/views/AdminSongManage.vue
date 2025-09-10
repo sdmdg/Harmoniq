@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import apiClient from '@/utils/axios'
 
@@ -17,11 +17,19 @@ const target = ref(null)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / limit.value)))
 
+// player state
+const isPlayerOpen = ref(false)
+const current = ref(null)
+const src = ref('')
+const audioEl = ref(null)
+
+const FILE_SERVER = import.meta.env.VITE_FILE_SERVER 
+
 async function fetchSongs() {
   loading.value = true
   error.value = ''
   try {
-    const { data } = await apiClient.get('/api/songs', {          // <— unified path
+    const { data } = await apiClient.get('/api/songs', {
       params: { query: query.value || null, page: page.value, limit: limit.value }
     })
     songs.value = data?.items ?? []
@@ -54,6 +62,7 @@ async function doDelete() {
       page.value -= 1
       await fetchSongs()
     }
+    if (current.value && current.value.id === id) stopPlayer()
   } catch (e) {
     console.error(e)
     error.value = 'Delete failed.'
@@ -67,6 +76,35 @@ function fmtTime(sec) {
   if (sec === null || sec === undefined) return '—'
   const m = Math.floor(sec / 60), s = Math.floor(sec % 60)
   return `${m}:${String(s).padStart(2,'0')}`
+}
+
+
+function songUrlById(id) {
+  // files are stored as <uuid>.mp3 under /public/songs/
+  return `${FILE_SERVER}/public/songs/${encodeURIComponent(id)}.mp3`
+}
+
+async function playSong(row) {
+  current.value = row
+  src.value = songUrlById(row.id)
+  isPlayerOpen.value = true
+
+  
+  await nextTick()
+  try {
+    audioEl.value?.load()
+    await audioEl.value?.play()
+  } catch (e) {
+   
+    console.debug('Playback will start on user interaction', e)
+  }
+}
+
+function stopPlayer() {
+  try { audioEl.value?.pause() } catch {}
+  isPlayerOpen.value = false
+  src.value = ''
+  current.value = null
 }
 
 // debounce search
@@ -95,6 +133,7 @@ onMounted(fetchSongs)
           <option :value="10">10</option>
           <option :value="20">20</option>
           <option :value="50">50</option>
+          <option :value="100">100</option>
         </select>
       </div>
     </div>
@@ -112,7 +151,8 @@ onMounted(fetchSongs)
           <tr>
             <th class="px-4 py-3 text-left">Title</th>
             <th class="px-4 py-3 text-left">Album</th>
-            <th class="px-4 py-3 text-left">Duration</th>
+            <th class="px-4 py-3 text-left">Genre</th>   
+        <th class="px-4 py-3 text-left">Mood</th> 
             <th class="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
@@ -123,11 +163,17 @@ onMounted(fetchSongs)
           <tr v-for="s in songs" :key="s.id" class="border-t border-zinc-800">
             <td class="px-4 py-3">{{ s.title }}</td>
             <td class="px-4 py-3">{{ s.album_name ?? '—' }}</td>
-            <td class="px-4 py-3">{{ fmtTime(s.duration) }}</td>
+             <td class="px-4 py-3">{{ s.genre }}</td>  <!-- new -->
+        <td class="px-4 py-3">{{ s.mood }}</td>  
             <td class="px-4 py-3 text-right">
-              <button class="rounded-lg bg-red-600 px-3 py-1.5 hover:bg-red-500" @click="askDelete(s)">
-                Delete
-              </button>
+              <div class="flex items-center justify-end gap-2">
+                <button class="rounded-lg bg-zinc-700 px-3 py-1.5 hover:bg-zinc-600" @click="playSong(s)">
+                  Play
+                </button>
+                <button class="rounded-lg bg-red-600 px-3 py-1.5 hover:bg-red-500" @click="askDelete(s)">
+                  Delete
+                </button>
+              </div>
             </td>
           </tr>
           <tr v-if="!loading && songs.length === 0">
@@ -152,5 +198,18 @@ onMounted(fetchSongs)
       @cancel="showConfirm = false"
       @confirm="doDelete"
     />
+
+    
+    <div  v-if="isPlayerOpen"
+  class="fixed bottom-0 right-0 z-50 border-t border-zinc-800 bg-zinc-900 md:left-60 left-0">
+      <div class="flex items-center gap-4 px-4 py-3">
+        <div class="min-w-0">
+          <div class="truncate font-medium">{{ current && current.title }}</div>
+          <div class="truncate text-xs text-zinc-400">{{ current && current.artist_name }}</div>
+        </div>
+        <audio ref="audioEl" :src="src" controls class="w-full"></audio>
+        <button class="rounded bg-zinc-800 px-3 py-1.5" @click="stopPlayer">Close</button>
+      </div>
+    </div>
   </div>
 </template>
