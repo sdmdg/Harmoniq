@@ -72,6 +72,7 @@ async function doDelete() {
   }
 }
 
+
 function fmtTime(sec) {
   if (sec === null || sec === undefined) return '—'
   const m = Math.floor(sec / 60), s = Math.floor(sec % 60)
