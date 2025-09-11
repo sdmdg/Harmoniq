@@ -74,16 +74,20 @@ const userPlaylists = ref([
 ]);
 
 const albums = ref([
-  { id: 101, title: 'Different World', artist: 'Alan Walker', cover: 'http://localhost:3000/public/images/DifferentWorld.png' },
+  { id: '34bf0bbd-ab57-457f-a9b3-1b2d271285fd', title: 'Different World', artist: 'Alan Walker', cover: 'http://localhost:3000/public/images/2732e7ca-66e5-4ae5-b17e-47624c87949c' },
+  { id: '89b47003-6f5c-4c2b-a910-606217908198', title: 'Nine Track Mind', artist: 'charl', cover: 'http://localhost:3000/public/images/22e5a58f-4d87-4715-9669-4c736dc2e1c6' },
+  { id: '8b97eb52-4aea-4333-91d2-c0c128210b3b', title: 'Lover', artist: 'Alan Walker', cover: 'http://localhost:3000/public/images/cb163513-4e23-47d2-bf63-b1c6c089eb94' },
+  { id: '8d6890ef-5710-439b-aebb-c21f6485f2ad', title: 'Speak Now (Deluxe Package)', artist: 'Alan Walker', cover: 'http://localhost:3000/public/images/484d54a1-1eac-4b6f-8a94-6a3ed599a0c3' },
+  { id: '8f641b04-fbe9-416c-8549-69bc7d2fcf80', title: 'Voicenotes', artist: 'Alan Walker', cover: 'http://localhost:3000/public/images/c89894db-6c94-4030-bafb-3fe59cc92f13' },
+  { id: 'e6346070-fb8a-4bd9-ab6b-ef26596d587a', title: '1989 (Deluxe)', artist: 'Alan Walker', cover: 'http://localhost:3000/public/images/ae8b588a-ab3b-48a6-9ad4-2230f7c9b936' },
 ]);
 
 const likedSongsCount = ref(0);
 
-// In a real application, you would fetch this data from an API
 onMounted(() => {
   // fetchUserPlaylists();
   // fetchAlbums();
   // fetchLikedSongsCount();
-  likedSongsCount.value = 54; // Placeholder
+  likedSongsCount.value = 54;
 });
 </script>

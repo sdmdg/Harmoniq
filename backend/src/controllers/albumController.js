@@ -1,40 +1,20 @@
 // controller.js
 import { findAlbumsByUserId, createAlbum , findSongsByAlbumId} from '../models/Artist.js';
 import { uploadFileToServer } from '../services/fileService.js';
-const sampleAlbum = {
-    "name": "Different World",
-    "albumCover": "DifferentWorld.png",
-    "artist": "Alan Walker",
-    "releaseYear": "2018",
-    "tracks": [
-        {
-            "id": 'cc99f3c4-eeca-4db4-85eb-0db94a99ba31',
-            "name": "Alone",
-            "path": "Alan Walker - Alone.mp3",
-            "duration": "1;30",
-            "key": "e2797ff1c1bca2b5056d20aba421f69a31b115b8f68537ffc46783404a23cfc2",
-        },
-        {
-            "id": 'cc99f3c4-eeca-4db4-85eb-0db94a99ba3a',
-            "name": "Faded",
-            "path": "Alan Walker - Faded.mp3",
-            "duration": "1;30",
-            "key": "e2797ff1c1bca2b5056d20aba421f69a31b115b8f68537ffc46783404a23cfc2",
-        },
-        {
-            "id": 'cc99f3c4-eeca-4db4-85eb-0db94a99ba33',
-            "name": "Intro",
-            "path": "Alan Walker - Intro.mp3",
-            "duration": "1;30",
-            "key": "e2797ff1c1bca2b5056d20aba421f69a31b115b8f68537ffc46783404a23cfc2",
-        }
-    ]
-};
+import { fetchAlbumData } from '../models/Album.js';
 
 export const getAlbum = async (req, res) => {
     const { album_id } = req.params;
+
     try {
-        res.status(200).json(sampleAlbum);
+        const fullAlbum = await fetchAlbumData(album_id);
+
+        if (!fullAlbum) {
+            // The model returns null if the album is not found
+            return res.status(404).json({ message: "Album not found." });
+        }
+
+        res.status(200).json(fullAlbum);
     } catch (error) {
         console.error("Get Album Error:", error);
         res.status(500).json({ message: `Internal server error: ${error.message}` });

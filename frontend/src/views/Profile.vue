@@ -22,15 +22,12 @@ const router = useRouter();
 
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
 
-// --- API and Logic Functions ---
-
 // Fetch user data and initial profile image from localStorage and API
 const fetchUser = async () => {
     const userData = localStorage.getItem('user_data');
     if (userData) {
         user.value = JSON.parse(userData);
-        
-        // Fetch the profile image URL
+    
         try {
             const response = await apiClient.get(`api/profile/image/${user.value.id}`);
             profileImageUrl.value = `${fileServerBaseUrl}/public/images/${response.data.pic_path}`;
@@ -74,7 +71,6 @@ const handlePasswordChange = async () => {
     }
 
     try {
-        // Assume an endpoint for password change exists
         await apiClient.post('api/profile/update-password', {
             currentPassword: currentPassword.value,
             newPassword: newPassword.value,
@@ -111,7 +107,6 @@ const handleImageUpload = async () => {
     formData.append('file', profileImageFile.value);
 
     try {
-        // Assume an endpoint for image upload
         const response = await apiClient.post('api/profile/upload-image', formData, {  
             headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -139,7 +134,6 @@ const handleArtistPublish = async () => {
     }
 
     try {
-        // Assume an endpoint to update user role and artist details
         const response = await apiClient.post('api/profile/become-artist', {
             artistName: artistName.value,
             artistDescription: artistDescription.value,
@@ -168,7 +162,6 @@ const handleArtistUpdate = async () => {
     }
 
     try {
-        // Assume an endpoint to update artist details
         const response = await apiClient.post('api/profile/update-artist-details', {
             artistName: artistName.value,
             artistDescription: artistDescription.value,

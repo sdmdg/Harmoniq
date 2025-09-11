@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/axios';
-import SongRow from '../components/SongRow.vue'; // ✅ use SongRow instead
+import SongRow from '../components/SongRow.vue'; 
 
 const albums = ref([]);
 const loading = ref(true);
@@ -10,7 +10,7 @@ const errorMessage = ref('');
 const user = ref(null);
 const router = useRouter();
 
-const VITE_FILE_SERVER = import.meta.env.VITE_FILE_SERVER; // e.g., http://localhost:3000
+const VITE_FILE_SERVER = import.meta.env.VITE_FILE_SERVER; 
 
 // Track which album is expanded
 const expandedAlbumId = ref(null);
@@ -58,13 +58,13 @@ const fetchAlbums = async () => {
           // eslint-disable-next-line no-await-in-loop
           if (await imageExists(url)) {
             coverUrl = url;
-            console.log(`✅ Found cover for "${album.title}": ${url}`);
+            console.log(`Found cover for "${album.title}": ${url}`);
             break;
           }
         }
 
         if (!coverUrl) {
-          console.warn(`⚠️ No cover found for "${album.title}", using placeholder`);
+          console.warn(`No cover found for "${album.title}", using placeholder`);
           coverUrl = 'https://via.placeholder.com/300x300?text=No+Cover';
         }
 
@@ -83,7 +83,7 @@ const fetchAlbums = async () => {
 // Toggle album expansion + fetch songs if not loaded
 const toggleAlbum = async (albumId) => {
   if (expandedAlbumId.value === albumId) {
-    expandedAlbumId.value = null; // collapse
+    expandedAlbumId.value = null; 
     return;
   }
   expandedAlbumId.value = albumId;
@@ -132,6 +132,18 @@ onMounted(() => {
         class="bg-[#181818] rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
         @click="toggleAlbum(album.id)"
       >
+          <!-- Delete Button at top-right -->
+      <button
+        @click.stop="deleteAlbum(album.id)"
+        class="absolute top-2 right-2 flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-all duration-300 hover:scale-105"
+      >
+        <!-- Optional Trash Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Delete
+      </button>
+
         <img
           :src="album.coverUrl || 'https://via.placeholder.com/300x300?text=No+Cover'"
           alt="Album Cover"

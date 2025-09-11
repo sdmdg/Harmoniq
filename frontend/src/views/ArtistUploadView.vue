@@ -29,7 +29,6 @@
               <h2 class="text-lg font-semibold text-white mb-4 text-center">
                 {{ songFeatures ? 'Review & Edit Features' : 'New Song Details' }}
               </h2>
-
               <form
                 v-if="!songFeatures"
                 @submit.prevent="handleUpload"

@@ -41,7 +41,7 @@ const playFunc = () => {
 const fetchData = async () => {
     try {
         loading.value = true;
-        const { type, id } = route.params; // e.g., type="album" or "playlist"
+        const { type, id } = route.params;
         const response = await apiClient.get(`/api/album/get/${id}`);
         collection.value = response.data;
     } catch (err) {
@@ -99,7 +99,7 @@ const formatDuration = (durationString) => {
                     <div class="text-gray-300 text-[13px] flex">
                         <div class="flex capitalize">{{ route.params.type }}</div>
                         <div v-if="collection.releaseYear" class="ml-2 flex">
-                            <div class="circle mt-2 mr-2" />
+             
                             <span class="-ml-0.5">{{ collection.releaseYear }}</span>
                         </div>
                         <div class="ml-2 flex">

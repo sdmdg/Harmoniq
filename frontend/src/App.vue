@@ -258,11 +258,10 @@ onMounted(() => {
                 >
                     <div class="flex items-center">
                         <img
-                            class="rounded-full"
-                            width="27"
-                            :src="profileImageUrl || 'http://localhost:3000/public/images/default.png'"
-                            alt="Profile Image"
-                        >
+                        class="rounded-full object-cover w-8 h-8"
+                        :src="profileImageUrl || 'http://localhost:3000/public/images/default.png'"
+                        alt="Profile Image"
+                        />
                         <div class="text-white text-[14px] ml-1.5 font-semibold">{{ userName }}</div>
                         <ChevronDown v-if="!openMenu" fillColor="#FFFFFF" :size="25" />
                         <ChevronUp v-else fillColor="#FFFFFF" :size="25" />

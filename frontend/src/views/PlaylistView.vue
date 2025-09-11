@@ -38,7 +38,7 @@ const playFunc = () => {
 const fetchData = async () => {
     try {
         loading.value = true;
-        const { type, id } = route.params; // e.g., type="album" or "playlist"
+        const { type, id } = route.params; 
         const response = await apiClient.get(`/api/playlist/get/${id}`);
         collection.value = response.data;
     } catch (err) {

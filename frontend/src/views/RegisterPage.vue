@@ -9,12 +9,12 @@ const username = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
-const errorMessage = ref(''); // To display any registration errors
+const errorMessage = ref('');
 
-const router = useRouter(); // Initialize router
+const router = useRouter();
 
 const handleRegister = async () => {
-    errorMessage.value = ''; // Clear previous errors
+    errorMessage.value = '';
 
     // Client-side validation for password confirmation
     if (password.value !== confirmPassword.value) {
