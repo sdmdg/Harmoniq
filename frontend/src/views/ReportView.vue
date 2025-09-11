@@ -34,7 +34,7 @@
         :key="r.id"
         class="rounded-2xl border border-neutral-800 bg-neutral-900 p-4 flex flex-col gap-4"
       >
-        <!-- Top -->
+        
         <header class="flex items-start justify-between gap-4">
           <div class="min-w-0">
             <div class="text-xs text-neutral-400">{{ formatDate(r.created_at) }}</div>
@@ -49,7 +49,7 @@
           </div>
         </header>
 
-        <!-- Quick meta -->
+      
         <div class="flex flex-wrap items-center gap-2 text-xs text-neutral-400">
           <span class="px-2 py-1 rounded-lg bg-neutral-800 text-neutral-300">
             Issue: <span class="text-neutral-100">{{ r.issue_type }}</span>
