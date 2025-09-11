@@ -146,11 +146,11 @@ onMounted(() => {
                 </RouterLink>
                
                 <RouterLink v-if="userRole == 'admin'" to="/reports">
-                    <MenuItem :iconSize="24" name="Report" iconString="home" />
+                    <MenuItem :iconSize="24" name="Report" iconString="library" />
                 </RouterLink>
                 
 <!--     -->   <RouterLink v-if="userRole == 'admin'" to="/adminSongsManage">
-                    <MenuItem :iconSize="24" name="Songs" iconString="home" />
+                    <MenuItem :iconSize="24" name="Songs" iconString="playlist" />
                 </RouterLink>
                 
                 <RouterLink v-if="userRole !== 'admin'" to="/liked-songs">
