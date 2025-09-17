@@ -161,7 +161,7 @@ onMounted(() => {
               :track="song"
               :artist="album"
               :index="index + 1"
-              duration="3:45"
+ 
             />
             <li
               v-if="(albumSongs[album.id] || []).length === 0"
