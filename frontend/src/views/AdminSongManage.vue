@@ -1,8 +1,16 @@
+<!-- src/views/AdminSongManage.vue -->
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import apiClient from '@/utils/axios'
 
+// 🔊 Pinia player + UI
+import { useSongStore } from '@/stores/song'
+import MusicPlayer from '@/components/MusicPlayer.vue'
+
+const songStore = useSongStore()
+
+// --- table/query state ---
 const query = ref('')
 const page = ref(1)
 const limit = ref(10)
@@ -12,20 +20,26 @@ const loading = ref(false)
 const error = ref('')
 const success = ref('')
 
+// delete confirm
 const showConfirm = ref(false)
 const target = ref(null)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / limit.value)))
 
-// player state
-const isPlayerOpen = ref(false)
-const current = ref(null)
-const src = ref('')
-const audioEl = ref(null)
+// Build the “artist” container that the store expects.
+// We keep it in a computed so next/prev work across whatever is currently listed.
+const artist = computed(() => ({
+  id: 'admin-all-songs',
+  title: 'All Songs',
+  tracks: (songs.value || []).map(r => ({
+    id: r.id,                 // UUID
+    name: r.title,            // display name
+    key: r.encryption_key,    // AES key (hex)
+    path: r.id                // store turns into "<id>.mp3.encrypted"
+  }))
+}))
 
-const FILE_SERVER = import.meta.env.VITE_FILE_SERVER 
-
-async function fetchSongs() {
+async function fetchSongs () {
   loading.value = true
   error.value = ''
   try {
@@ -33,21 +47,32 @@ async function fetchSongs() {
       params: { query: query.value || null, page: page.value, limit: limit.value }
     })
     songs.value = data?.items ?? []
-    total.value = data?.total ?? songs.value.length
+    total.value = Number(data?.total ?? songs.value.length)
+
+    // keep the artist’s tracklist in sync for next/prev
+    if (
+      songStore.currentTrack &&
+      !artist.value.tracks.some(t => t.id === songStore.currentTrack.id)
+    ) {
+      // if current track fell off the page due to filtering, we keep playing;
+      // next/prev will still work if the track is in currentArtist.tracks.
+      // Optionally: you could rebind currentArtist to `artist.value` here.
+    }
   } catch (e) {
     console.error(e)
     error.value = 'Failed to load songs.'
+    songs.value = []
   } finally {
     loading.value = false
   }
 }
 
-function askDelete(row) {
+function askDelete (row) {
   target.value = row
   showConfirm.value = true
 }
 
-async function doDelete() {
+async function doDelete () {
   const id = target.value?.id
   showConfirm.value = false
   if (!id) return
@@ -62,7 +87,11 @@ async function doDelete() {
       page.value -= 1
       await fetchSongs()
     }
-    if (current.value && current.value.id === id) stopPlayer()
+    // stop the player if the deleted one is currently playing
+    if (songStore.currentTrack?.id === id) {
+      songStore.stop()
+      songStore.resetState()
+    }
   } catch (e) {
     console.error(e)
     error.value = 'Delete failed.'
@@ -72,47 +101,38 @@ async function doDelete() {
   }
 }
 
-
-function fmtTime(sec) {
-  if (sec === null || sec === undefined) return '—'
-  const m = Math.floor(sec / 60), s = Math.floor(sec % 60)
-  return `${m}:${String(s).padStart(2,'0')}`
+function fmtTime (sec) {
+  if (sec === null || sec === undefined || Number.isNaN(sec)) return '—'
+  const m = Math.floor(sec / 60); const s = Math.floor(sec % 60)
+  return `${m}:${String(s).padStart(2, '0')}`
 }
 
+// ── Player wiring ──────────────────────────────────────────────────────────────
 
-function songUrlById(id) {
-  // files are stored as <uuid>.mp3 under /public/songs/
-  return `${FILE_SERVER}/public/songs/${encodeURIComponent(id)}.mp3`
-}
-
-async function playSong(row) {
-  current.value = row
-  src.value = songUrlById(row.id)
-  isPlayerOpen.value = true
-
-  
-  await nextTick()
-  try {
-    audioEl.value?.load()
-    await audioEl.value?.play()
-  } catch (e) {
-   
-    console.debug('Playback will start on user interaction', e)
+// Play/Pause the row’s song using your store + encrypted file flow
+function playRow(row) {
+  const track = { id: row.id, name: row.title, key: row.encryption_key, path: row.id }
+  if (!track.key) {
+    error.value = 'Missing encryption key for this track. Please encrypt/update it first.'
+    setTimeout(() => (error.value = ''), 3000)
+    return
   }
+  const a = {
+    id: 'admin-all-songs',
+    title: 'All Songs',
+    tracks: songs.value.map(r => ({ id: r.id, name: r.title, key: r.encryption_key, path: r.id }))
+  }
+  songStore.playOrPauseThisSong(a, track)
 }
+function prevGlobal () { songStore.prevSong() }
+function nextGlobal () { songStore.nextSong() }
+function togglePlayPause () { songStore.playOrPauseSong() }
 
-function stopPlayer() {
-  try { audioEl.value?.pause() } catch {}
-  isPlayerOpen.value = false
-  src.value = ''
-  current.value = null
-}
-
-// debounce search
-let t
+// search & pagination reactions
+let debounce
 watch([query, limit], () => {
-  clearTimeout(t)
-  t = setTimeout(() => { page.value = 1; fetchSongs() }, 250)
+  clearTimeout(debounce)
+  debounce = setTimeout(() => { page.value = 1; fetchSongs() }, 250)
 })
 watch(page, fetchSongs)
 
@@ -123,6 +143,10 @@ onMounted(fetchSongs)
   <div class="p-6 text-white">
     <div class="mb-5 flex items-center justify-between">
       <h1 class="text-2xl font-semibold">Songs</h1>
+
+     
+
+      <!-- Search & page size -->
       <div class="flex items-center gap-2">
         <input
           v-model.trim="query"
@@ -146,44 +170,73 @@ onMounted(fetchSongs)
       {{ success }}
     </div>
 
+    <!-- Table -->
     <div class="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
       <table class="w-full text-sm">
         <thead class="bg-zinc-800/60 text-zinc-300">
           <tr>
             <th class="px-4 py-3 text-left">Title</th>
             <th class="px-4 py-3 text-left">Album</th>
-            <th class="px-4 py-3 text-left">Genre</th>   
-        <th class="px-4 py-3 text-left">Mood</th> 
+            <th class="px-4 py-3 text-left">Genre</th>
+            <th class="px-4 py-3 text-left">Mood</th>
             <th class="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td colspan="4" class="px-4 py-6 text-center text-zinc-400">Loading…</td>
+            <td colspan="5" class="px-4 py-6 text-center text-zinc-400">Loading…</td>
           </tr>
-          <tr v-for="s in songs" :key="s.id" class="border-t border-zinc-800">
-            <td class="px-4 py-3">{{ s.title }}</td>
+
+          <tr
+            v-for="s in songs"
+            :key="s.id"
+            class="border-t border-zinc-800 hover:bg-zinc-800/40"
+          >
+            <td class="px-4 py-3">
+              <div class="font-medium">{{ s.title }}</div>
+              <div class="text-xs text-zinc-400">
+                {{ s.artist_name  }}
+              </div>
+            </td>
             <td class="px-4 py-3">{{ s.album_name ?? '—' }}</td>
-             <td class="px-4 py-3">{{ s.genre }}</td>  <!-- new -->
-        <td class="px-4 py-3">{{ s.mood }}</td>  
+            <td class="px-4 py-3">{{ s.genre || '—' }}</td>
+            <td class="px-4 py-3">{{ s.mood || '—' }}</td>
             <td class="px-4 py-3 text-right">
               <div class="flex items-center justify-end gap-2">
-                <button class="rounded-lg bg-zinc-700 px-3 py-1.5 hover:bg-zinc-600" @click="playSong(s)">
-                  Play
+                <button
+                  class="rounded-lg bg-zinc-700 px-3 py-1.5 hover:bg-zinc-600 disabled:opacity-50"
+                  :disabled="!s.encryption_key"
+                  :title="s.encryption_key ? 'Play/Pause' : 'Missing encryption key'"
+                  @click="playRow(s)"
+                >
+                  {{ songStore.currentTrack?.id === s.id && songStore.isPlaying ? 'Pause' : 'Play' }}
                 </button>
-                <button class="rounded-lg bg-red-600 px-3 py-1.5 hover:bg-red-500" @click="askDelete(s)">
+                <button
+                  class="rounded-lg bg-red-600 px-3 py-1.5 hover:bg-red-500"
+                  @click="askDelete(s)"
+                >
                   Delete
                 </button>
               </div>
+
+              <!-- Inline progress while downloading/decrypting this exact row -->
+              <div
+                v-if="songStore.currentTrack?.id === s.id && songStore.isBuffering"
+                class="mt-2 text-xs text-zinc-400"
+              >
+                Buffering… {{ songStore.downloadProgress }}%
+              </div>
             </td>
           </tr>
+
           <tr v-if="!loading && songs.length === 0">
-            <td colspan="4" class="px-4 py-6 text-center text-zinc-400">No songs found.</td>
+            <td colspan="5" class="px-4 py-6 text-center text-zinc-400">No songs found.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
+    <!-- Pagination -->
     <div class="mt-4 flex items-center justify-between">
       <div class="text-xs text-zinc-400">Page {{ page }} / {{ totalPages }}</div>
       <div class="flex gap-2">
@@ -200,17 +253,13 @@ onMounted(fetchSongs)
       @confirm="doDelete"
     />
 
-    
-    <div  v-if="isPlayerOpen"
-  class="fixed bottom-0 right-0 z-50 border-t border-zinc-800 bg-zinc-900 md:left-60 left-0">
-      <div class="flex items-center gap-4 px-4 py-3">
-        <div class="min-w-0">
-          <div class="truncate font-medium">{{ current && current.title }}</div>
-          <div class="truncate text-xs text-zinc-400">{{ current && current.artist_name }}</div>
-        </div>
-        <audio ref="audioEl" :src="src" controls class="w-full"></audio>
-        <button class="rounded bg-zinc-800 px-3 py-1.5" @click="stopPlayer">Close</button>
-      </div>
+    <!-- Docked player UI (reads from the same Pinia store) -->
+    <div class="fixed left-0 right-0 bottom-0 z-50 border-t border-zinc-800 bg-zinc-900 md:left-60">
+      <MusicPlayer />
     </div>
   </div>
 </template>
+
+<style scoped>
+table { border-collapse: collapse; }
+</style>
