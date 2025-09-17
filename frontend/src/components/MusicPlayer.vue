@@ -72,17 +72,16 @@ watch(currentTrack, () => {
 </script>
 
 <template>
-  <div
-    v-if="audio"
-    id="MusicPlayer"
-    class="fixed flex items-center justify-between bottom-0 w-full z-50 h-[90px] bg-opacity-80 border-t border-t-[#272727]"
-    style="background-color: rgba(24,24,24,0.8); backdrop-filter: blur(10px);"
-  >
+  <div id="MusicPlayer"
+     class="fixed flex items-center justify-between bottom-0 w-full z-50 h-[90px] bg-opacity-80 border-t border-t-[#272727]"
+     :class="{ 'opacity-50 pointer-events-none': !currentTrack }"
+     style="background-color: rgba(24,24,24,0.8); backdrop-filter: blur(10px);">
+
     <!-- Left: Album/artist info -->
     <div class="flex items-center w-1/4">
       <div class="flex items-center ml-4">
         <img
-          class="rounded-sm shadow-2xl"
+          class="rounded-sm shadow-2xl transition-transform duration-200 hover:scale-110 active:scale-90"
           width="55"
           :src="`${fileServerBaseUrl}/public/images/${currentTrack.albumCover || currentArtist.albumCover || 'default_album.png'}`"
         />
@@ -101,14 +100,22 @@ watch(currentTrack, () => {
       <div class="flex-col items-center justify-center">
         <!-- Buttons -->
         <div class="buttons flex items-center justify-center h-[30px]">
-          <button class="mx-2" @click="useSong.prevSong()">
+          <button class="mx-2 transition-transform duration-200 hover:scale-110 active:scale-90" @click="useSong.prevSong()">
             <SkipBackward fillColor="#FFFFFF" :size="25" />
           </button>
-          <button class="p-1 rounded-full mx-3 bg-white" @click="useSong.playOrPauseThisSong(currentArtist, currentTrack)">
+          <button class="p-1 rounded-full mx-3 bg-white transition-transform duration-200 hover:scale-110 active:scale-90"
+          @click="useSong.playOrPauseThisSong(currentArtist, currentTrack).then(() => {
+            if (isPlaying.value) {
+              useSong.startPlaytimeUpdates()
+            } else {
+              useSong.stopPlaytimeUpdates()
+            }
+          })"
+          >
             <Play v-if="!isPlaying" fillColor="#181818" :size="25" />
             <Pause v-else fillColor="#181818" :size="25" />
           </button>
-          <button class="mx-2" @click="useSong.nextSong()">
+          <button class="mx-2 transition-transform duration-200 hover:scale-110 active:scale-90" @click="useSong.nextSong()">
             <SkipForward fillColor="#FFFFFF" :size="25" />
           </button>
         </div>
@@ -135,8 +142,8 @@ watch(currentTrack, () => {
               :class="{ 'rangeDotHidden': !isHover }"
             />
             <div
-              class="pointer-events-none mt-[6px] absolute h-[4px] z-10 inset-y-0 left-0 w-0"
-              :style="`width: ${range}%;`"
+              class="pointer-events-none mt-[6px] absolute h-[4px] z-10 inset-y-0 left-0 rounded-full"
+              :style="`width: ${range}%; transition: width 0.25s linear;`"
               :class="isHover ? 'bg-green-500' : 'bg-white'"
             />
             <div class="absolute h-[4px] z-[-0] mt-[6px] inset-y-0 left-0 w-full bg-gray-500 rounded-full" />
@@ -155,9 +162,24 @@ watch(currentTrack, () => {
 
 <style>
 .rangeDotHidden[type="range"]::-webkit-slider-thumb {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 0;
-  height: 0;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
+
+[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #1BD760;
+}
+
 </style>
