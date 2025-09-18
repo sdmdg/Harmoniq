@@ -23,6 +23,7 @@ import AdminUserDetail from '../views/AdminUserDetail.vue'
 import AdminSongManage from '../views/AdminSongManage.vue'
 import MyAlbumView from '../views/MyAlbumView.vue'
 import LikedSongs from '../views/LikedSongs.vue'
+import AdminUsersManage from '../views/AdminUsersManage.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -100,6 +101,18 @@ const router = createRouter({
     name: 'ReportingGuidelines',
     component: ReportingGuide
   },
+  {
+      path: '/adminUsersManage',
+      name: 'adminUsersManage',
+      component: AdminUsersManage,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ['admin']
+      }
+    },
 
     {
       path: '/profile',
