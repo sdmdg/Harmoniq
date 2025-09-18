@@ -17,7 +17,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-// Allow requests from your frontend
+// Allow requests from frontend
 app.use(cors({
   origin: "*",   // or "*" for all origins
   methods: ["*"],
@@ -38,14 +38,14 @@ const startServer = async () => {
   try {
     // Check database connection
     await pool.query("SELECT NOW()");
-    console.log("✅ Connected to PostgreSQL database");
+    console.log("Connected to PostgreSQL database");
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () =>
-      console.log(`🚀 Server running at http://localhost:${PORT}`)
+      console.log(`Server running at http://localhost:${PORT}`)
     );
   } catch (error) {
-    console.error("❌ Failed to connect to database or start server:", error);
+    console.error("Failed to connect to database or start server:", error);
     process.exit(1);
   }
 };

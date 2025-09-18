@@ -130,7 +130,7 @@ onMounted(() => {
     <div class="min-h-screen bg-black">
         <div v-if="!hideSidebar()" id="SideNav" class="h-[100%] p-6 w-[240px] fixed z-50 bg-black">
             <RouterLink to="/home">
-                <img width="180" src="/images/icons/logo.png" alt="Logo">
+                <img class="transition-transform duration-200 hover:scale-105 active:scale-95" width="180" src="/images/icons/logo.png" alt="Logo">
             </RouterLink>
             <div class="my-8"></div>
             <ul>
