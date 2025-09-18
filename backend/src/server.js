@@ -12,6 +12,7 @@ import cors from "cors";
 import morgan from "morgan";
 import pool from "./config/db.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use("/api/playlist", playlistRoutes);
 app.use("/api/songs", songsRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/search", searchRoutes);
 
 const startServer = async () => {
   try {

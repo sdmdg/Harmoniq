@@ -22,7 +22,7 @@ export const fetchAlbumData = async (albumId) => {
         SELECT
             a.id,
             a.title AS name,
-            a.artist AS artistId,
+            ar.id AS artistId,
             EXTRACT(YEAR FROM a.release_date) AS "releaseYear",
             a.album_art_id AS "albumCover",
             ar.artist_name AS "artistName"
@@ -72,6 +72,7 @@ export const fetchAlbumData = async (albumId) => {
         name: albumData.name,
         albumCover: albumData.albumCover,
         artist: albumData.artistName,
+        artistId: albumData.artistid,
         releaseYear: albumData.releaseYear,
         tracks: tracks
     };

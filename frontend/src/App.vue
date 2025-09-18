@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, onUnmounted } from "vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 import MenuItem from "./components/MenuItem.vue";
 import MusicPlayer from "./components/MusicPlayer.vue";
@@ -7,7 +7,7 @@ import ChevronUp from "vue-material-design-icons/ChevronUp.vue";
 import ChevronDown from "vue-material-design-icons/ChevronDown.vue";
 import Plus from "vue-material-design-icons/Plus.vue";
 import CreatePlaylistModal from "./components/CreatePlaylistModal.vue";
-
+import SearchResults from "./components/SearchResults.vue";
 import { useSongStore } from "./stores/song";
 
 import { storeToRefs } from "pinia";
@@ -127,6 +127,43 @@ onMounted(() => {
   fetchUser();
   fetchUserPlaylists();
 });
+
+
+const searchQuery = ref('');
+const searchResults = ref(null);
+const isSearching = ref(false);
+const searchContainer = ref(null);
+
+const handleSearch = async () => {
+  if (!searchQuery.value.trim()) {
+    searchResults.value = null;
+    return;
+  }
+  try {
+    isSearching.value = true;
+    const response = await apiClient.get(`/api/search/all?query=${encodeURIComponent(searchQuery.value)}`);
+    searchResults.value = response.data; // { tracks:[], albums:[], artists:[] }
+  } catch (error) {
+    console.error('Search failed:', error);
+  } finally {
+    isSearching.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+const handleClickOutside = (event) => {
+  if (searchContainer.value && !searchContainer.value.contains(event.target)) {
+    searchResults.value = null;
+  }
+};
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
+
 </script>
 
 <template>
@@ -262,28 +299,34 @@ onMounted(() => {
         backdrop-filter: blur(10px);
       "
     >
-      <div class="flex items-center space-x-4">
-        <div class="relative flex items-center">
-          <input
+
+    <div class="relative flex items-center" ref="searchContainer">
+        <input
             type="text"
+            v-model="searchQuery"
+            @input="handleSearch"
             placeholder="What do you want to listen to?"
             class="w-full md:w-[300px] bg-[#282828] text-white rounded-full py-2 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
-          />
-          <svg
-            class="absolute right-3 w-5 h-5 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
+        />
+        <svg class="absolute right-3 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+
+        <!-- Search Results Dropdown -->
+        <div
+            v-if="searchResults"
+            class="absolute top-12 left-0 w-[400px] max-h-[500px] rounded-lg shadow-lg z-50"
+            style="background-color: rgba(24,24,24,0.98);"
+            >
+            <div class="overflow-y-auto max-h-[500px] rounded-lg">
+                <SearchResults 
+                :results="searchResults" 
+                @item-selected="searchResults = null" 
+                />
+            </div>
         </div>
-      </div>
+    </div>
+
       <div class="relative">
         <button
           @click="openMenu = !openMenu"

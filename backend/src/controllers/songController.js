@@ -3,7 +3,7 @@ import { uploadFileToServer,deleteFileOnServer, encryptFile } from "../services/
 import axios from "axios";
 
 import { ModelListSongs, ModelCountSongs,ModelGetSongById } from "../models/Song.js";
-import { updateSongHistory, getDuration } from '../models/songHistoryModel.js'
+import { updateSongHistory, getDuration } from '../models/SongHistory.js'
 
 export const listSongsAdmin = async (req, res) => {
   try {

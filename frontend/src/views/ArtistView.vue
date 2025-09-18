@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Play from 'vue-material-design-icons/Play.vue';
 import apiClient from '../utils/axios';
@@ -92,4 +92,12 @@ const formatNumber = (num) => {
 onMounted(() => {
   fetchArtistData();
 });
+
+// Watch for route changes and refetch
+watch(
+  () => route.fullPath,  // or route.params.id if only ID matters
+  () => {
+    fetchArtistData();
+  }
+);
 </script>

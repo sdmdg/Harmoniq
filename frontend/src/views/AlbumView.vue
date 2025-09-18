@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import SongRow from '../components/SongRow.vue';
 import Play from 'vue-material-design-icons/Play.vue';
@@ -54,6 +54,14 @@ const fetchData = async () => {
 
 onMounted(fetchData);
 
+// Watch for route changes and refetch
+watch(
+  () => route.fullPath,  // or route.params.id if only ID matters
+  () => {
+    fetchData();
+  }
+);
+
 // Function to format duration
 const formatDuration = (durationString) => {
     if (!durationString) return '';
@@ -81,12 +89,13 @@ const formatDuration = (durationString) => {
                 >
 
                 <div class="w-full ml-5">
-                    <div
+                    <router-link
+                        :to="`/artist/${collection.artistId}`"
                         style="font-size: 15px;"
-                        class="text-white absolute w-full hover:underline cursor-pointer top-0 font-bosemiboldld"
-                    >
+                        class="text-white absolute w-full hover:underline cursor-pointer top-0 font-semibold"
+                        >
                         {{ collection.artist }}
-                    </div>
+                    </router-link>
 
                     <div
                         style="font-size: 33px;"
