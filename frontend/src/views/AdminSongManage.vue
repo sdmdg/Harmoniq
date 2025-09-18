@@ -82,7 +82,7 @@
         </div>
       </div>
 
-      <!-- Filter Actions -->
+     
       <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-800">
         <div class="flex items-center gap-4">
           <span class="text-sm text-gray-400">{{ filteredSongs.length }} songs found</span>
