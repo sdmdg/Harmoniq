@@ -109,4 +109,35 @@ export const updateArtistProfile = async (userId, artistName, description) => {
 };
 
 
+export async function getAllUsers({ q = '', role = '', limit = 10, offset = 0 }) {
+  const where = [];
+  const params = [];
+  let i = 1;
 
+  if (q) { where.push(`(u.user_name ILIKE $${i} OR u.email ILIKE $${i})`); params.push(`%${q}%`); i++; }
+  if (role) { where.push(`u.role = $${i}`); params.push(role); i++; }
+
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+  const sql = `
+    SELECT
+      u.id, u.user_name, u.email, u.role, u.created_at,
+      u.pic_path AS profile_pic,
+       a.id AS artist_id,  
+      a.artist_name, a.description
+    FROM users u
+    LEFT JOIN artists a ON a.user_id = u.id
+    ${whereSql}
+    ORDER BY u.created_at DESC
+    LIMIT $${i++} OFFSET $${i++}
+  `;
+  params.push(limit, offset);
+
+  const { rows } = await db.query(sql, params);
+
+  const countSql = `SELECT COUNT(*) FROM users u ${whereSql}`;
+  const { rows: crows } = await db.query(countSql, params.slice(0, i - 3));
+  const total = parseInt(crows[0].count, 10);
+
+  return { rows, total };
+}
