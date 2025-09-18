@@ -82,7 +82,7 @@ onMounted(()=>load(true))
 </script>
 
 <template>
-  <div class="bg-[#181818] p-6 rounded-lg shadow-md">
+  <div class="bg-gray-800/50 p-6 rounded-lg shadow-md">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-bold text-white">Recent Activity</h2>
 
@@ -107,8 +107,8 @@ onMounted(()=>load(true))
         <input v-model.trim="searchText"
                @keyup.enter="load(true)"
                placeholder="Search name…"
-               class="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-gray-200 w-48 outline-none" />
-        <button class="px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm"
+               class="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2  text-white w-48 outline-none" />
+        <button class="px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm text-white"
                 @click="load(true)">
           Search
         </button>
@@ -179,7 +179,7 @@ onMounted(()=>load(true))
 
     <div class="mt-4">
       <button v-if="hasMore && !loading"
-              class="px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg"
+              class="px-4 py-2 bg-neutral-800 border border-neutral-700 text-white rounded-lg"
               @click="load(false)">
         Load more
       </button>
