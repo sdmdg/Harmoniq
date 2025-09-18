@@ -135,7 +135,7 @@ const isSearching = ref(false);
 const searchContainer = ref(null);
 
 const handleSearch = async () => {
-  if (!searchQuery.value.trim()) {
+  if (!searchQuery.value.trim() || searchQuery.value.trim().length < 2) {
     searchResults.value = null;
     return;
   }
@@ -173,83 +173,57 @@ onUnmounted(() => {
       id="SideNav"
       class="h-[100%] p-6 w-[240px] fixed z-50 bg-black"
     >
+
       <RouterLink to="/home">
-        <img
-          class="transition-transform duration-200 hover:scale-105 active:scale-95"
-          width="180"
-          src="/images/icons/logo.png"
-          alt="Logo"
-        />
+        <img class="transition-transform duration-200" width="180" src="/images/icons/logo.png" alt="Logo"/>
       </RouterLink>
+
       <div class="my-8"></div>
+
       <ul>
+        <!--  Listener & Artist   -->
         <RouterLink v-if="userRole !== 'admin'" to="/home">
-          <MenuItem
-            class="ml-[1px]"
-            :iconSize="23"
-            name="Home"
-            iconString="home"
-            pageUrl="/home"
-          />
+          <MenuItem :iconSize="23" name="Home" iconString="home"/>
         </RouterLink>
         <RouterLink v-if="userRole !== 'admin'" to="/library">
-          <MenuItem
-            class="ml-[2px]"
-            :iconSize="23"
-            name="Your Library"
-            iconString="library"
-            pageUrl="/library"
-          />
+          <MenuItem :iconSize="23" name="Your Library" iconString="library"/>
         </RouterLink>
-        <!--     -->
-        <RouterLink v-if="userRole == 'admin'" to="/admin-dashboard">
-          <MenuItem :iconSize="24" name="Dashboard" iconString="home" />
-        </RouterLink>
-
-        <RouterLink v-if="userRole == 'admin'" to="/reports">
-          <MenuItem :iconSize="24" name="Report" iconString="library" />
-        </RouterLink>
-
-        <!--     -->
-        <RouterLink v-if="userRole == 'admin'" to="/adminSongsManage">
-          <MenuItem :iconSize="24" name="Songs" iconString="playlist" />
-        </RouterLink>
-
         <RouterLink v-if="userRole !== 'admin'" to="/liked-songs">
-          <MenuItem
-            class="-ml-[1px]"
-            :iconSize="27"
-            name="Liked Songs"
-            iconString="liked"
-            pageUrl="/liked-songs"
-          />
+          <MenuItem :iconSize="23" name="Liked Songs" iconString="liked"/>
         </RouterLink>
-        <RouterLink v-if="userRole == 'admin'" to="/adminUsersManage">
-          <MenuItem :iconSize="24" name="Users" iconString="playlist" />
-             </RouterLink
-        >
+
+
+        <!--  Specific Features   -->
+        <div v-if="userRole !== 'admin'" class="border-b border-b-gray-700 my-4"></div>
         <RouterLink v-if="userRole !== 'admin'" to="/upload">
-          <MenuItem :iconSize="24" name="Upload Songs" iconString="playlist" />
+          <MenuItem :iconSize="23" name="Upload Songs" iconString="playlist" />
+        </RouterLink>
+        <RouterLink v-if="userRole == 'artist'" to="/albums">
+          <MenuItem :iconSize="23" name="My Albums" iconString="playlist" />
         </RouterLink>
         <RouterLink v-if="userRole !== 'admin'" to="/reportIssue">
-          <MenuItem
-            :iconSize="24"
-            name="Report an Issue"
-            iconString="playlist"
-          />
+          <MenuItem :iconSize="23" name="Report an Issue" iconString="playlist"/>
         </RouterLink>
-        <RouterLink
-          v-if="userRole !== 'admin' && userRole !== 'listener'"
-          to="/albums"
-        >
-          <MenuItem :iconSize="24" name="Albums" iconString="playlist" />
+
+
+        <!--  Admin   -->
+        <RouterLink v-if="userRole == 'admin'" to="/admin-dashboard">
+          <MenuItem :iconSize="23" name="Dashboard" iconString="home" />
+        </RouterLink>
+        <RouterLink v-if="userRole == 'admin'" to="/reports">
+          <MenuItem :iconSize="23" name="Report" iconString="library" />
+        </RouterLink>
+        <RouterLink v-if="userRole == 'admin'" to="/adminSongsManage">
+          <MenuItem :iconSize="23" name="Songs" iconString="playlist" />
+        </RouterLink>
+        <RouterLink v-if="userRole == 'admin'" to="/adminUsersManage">
+          <MenuItem :iconSize="23" name="Users" iconString="playlist" />
         </RouterLink>
       </ul>
 
-      <div
-        v-if="userRole !== 'admin'"
-        class="border-b border-b-gray-700 my-4"
-      ></div>
+
+      <!--  Playlist  -->
+      <div v-if="userRole !== 'admin'" class="border-b border-b-gray-700 my-4"></div>
 
       <div>
         <button
@@ -282,13 +256,10 @@ onUnmounted(() => {
           </ul>
         </div>
       </div>
-
-      <CreatePlaylistModal
-        :isOpen="isModalOpen"
-        @close="isModalOpen = false"
-        @playlist-created="handlePlaylistCreated"
-      />
+      <CreatePlaylistModal :isOpen="isModalOpen" @close="isModalOpen = false" @playlist-created="handlePlaylistCreated"/>
     </div>
+
+
 
     <div
       v-if="!hideTopNav()"
@@ -297,8 +268,7 @@ onUnmounted(() => {
       style="
         background-color: rgba(16, 16, 16, 0.8);
         backdrop-filter: blur(10px);
-      "
-    >
+      ">
 
     <div class="relative flex items-center" ref="searchContainer">
         <input

@@ -79,3 +79,29 @@ export const getDuration = async (trackId) => {
   `, [trackId])
   return result.rows[0] || null
 }
+
+
+// Get recently played songs for current user
+export const getRecentSongsByUser = async (userId, limit = 10) => {
+  const query = `
+    SELECT 
+      s.id,
+      s.title,
+      a.title AS album,
+      a.album_art_id AS cover_image,
+      ar.artist_name AS artist,
+      COUNT(h.song_id) AS play_count,
+      MAX(h.last_played) AS last_played
+    FROM song_history h
+    LEFT JOIN songs s ON h.song_id = s.id
+    LEFT JOIN albums a ON s.album_id = a.id
+    LEFT JOIN artists ar ON a.artist = ar.user_id
+    WHERE h.user_id = $1
+    GROUP BY s.id, s.title, a.title, a.album_art_id, ar.artist_name
+    ORDER BY play_count DESC, last_played DESC
+    LIMIT $2;
+  `;
+
+  const { rows } = await db.query(query, [userId, limit]);
+  return rows;
+};

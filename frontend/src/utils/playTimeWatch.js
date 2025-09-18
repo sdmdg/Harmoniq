@@ -8,44 +8,34 @@ export function setupPlaytimeWatcher() {
 
   // Local counter for actual listened time in seconds
   let listenedSeconds = 0
-  // Keep track of which thresholds have been sent
-  let sentStates = new Set()
+  // Track last time we sent an update
+  let lastSentSeconds = 0
   let rafId = null
   let lastTimestamp = null
   let currentTrackId = null
 
   const updateCounter = (timestamp) => {
     if (!lastTimestamp) lastTimestamp = timestamp
-    const delta = (timestamp - lastTimestamp) / 1000 // convert ms to s
+    const delta = (timestamp - lastTimestamp) / 1000 // convert ms to seconds
     lastTimestamp = timestamp
 
     if (store.isPlaying) {
       listenedSeconds += delta
 
-      const duration = store.audio?.duration || 1
-      const progress = listenedSeconds / duration
+      // Send update every 15 seconds of listened time
+      if (Math.floor(listenedSeconds) - lastSentSeconds >= 15) {
+        lastSentSeconds = Math.floor(listenedSeconds)
 
-      // Determine state based on actual listened progress
-      let state = 0
-      if (progress > 1) state = 6
-      else if (progress >= 0.99) state = 5
-      else if (progress >= 0.75) state = 4
-      else if (progress >= 0.5) state = 3
-      else if (progress >= 0.25) state = 2
-      else if (progress > 0) state = 1
-
-      if (state && state < 100 && !sentStates.has(state) && listenedSeconds > 10) {
-        sentStates.add(state)
         apiClient.post('/api/songs/update', {
           trackId: store.currentTrack.id,
-          listenedSeconds: Math.floor(listenedSeconds),
+          listenedSeconds: lastSentSeconds,
         }).then(() => {
-          console.log('Playtime state sent:', state, 'Listened:', Math.floor(listenedSeconds))
+          console.log('Playtime update sent at', lastSentSeconds, 'seconds')
         }).catch(err => console.error('Failed to update playtime:', err))
       }
     }
 
-    // Continue the loop if the song is still playing
+    // Continue the loop
     rafId = requestAnimationFrame(updateCounter)
   }
 
@@ -54,10 +44,10 @@ export function setupPlaytimeWatcher() {
     ([audio, isPlaying, track]) => {
       if (!audio) return
 
-      // Reset counter only if a new song starts
+      // Reset counters when a new song starts
       if (track?.id !== currentTrackId) {
         listenedSeconds = 0
-        sentStates.clear()
+        lastSentSeconds = 0
         currentTrackId = track?.id
       }
 
