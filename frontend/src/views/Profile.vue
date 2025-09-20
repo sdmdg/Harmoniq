@@ -141,10 +141,14 @@ const handleArtistPublish = async () => {
 
         // Update local user data and the reactive user object
         const updatedUser = { ...user.value, ...response.data };
-        localStorage.setItem('user_data', JSON.stringify(updatedUser));
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('jwt_token');
         user.value = updatedUser;
         
         successMessage.value = 'Congratulations! Your role has been successfully updated. Please log out and log back in to access your new artist features.';
+        setTimeout(() => {
+            router.push('/login');
+        }, 2000);
 
     } catch (error) {
         console.error('Failed to become an artist:', error);

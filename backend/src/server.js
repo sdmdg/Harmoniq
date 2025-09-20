@@ -12,12 +12,13 @@ import cors from "cors";
 import morgan from "morgan";
 import pool from "./config/db.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
-// Allow requests from your frontend
+// Allow requests from frontend
 app.use(cors({
   origin: "*",   // or "*" for all origins
   methods: ["*"],
@@ -33,19 +34,20 @@ app.use("/api/playlist", playlistRoutes);
 app.use("/api/songs", songsRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/search", searchRoutes);
 
 const startServer = async () => {
   try {
     // Check database connection
     await pool.query("SELECT NOW()");
-    console.log("✅ Connected to PostgreSQL database");
+    console.log("Connected to PostgreSQL database");
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () =>
-      console.log(`🚀 Server running at http://localhost:${PORT}`)
+      console.log(`Server running at http://localhost:${PORT}`)
     );
   } catch (error) {
-    console.error("❌ Failed to connect to database or start server:", error);
+    console.error("Failed to connect to database or start server:", error);
     process.exit(1);
   }
 };

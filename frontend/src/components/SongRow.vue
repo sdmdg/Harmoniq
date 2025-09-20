@@ -17,7 +17,7 @@ const props = defineProps({
     track: Object,
     artist: Object,
     index: Number,
-    duration: String // <-- New prop to accept the formatted duration
+    duration: String
 })
 
 const { track, artist, index, duration } = toRefs(props)

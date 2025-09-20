@@ -5,6 +5,7 @@ import {getProPic,
         becomeArtist,
         getArtistDetails,
         updateArtistDetails} from "../controllers/profileController.js";
+import { getRecentSongs } from "../controllers/profileController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import multer from 'multer';
 
@@ -20,5 +21,8 @@ router.post('/update-password', protect(["admin", "listener", "artist"]), update
 router.post('/become-artist', protect(["listener"]), becomeArtist);
 router.get('/artist-details/:id', protect(["admin", "artist"]), getArtistDetails);
 router.post('/update-artist-details', protect(["admin", "artist"]), updateArtistDetails);
+
+router.get('/recent', protect(["listener","artist"]), getRecentSongs);
+
 
 export default router;

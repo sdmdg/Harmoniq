@@ -9,7 +9,7 @@ const router = useRouter()
   <div class="min-h-screen">
     <!-- PAGE HEADER -->
     <header class="mx-auto max-w-6xl px-6 pt-10">
-      <!-- Breadcrumb -->
+      
       <nav class="text-sm text-neutral-400 mb-3" aria-label="Breadcrumb">
         <ol class="flex items-center gap-2">
           <li class="hover:text-white cursor-default">Help &amp; Support</li>

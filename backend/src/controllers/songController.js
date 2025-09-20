@@ -2,8 +2,8 @@ import { ModelSetSong, ModelUpdateSong,ModelDeleteSong } from "../models/Song.js
 import { uploadFileToServer,deleteFileOnServer, encryptFile } from "../services/fileService.js";
 import axios from "axios";
 
-import { ModelListSongs, ModelCountSongs,ModelGetSongById } from "../models/Song.js";
-
+import { ModelListSongs, ModelCountSongs, ModelGetSongById } from "../models/Song.js";
+import { updateSongHistory, getDuration } from '../models/SongHistory.js'
 
 export const listSongsAdmin = async (req, res) => {
   try {
@@ -222,3 +222,42 @@ export const deleteSong = async (req, res) => {
     return res.status(500).json({ message: "Failed to delete song." });
   }
 };
+
+
+
+
+export const updateSongProgress = async (req, res) => {
+  try {
+    const userId = req.user.id
+    const { trackId, listenedSeconds } = req.body
+
+    if (!trackId || !listenedSeconds) {
+      return res.status(400).json({ message: 'trackId and listenedSeconds required' })
+    }
+
+    // Get song duration
+    const songResult = await getDuration(trackId)
+    if (!songResult) {
+      return res.status(404).json({ message: 'Song not found' })
+    }
+
+    // Convert Postgres INTERVAL to seconds safely
+    let durationSec = 0
+    if (typeof songResult.duration === 'string') {
+      // format like "00:03:25" → convert to seconds
+      durationSec = songResult.duration
+        .split(':')
+        .reduce((acc, t) => 60 * acc + +t, 0)
+    } else if (songResult.duration?.seconds !== undefined) {
+      // if pg returns an object for interval
+      durationSec = songResult.duration.seconds
+    }
+
+    await updateSongHistory(userId, trackId, listenedSeconds, durationSec)
+
+    return res.status(200).json({ message: 'Song progress updated' })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ message: 'Internal server error' })
+  }
+}

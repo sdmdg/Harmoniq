@@ -6,6 +6,8 @@ import {ModelgetProPic,
         findArtistByUserId,
         updateArtistProfile } from '../models/User.js';
 import { uploadFileToServer } from '../services/fileService.js';
+import { getRecentSongsByUser } from '../models/SongHistory.js';
+
 import bcrypt from 'bcryptjs';
 
 export const getProPic = async (req, res) => {
@@ -151,4 +153,23 @@ export const updateArtistDetails = async (req, res) => {
         console.error('Failed to update artist details:', error);
         res.status(500).json({ message: 'Failed to update artist details.' });
     }
+};
+
+export const getRecentSongs = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const songs = await getRecentSongsByUser(userId, 10);
+
+    return res.json(songs.map(song => ({
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      album: song.album,
+      cover_image: song.cover_image || 'default_album.png',
+      last_played: song.last_played,
+    })));
+  } catch (err) {
+    console.error('Error fetching recent songs:', err);
+    res.status(500).json({ message: 'Failed to fetch recent songs' });
+  }
 };

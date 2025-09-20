@@ -22,12 +22,15 @@ export const fetchAlbumData = async (albumId) => {
         SELECT
             a.id,
             a.title AS name,
-            a.artist AS artistId, -- Renamed to avoid a conflict with a 'name' field
+            ar.id AS artistId,
             EXTRACT(YEAR FROM a.release_date) AS "releaseYear",
-            a.album_art_id AS "albumCover"
+            a.album_art_id AS "albumCover",
+            ar.artist_name AS "artistName"
         FROM albums a
+        JOIN artists ar ON a.artist = ar.user_id
         WHERE a.id = $1;
     `;
+
     const albumResult = await pool.query(albumQuery, [albumId]);
 
     // If no album is found, return null
@@ -68,7 +71,8 @@ export const fetchAlbumData = async (albumId) => {
         id: albumData.id,
         name: albumData.name,
         albumCover: albumData.albumCover,
-        artist: albumData.artistId,
+        artist: albumData.artistName,
+        artistId: albumData.artistid,
         releaseYear: albumData.releaseYear,
         tracks: tracks
     };

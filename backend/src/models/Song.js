@@ -23,6 +23,7 @@ export async function ModelListSongs({ query, page = 1, limit = 10 }) {
       s.album_id,
       s.genre,
       s.mood,
+      s.encryption_key,
       a.title  AS album_name         -- if your column is "title", use a.title AS album_name
     FROM songs s
     LEFT JOIN albums a ON a.id = s.album_id
