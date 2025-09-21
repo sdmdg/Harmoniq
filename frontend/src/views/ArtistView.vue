@@ -5,7 +5,7 @@
       v-if="artist"
       class="relative flex flex-col md:flex-row items-end h-[350px] md:h-[400px] text-white p-6"
       :style="{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,1)), url(http://localhost:3000/public/images/${artist.image})`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,1)), url(${fileServerBaseUrl}/public/images/${artist.image})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }"
@@ -26,37 +26,53 @@
       <div class="flex items-center mb-6">
         <button
           class="bg-[#1ED760] text-black font-bold py-3 px-6 rounded-full hover:scale-105 transition-transform duration-200 flex items-center whitespace-nowrap"
+          @click="handleShuffle"
         >
           <Play fillColor="#000000" :size="20" />
           <span class="ml-2">Shuffle</span>
         </button>
+
+        <!-- Follow/Unfollow Button -->
         <button
-          class="ml-4 bg-transparent border border-gray-500 text-white font-bold py-3 px-6 rounded-full hover:bg-gray-800 transition-colors duration-200"
+          class="ml-4 px-6 py-3 rounded-full font-bold transition-colors duration-200"
+          :class="following
+            ? 'bg-gray-700 text-white hover:bg-gray-600'
+            : 'bg-green-600 text-white hover:bg-green-700'"
+          :disabled="isProcessing"
+          @click="toggleFollow"
         >
-          <span class="ml-2">Follow</span>
+          <span v-if="!following">Follow</span>
+          <span v-else>Unfollow</span>
         </button>
+
       </div>
 
-      <!-- Top Songs -->
-      <div>
-        <h2 class="text-2xl font-bold mb-4 text-white">Top songs</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4">
-          <div
-            v-for="(song, index) in artist.topSongs"
-            :key="index"
-            class="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-800 transition-colors duration-200 cursor-pointer"
-          >
-            <img :src="song.cover" alt="Song Cover" class="w-12 h-12 rounded-lg object-cover">
-            <div>
-              <p class="text-white font-semibold truncate">{{ song.title }}</p>
-              <p class="text-gray-400 text-sm">{{ song.artist }}</p>
-            </div>
-            <div class="ml-auto text-gray-400 text-sm">
-              {{ formatNumber(song.plays) }} plays
-            </div>
+      <!-- Top Tracks -->
+      <div v-if="topTracks.length" class="p-8">
+        <h1 class="text-white text-2xl font-semibold">Top songs</h1>
+        <div class="py-1.5"></div>
+
+        <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+          <div class="grid grid-rows-2 grid-flow-col auto-cols-max gap-4">
+            <transition-group
+              name="fade-slide"
+              tag="div"
+              class="contents"
+            >
+              <QuickPickCard
+                v-for="song in topTracks"
+                :key="song.id"
+                :image="`${fileServerBaseUrl}/public/images/${song.albumcover}`"
+                :title="song.name"
+                :subTitle="song.artist"
+                :track="song"
+                class="transition-transform duration-300"
+              />
+            </transition-group>
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- Loading State -->
@@ -69,15 +85,33 @@ import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Play from 'vue-material-design-icons/Play.vue';
 import apiClient from '../utils/axios';
+import QuickPickCard from '../components/SongCardRow.vue'
+
+import { useSongStore } from '../stores/song';
+import { storeToRefs } from 'pinia';
+
+const useSong = useSongStore();
+const { isPlaying, currentTrack, currentArtist } = storeToRefs(useSong);
 
 const artist = ref(null);
+const following = ref(false);
+const isProcessing = ref(false);
+const topTracks = ref([]);
+
+const player = ref({
+  tracks:[]
+});
+
 const route = useRoute();
+const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
 
 const fetchArtistData = async () => {
   const artistId = route.params.id;
   try {
     const response = await apiClient.get(`/api/artist/get/${artistId}`);
     artist.value = response.data;
+    following.value = response.data.isFollowing;
+    topTracks.value = response.data.topTracks;
   } catch (error) {
     console.error('Failed to fetch artist data:', error);
     artist.value = null;
@@ -89,13 +123,55 @@ const formatNumber = (num) => {
   return num.toLocaleString();
 };
 
-onMounted(() => {
-  fetchArtistData();
-});
+const toggleFollow = async () => {
+  if (isProcessing.value) return;
 
-// Watch for route changes and refetch
+  isProcessing.value = true;
+  try {
+    if (!following.value) {
+      await apiClient.post('/api/artist/follow', { artistId: artist.value.id });
+      following.value = true;
+    } else {
+      await apiClient.post('/api/artist/unfollow', { artistId: artist.value.id });
+      following.value = false;
+    }
+  } catch (error) {
+    console.error('Failed to update follow state', error);
+  } finally {
+    isProcessing.value = false;
+  }
+};
+
+// Shuffle utility
+const shuffleArray = (arr) => {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
+// Handle shuffle play
+const handleShuffle = () => {
+  if (!topTracks.value || topTracks.value.length === 0) return;
+
+  const shuffled = shuffleArray(topTracks.value);
+
+  player.value.tracks = shuffled;
+
+  // Play the first track from shuffled list
+  const firstTrack = shuffled[0];
+  useSong.loadSong(player.value, firstTrack);
+
+  // Set shuffled playlist in Pinia store
+  useSong.setQueue(shuffled, artist.value.name);
+};
+
+onMounted(fetchArtistData);
+
 watch(
-  () => route.fullPath,  // or route.params.id if only ID matters
+  () => route.fullPath,
   () => {
     fetchArtistData();
   }

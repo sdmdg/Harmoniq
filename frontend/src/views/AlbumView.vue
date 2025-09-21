@@ -8,7 +8,7 @@ import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 import ClockTimeThreeOutline from 'vue-material-design-icons/ClockTimeThreeOutline.vue';
 import apiClient from '../utils/axios';
 
-const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
+const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000'
 
 import { useSongStore } from '../stores/song';
 import { storeToRefs } from 'pinia';

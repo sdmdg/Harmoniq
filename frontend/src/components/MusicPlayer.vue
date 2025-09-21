@@ -101,7 +101,7 @@ watch(currentTrack, () => {
         :class="isExpanded ? 'w-1/3 flex-col justify-center' : 'w-1/4 flex-row'"
       >
         <img
-          :src="`${fileServerBaseUrl}/public/images/${currentTrack.albumCover || currentArtist.albumCover || 'default_album.png'}`"
+          :src="`${fileServerBaseUrl}/public/images/${currentTrack.albumCover || currentArtist.albumCover || currentTrack.albumcover || currentArtist.albumcover || 'default_album.png'}`"
           class="rounded-md shadow-2xl transition-all duration-500 ease-in-out hover:scale-105 cursor-pointer"
           :class="isExpanded ? 'w-56 h-56 mb-6' : 'w-14 h-14 mr-4'"
           @click="isExpanded = !isExpanded"

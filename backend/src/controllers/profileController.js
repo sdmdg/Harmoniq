@@ -6,7 +6,8 @@ import {ModelgetProPic,
         findArtistByUserId,
         updateArtistProfile } from '../models/User.js';
 import { uploadFileToServer } from '../services/fileService.js';
-import { getRecentSongsByUser } from '../models/SongHistory.js';
+
+import { getRecentSongsByUser, getTrendingAlbums, getRecentReleases, getMostPlayedSongs, getTrendingArtists} from '../models/SongHistory.js';
 
 import bcrypt from 'bcryptjs';
 
@@ -155,21 +156,27 @@ export const updateArtistDetails = async (req, res) => {
     }
 };
 
-export const getRecentSongs = async (req, res) => {
+export const getHomePage = async (req, res) => {
   try {
     const userId = req.user.id;
-    const songs = await getRecentSongsByUser(userId, 10);
 
-    return res.json(songs.map(song => ({
-      id: song.id,
-      title: song.title,
-      artist: song.artist,
-      album: song.album,
-      cover_image: song.cover_image || 'default_album.png',
-      last_played: song.last_played,
-    })));
+    const [recent, quickPicks, albums, newReleases, artists] = await Promise.all([
+      getRecentSongsByUser(userId, 10),
+      getMostPlayedSongs(24),
+      getTrendingAlbums(20),
+      getRecentReleases(8),
+      getTrendingArtists(userId, 8),
+    ]);
+
+    return res.json({
+      recent,
+      quickPicks,
+      albums,
+      newReleases,
+      artists,
+    });
   } catch (err) {
-    console.error('Error fetching recent songs:', err);
-    res.status(500).json({ message: 'Failed to fetch recent songs' });
+    console.error('Error fetching home page:', err);
+    res.status(500).json({ message: 'Failed to fetch home page' });
   }
 };

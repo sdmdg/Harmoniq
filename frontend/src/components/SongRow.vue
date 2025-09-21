@@ -48,7 +48,7 @@ const { track, artist, index, duration } = toRefs(props)
                 <div v-else class="relative w-[40px] ml-5 flex items-center justify-center">
                 <img 
                     class="absolute w-[30px] h-[30px] rounded-sm -z-10 brightness-[0.5]" 
-                    :src="`${fileServerBaseUrl}/public/images/${track.albumCover || artist.albumCover || 'default_album.png'}`"
+                    :src="`${fileServerBaseUrl}/public/images/${track.albumCover || track.albumcover || artist.albumCover || 'default_album.png'}`"
                     alt="Album Cover"
                 >
                 <span 
