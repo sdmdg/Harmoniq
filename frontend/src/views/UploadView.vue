@@ -43,7 +43,7 @@ export default {
 
       try {
         const token = localStorage.getItem("jwt_token");
-        const response = await fetch("http://localhost:5000/api/songs/upload-song", {
+        const response = await fetch("http://localhost:5000/api/songs/normal-upload-song", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -151,50 +151,6 @@ export default {
         <div v-if="uploadMessage" class="mt-4 text-white font-semibold text-center">
           {{ uploadMessage }}
         </div>
-      </div>
-    </div>
-
-    <!-- Extracted features -->
-    <div v-if="songFeatures && !isEditing" class="relative z-10 w-full mt-10 bg-[#111] py-8">
-      <h2 class="text-2xl font-bold text-white text-center mb-6">Extracted Song Features</h2>
-
-      <div class="flex justify-center flex-wrap gap-4 px-4">
-        <div class="bg-[#1ED760] text-black rounded-lg shadow-md px-6 py-6 flex flex-col items-center min-w-[150px]">
-          <span class="text-sm font-medium">Duration</span>
-          <span class="text-lg font-bold">{{ songFeatures.duration }}</span>
-        </div>
-        <div class="bg-[#1ED760] text-black rounded-lg shadow-md px-6 py-6 flex flex-col items-center min-w-[150px]">
-          <span class="text-sm font-medium">Track #</span>
-          <span class="text-lg font-bold">{{ songFeatures.track_number }}</span>
-        </div>
-        <div class="bg-[#1ED760] text-black rounded-lg shadow-md px-6 py-6 flex flex-col items-center min-w-[150px]">
-          <span class="text-sm font-medium">BPM</span>
-          <span class="text-lg font-bold">{{ songFeatures.bpm }}</span>
-        </div>
-        <div class="bg-[#1ED760] text-black rounded-lg shadow-md px-6 py-6 flex flex-col items-center min-w-[150px]">
-          <span class="text-sm font-medium">Genre</span>
-          <span class="text-lg font-bold">{{ songFeatures.genre }}</span>
-        </div>
-        <div class="bg-[#1ED760] text-black rounded-lg shadow-md px-6 py-6 flex flex-col items-center min-w-[150px]">
-          <span class="text-sm font-medium">Mood</span>
-          <span class="text-lg font-bold">{{ songFeatures.mood }}</span>
-        </div>
-      </div>
-
-      <!-- Buttons -->
-      <div class="flex justify-center mt-6 gap-4">
-        <button
-          @click="startEdit"
-          class="bg-[#FFD700] hover:bg-[#E6C200] text-black font-bold py-2 px-6 rounded-full transition duration-200"
-        >
-          Edit Song
-        </button>
-        <button
-          @click="resetUpload"
-          class="bg-[#FF4747] hover:bg-[#E63939] text-white font-bold py-2 px-6 rounded-full transition duration-200"
-        >
-          Upload Another Song
-        </button>
       </div>
     </div>
   </div>

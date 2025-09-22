@@ -147,8 +147,9 @@ onMounted(() => {
         <img
           :src="album.coverUrl || 'https://via.placeholder.com/300x300?text=No+Cover'"
           alt="Album Cover"
-          class="w-50 h-50 object-cover"
+          class="w-48 h-48 object-cover mx-auto"
         />
+
         <div class="p-4">
           <h3 class="text-white font-semibold text-lg truncate">{{ album.title }}</h3>
           <p class="text-gray-400 text-sm mt-1">Artist: {{ album.artistName || 'You' }}</p>
