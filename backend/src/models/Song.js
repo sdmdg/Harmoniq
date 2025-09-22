@@ -106,7 +106,19 @@ export const ModelSetSong = async (
   const result = await db.query(query, values);
   return result.rows.length > 0 ? result.rows[0] : null;
 };
+export const ModelSetUserSong = async (
+  user_id,
+  song_id) => {
+  const query = `
+    INSERT INTO public.users_songs (user_id, song_id)
+    VALUES ($1, $2)
+    RETURNING *;
+  `;
+  const values = [user_id, song_id];
 
+  const result = await db.query(query, values);
+  return result.rows.length > 0 ? result.rows[0] : null;
+};
 export const ModelUpdateSong = async (songId, features, encryptionKey) => {
   // Map the camelCase keys from the features object to SQL snake_case column names.
   // Note: Your initial code already uses snake_case for the database columns.
