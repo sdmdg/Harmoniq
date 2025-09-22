@@ -21,6 +21,13 @@ const playTrack = (track) => {
   const artistInfo = track.artist || { name: "Unknown" }
   songStore.playOrPauseThisSong(artistInfo, track)
 }
+
+
+// Format play count
+const formatPlays = (count) => {
+  if (!count || count <= 0) return null
+  return `${count.toLocaleString()} plays`
+}
 </script>
 
 <template>
@@ -66,7 +73,21 @@ const playTrack = (track) => {
     </div>
     <div class="text-gray-400 text-[13px] truncate">
       {{ subTitle }}
+      <!-- Play count + duration -->
+      <div class="flex items-center gap-3 text-gray-400 text-[12px]">
+        <span v-if="formatPlays(track.play_count)">
+          {{ formatPlays(track.play_count) }}
+        </span>
+
+        <!-- Dot separator -->
+        <div v-if="formatPlays(track.play_count)" class="w-1 h-1 rounded-full bg-gray-400"></div>
+
+        <span>
+          {{ track.duration.replace(";", ":") }}
+        </span>
+      </div>
     </div>
+
   </div>
 </div>
 </template>

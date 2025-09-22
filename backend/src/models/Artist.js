@@ -38,33 +38,53 @@ export const createAlbum = async ({ title, artist, releaseDate, albumArtId }) =>
     }
 };
 
-export const findArtistById = async (id) => {
+export const findArtistById = async (id, userId = null) => {
   const result = await db.query(
-    `SELECT a.id,
-            a.artist_name,
-            a.description,
-            a.created_at,
-            u.user_name,
-            u.email,
-            u.role,
-            u.pic_path
-     FROM artists a
-     JOIN users u ON a.user_id = u.id
-     WHERE a.id = $1`,
-    [id]
+    `
+    SELECT 
+      a.id,
+      a.artist_name,
+      a.description,
+      a.created_at,
+      a.user_id as artist_user_id,
+      u.user_name,
+      u.email,
+      u.role,
+      u.pic_path,
+      COUNT(DISTINCT sh.user_id) AS listenerCount,
+      (MAX(CASE WHEN f.follower_id IS NOT NULL THEN 1 ELSE 0 END) = 1) AS "isFollowing"
+    FROM artists a
+    JOIN users u 
+      ON a.user_id = u.id
+    LEFT JOIN albums al
+      ON al.artist = a.user_id
+    LEFT JOIN songs s 
+      ON s.album_id = al.id
+    LEFT JOIN song_history sh 
+      ON sh.song_id = s.id
+    LEFT JOIN followers f
+      ON f.follower_id = $2 AND f.followed_id = a.id
+    WHERE a.id = $1
+    GROUP BY a.id, a.artist_name, a.description, a.created_at, 
+             u.user_name, u.email, u.role, u.pic_path
+    `,
+    [id, userId]
   );
-  return result.rows[0];
+
+  const artist = result.rows[0];
+
+  if (!artist) return null;
+
+  return {
+    ...artist,
+    listenerCount: artist.listenercount >= 1_000_000
+      ? Math.floor(artist.listenercount / 1_000_000) + "M"
+      : artist.listenercount >= 1_000
+      ? Math.floor(artist.listenercount / 1_000) + "K"
+      : String(artist.listenercount),
+  };
 };
 
-export const findArtistByName = async (name) => {
-  const result = await db.query(
-    `SELECT id, artist_name, description, created_at
-     FROM artists
-     WHERE id = $1`,
-    [id]
-  );
-  return result.rows[0];
-};
 
 
 
@@ -111,6 +131,8 @@ export const getMostPlayedSongsByArtist = async (artistId, limit = 24) => {
       s.encryption_key AS key,
       a.album_art_id AS albumCover,
       ar.artist_name AS artist,
+      EXTRACT(MINUTE FROM s.duration)::int || ';' || EXTRACT(SECOND FROM s.duration)::int AS duration,
+      COUNT(sh.song_id) AS play_count,
       SUM(COALESCE(EXTRACT(EPOCH FROM sh.listen_time), 0)) AS total_listen_seconds
     FROM songs s
     JOIN albums a ON s.album_id = a.id
@@ -124,6 +146,22 @@ export const getMostPlayedSongsByArtist = async (artistId, limit = 24) => {
 
   const { rows } = await db.query(query, [artistId, limit]);
   return rows;
+};
+
+export const findAlbumsByArtistId = async (artistId) => {
+  try {
+    const query = `
+      SELECT al.id, al.title, al.album_art_id as cover, ar.artist_name as artist, al.release_date
+      FROM albums al
+      JOIN artists ar ON ar.user_id = al.artist
+      WHERE ar.id = $1;
+    `;
+    const result = await db.query(query, [artistId]);
+    return result.rows;
+  } catch (error) {
+    console.error('Error finding albums by artist ID:', error);
+    throw error;
+  }
 };
 
 
