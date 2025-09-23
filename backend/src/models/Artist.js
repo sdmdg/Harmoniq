@@ -65,8 +65,16 @@ export const findArtistByName = async (name) => {
   );
   return result.rows[0];
 };
-
-
+export const searchArtistsByAlbumId = async (albumId) => {
+  const result = await db.query(
+    `SELECT a.user_id, a.artist_name
+     FROM artists a
+     JOIN albums al ON a.user_id = al.artist
+     WHERE al.id = $1`,
+    [albumId]
+  );
+  return result.rows;
+};
 
 export const addFollower = async (followerId, followedId) => {
   const query = `
