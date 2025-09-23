@@ -1,6 +1,6 @@
 // controllers/playlistController.js
 import {createPlaylist as createPlaylistModel,
-        getUserPlaylists as getUserPlaylistsModel } from '../models/Playlist.js';
+        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel } from '../models/Playlist.js';
 
 export const createPlaylist = async (req, res) => {
     try {
@@ -40,6 +40,16 @@ export const getUserPlaylists = async (req, res) => {
     }
 };
 
+export const getLikedSongs = async (req, res) => {
+    try {
+        const userId = req.user.id; // User ID from the authenticated token                 
+        const songs = await getLikedSongsModel(userId);
+        res.status(200).json(songs);
+    } catch (error) {
+        console.error('Failed to get liked songs:', error);
+        res.status(500).json({ message: 'Server error while fetching liked songs.' });
+    }       
+};
 
 const sampleAlbum = {
     "name": "Workout",
