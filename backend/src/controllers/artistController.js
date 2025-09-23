@@ -6,44 +6,8 @@ import {
   removeFollower,
   getMostPlayedSongsByArtist,
   searchArtistsByAlbumId,
+  findAlbumsByArtistId
 } from "../models/Artist.js";
-
-import { getRecentSongsByUser, getTrendingAlbums, getRecentReleases, getMostPlayedSongs, getTrendingArtists} from '../models/SongHistory.js';
-
-
-const hardcodedData = {
-  monthlyAudience: "238M",
-  topSongs: [
-    {
-      title: "Faded",
-      artist: "Alan Walker",
-      plays: "5.3B",
-      cover:
-        "https://lh3.googleusercontent.com/WbQvmYqxKwEbLPj5zSlYe5vrxipjJAaCxqB1cJxyzljnvIr9i4Ix9fyxK9h9BXq5a3jyvPdvGKI_2vWXnA=w544-h544-l90-rj",
-    },
-    {
-      title: "On My Way",
-      artist: "Alan Walker",
-      plays: "1.5B",
-      cover:
-        "https://lh3.googleusercontent.com/WbQvmYqxKwEbLPj5zSlYe5vrxipjJAaCxqB1cJxyzljnvIr9i4Ix9fyxK9h9BXq5a3jyvPdvGKI_2vWXnA=w544-h544-l90-rj",
-    },
-    {
-      title: "All Falls Down",
-      artist: "Alan Walker",
-      plays: "900M",
-      cover:
-        "https://lh3.googleusercontent.com/mOxS-HGSPLkUsQIlZZP7drX1x-ewJT5YW8O8FKt5HWR5lZ2b8NAQldscy6n8TV34dQKkND2489goh3zH=w544-h544-l90-rj",
-    },
-    {
-      title: "Alone",
-      artist: "Alan Walker",
-      plays: "1.2B",
-      cover:
-        "https://lh3.googleusercontent.com/Y19VtLffjcBZ2gMjaD_aMf2w_G4GX49EnycaJDA0tVzIn4GMKn0-sY6njoodgOquCfvUpyKyOp1jYZch9A=w544-h544-l90-rj",
-    },
-  ],
-};
 
 export const getArtist = async (req, res) => {
   try {
@@ -65,6 +29,8 @@ export const getArtist = async (req, res) => {
 
     const mostPlayedSongs = await getMostPlayedSongsByArtist(artistFromDB.id, 12);
 
+    const albums = await findAlbumsByArtistId(id);
+
     const artist = {
       id: artistFromDB.id,
       name: artistFromDB.artist_name,
@@ -72,14 +38,16 @@ export const getArtist = async (req, res) => {
       createdAt: artistFromDB.created_at,
       image: artistFromDB.pic_path,
       user: {
+        userid: artistFromDB.artist_user_id,
         name: artistFromDB.user_name,
         email: artistFromDB.email,
         role: artistFromDB.role,
         image: artistFromDB.pic_path,
       },
-      monthlyAudience: hardcodedData.monthlyAudience,
+      audience: artistFromDB.listenerCount,
       topTracks: mostPlayedSongs,
       isFollowing,
+      albums,
     };
 
     res.status(200).json(artist);

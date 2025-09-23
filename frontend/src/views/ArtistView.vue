@@ -14,7 +14,7 @@
         <p class="text-xs font-bold mb-1">Artist</p>
         <h1 class="text-3xl md:text-6xl font-bold font-sans">{{ artist.name }}</h1>
         <div class="flex items-center text-sm font-light mt-2">
-          <p>{{ formatNumber(artist.monthlyAudience) }} monthly listeners</p>
+          <p>{{ formatNumber(artist.audience) }} listeners</p>
         </div>
         <p class="text-sm font-light text-gray-300 mt-2 max-w-2xl">{{ artist.description }}</p>
       </div>
@@ -33,7 +33,8 @@
         </button>
 
         <!-- Follow/Unfollow Button -->
-        <button
+        <button 
+          v-if="userId && user && user.userid && userId !== user.userid"
           class="ml-4 px-6 py-3 rounded-full font-bold transition-colors duration-200"
           :class="following
             ? 'bg-gray-700 text-white hover:bg-gray-600'
@@ -58,6 +59,7 @@
               name="fade-slide"
               tag="div"
               class="contents"
+              appear
             >
               <QuickPickCard
                 v-for="song in topTracks"
@@ -71,6 +73,29 @@
             </transition-group>
           </div>
         </div>
+      </div>
+
+
+      <!-- Releases -->
+      <div v-if="albums.length" class="p-8">
+        <h1 class="text-white text-2xl font-semibold">Releases</h1>
+        <div class="py-1.5"></div>
+
+        <!-- Albums list -->
+        <transition-group
+          name="fade-slide"
+          tag="div"
+          class="flex items-center space-x-4 overflow-x-auto"
+          appear
+        >
+          <AlbumItem
+            v-for="album in albums"
+            :key="album.id"
+            :title="album.title"
+            :subTitle="album.artist"
+            :album="album"
+          />
+        </transition-group>
       </div>
 
     </div>
@@ -87,16 +112,21 @@ import Play from 'vue-material-design-icons/Play.vue';
 import apiClient from '../utils/axios';
 import QuickPickCard from '../components/SongCardRow.vue'
 
+import AlbumItem from '../components/AlbumCard.vue'
+
 import { useSongStore } from '../stores/song';
 import { storeToRefs } from 'pinia';
 
+const userId = ref(null);
 const useSong = useSongStore();
 const { isPlaying, currentTrack, currentArtist } = storeToRefs(useSong);
 
 const artist = ref(null);
+const user = ref({});
 const following = ref(false);
 const isProcessing = ref(false);
 const topTracks = ref([]);
+const albums = ref([]);
 
 const player = ref({
   tracks:[]
@@ -105,6 +135,7 @@ const player = ref({
 const route = useRoute();
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
 
+
 const fetchArtistData = async () => {
   const artistId = route.params.id;
   try {
@@ -112,6 +143,21 @@ const fetchArtistData = async () => {
     artist.value = response.data;
     following.value = response.data.isFollowing;
     topTracks.value = response.data.topTracks;
+    albums.value = response.data.albums;
+    user.value = response.data.user; // <-- important
+
+    const userDataString = localStorage.getItem('user_data');
+    if (userDataString) {
+      try {
+        const userData = JSON.parse(userDataString);
+        userId.value = userData.id;
+        console.log("Artist user ID:", user.value.userid);
+        console.log("Current user ID:", userId.value);
+      } catch (e) {
+        console.error("Error parsing user data from localStorage:", e);
+      }
+    }
+
   } catch (error) {
     console.error('Failed to fetch artist data:', error);
     artist.value = null;
@@ -163,12 +209,11 @@ const handleShuffle = () => {
   // Play the first track from shuffled list
   const firstTrack = shuffled[0];
   useSong.loadSong(player.value, firstTrack);
-
-  // Set shuffled playlist in Pinia store
-  useSong.setQueue(shuffled, artist.value.name);
 };
 
-onMounted(fetchArtistData);
+onMounted(() => {
+  fetchArtistData();
+});
 
 watch(
   () => route.fullPath,
@@ -176,4 +221,5 @@ watch(
     fetchArtistData();
   }
 );
+
 </script>

@@ -90,6 +90,7 @@ export const getRecentSongsByUser = async (userId, limit = 10) => {
       s.encryption_key AS key,
       a.album_art_id AS albumCover,
       ar.artist_name AS artist,
+      EXTRACT(MINUTE FROM s.duration)::int || ';' || EXTRACT(SECOND FROM s.duration)::int AS duration,
       COUNT(h.song_id) AS play_count,
       MAX(h.last_played) AS last_played
     FROM song_history h
@@ -109,22 +110,27 @@ export const getRecentSongsByUser = async (userId, limit = 10) => {
 // Most played songs globally
 export const getMostPlayedSongs = async (limit = 24) => {
   const query = `
-        SELECT 
-          s.id as id,
-          s.id as path,
-          s.title as name,
-          a.title AS album,
-          s.encryption_key AS key,
-          a.album_art_id AS albumCover,
-          ar.artist_name AS artist,
-          SUM(COALESCE(EXTRACT(EPOCH FROM sh.listen_time), 0)) AS total_listen_seconds
+    SELECT 
+        s.id AS id,
+        s.id AS path,
+        s.title AS name,
+        a.title AS album,
+        s.encryption_key AS key,
+        a.album_art_id AS albumCover,
+        ar.artist_name AS artist,
+        EXTRACT(MINUTE FROM s.duration)::int || ';' || EXTRACT(SECOND FROM s.duration)::int AS duration,
+        SUM(COALESCE(EXTRACT(EPOCH FROM sh.listen_time), 0)) AS total_listen_seconds,
+        ROUND(
+          SUM(COALESCE(EXTRACT(EPOCH FROM sh.listen_time), 0)) 
+          / NULLIF(EXTRACT(EPOCH FROM s.duration), 0)
+        ) AS play_count
     FROM song_history sh
     JOIN songs s ON sh.song_id = s.id
     JOIN albums a ON s.album_id = a.id
     LEFT JOIN artists ar ON a.artist = ar.user_id
-    GROUP BY s.id, a.id, ar.artist_name, a.album_art_id
+    GROUP BY s.id, a.id, ar.artist_name, a.album_art_id, s.duration
     ORDER BY total_listen_seconds DESC
-    LIMIT $1
+    LIMIT $1;
   `;
   const { rows } = await db.query(query, [limit]);
   return rows;
@@ -204,7 +210,9 @@ export const getTrendingArtists = async (userId, limit = 12) => {
     )
     LEFT JOIN song_history sh ON sh.song_id = s.id
     LEFT JOIN users u ON u.id = ar.user_id
+    WHERE ar.user_id != $1
     GROUP BY ar.id, ar.artist_name, u.pic_path
+    HAVING MAX(CASE WHEN f.follower_id IS NOT NULL THEN 1 ELSE 0 END) = 0
     ORDER BY listenerCount DESC
     LIMIT $2
   `;
