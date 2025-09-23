@@ -35,3 +35,17 @@ export const getUserPlaylists = async (userId) => {
         throw error;
     }
 };
+export const getLikedSongs = async(userId)=>{
+    const query = `
+        SELECT s.id, s.title, s.duration, s.album_id, s.encryption_key FROM songs s join liked_songs ls on s.id = ls.song_id WHERE ls.user_id = $1;
+    `;
+    const values = [userId];
+
+    try {
+        const result = await db.query(query, values);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching liked songs from database:', error);
+        throw error;
+    }
+};
