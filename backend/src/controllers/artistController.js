@@ -4,10 +4,12 @@ import {
   isUserFollowingArtist,
   addFollower,
   removeFollower,
-  getMostPlayedSongsByArtist
+  getMostPlayedSongsByArtist,
+  searchArtistsByAlbumId,
 } from "../models/Artist.js";
 
 import { getRecentSongsByUser, getTrendingAlbums, getRecentReleases, getMostPlayedSongs, getTrendingArtists} from '../models/SongHistory.js';
+
 
 const hardcodedData = {
   monthlyAudience: "238M",
@@ -130,6 +132,19 @@ export const checkFollowing = async (req, res) => {
 
     const following = await isUserFollowingArtist(userId, artistId);
     res.json({ following });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const searchArtists = async (req, res) => {
+  try {
+    const { albumId } = req.params;
+    if (!albumId) return res.status(400).json({ message: 'Album ID is required' });
+
+    const artists = await searchArtistsByAlbumId(albumId);
+    res.json(artists);
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });
