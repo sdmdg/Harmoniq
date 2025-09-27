@@ -48,42 +48,46 @@ onMounted(() => {
 const fetchData = async () => {
   try {
     loading.value = true;
+
+    // Fetch liked songs
     const response = await apiClient.get(`/api/playlist/liked-songs/${user.value.id}`);
+    
     const tracks = await Promise.all(
-    (response.data || []).map(async (track) => {
-      try {
-        const artistRes = await apiClient.get(`/api/artist/search/${track.album_id}`);
-        return {
-          ...track,
-          artist: artistRes.data[0]?.artist_name || "Unknown Artist",
-          albumCover: artistRes.data[0]?.coverUrl || "/default.jpg",
+      (response.data || []).map(async (track) => {
+        try {
+          // Fetch artist info
+          const artistRes = await apiClient.get(`/api/artist/search/${track.album_id}`);
+          const artistData = artistRes.data[0] || {};
 
-          // 🔑 Ensure decryption works
-          key: track.encryption_key,
+          return {
+            ...track,
+            artist: artistData.artist_name || "Unknown Artist",
+            albumCover: track.albumcover || "/default.jpg", 
+            key: track.encryption_key,
+            path: `${track.id}.mp3`
+          };
 
-          // 🎵 Construct a usable path (if backend doesn’t give it)
-          // You can decide the convention for filenames on your server.
-          path: `${track.id}.mp3`
-        };
-      } catch (err) {
-        console.error("Error resolving artist for album:", track.album_id, err);
-        return {
-          ...track,
-          artist: "Unknown Artist",
-          albumCover: "/heart.jpeg",
-          key: track.encryption_key,
-          path: `${track.id}.mp3`
-        };
-      }
-    })
-  );
+        } catch (err) {
+          console.error("Error resolving artist for album:", track.album_id, err);
 
+          return {
+            ...track,
+            artist: "Unknown Artist",
+            albumCover: track.albumcover || "/default.jpg", 
+            key: track.encryption_key,
+            path: `${track.id}.mp3`
+          };
+        }
+      })
+    );
 
+    // Build collection
     collection.value = {
       name: "Liked Songs",
-      image: "/heart.jpeg",
+      image: tracks.length > 0 ? tracks[0].albumCover : "/heart.jpeg",
       tracks
     };
+
   } catch (err) {
     console.error('Error fetching liked songs:', err);
     error.value = 'Failed to load liked songs.';
@@ -91,6 +95,7 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
+
 onMounted(() => {
   fetchData();
 });
@@ -120,7 +125,7 @@ const formatDuration = (durationObj) => {
         <!-- Left Column: Album Image + Description -->
         <div class="w-1/3 pr-6 text-center">
           <img
-            :src="collection.image"
+            :src="`/heart.jpeg`"
             alt="Album Cover"
             class="w-2/3 mx-auto rounded-xl shadow-lg"
           />
@@ -162,7 +167,7 @@ const formatDuration = (durationObj) => {
                 :track="track"
                 :index="index + 1"
                 :duration="formatDuration(track.duration)"
-                albumImage="/heart.jpeg"
+                :albumImage="track.albumCover"
                 @play="useSong.playOrPauseThisSong(collection, track)"
               />
 
