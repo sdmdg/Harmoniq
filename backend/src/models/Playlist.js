@@ -37,7 +37,7 @@ export const getUserPlaylists = async (userId) => {
 };
 export const getLikedSongs = async(userId)=>{
     const query = `
-        SELECT s.id, s.title, s.duration, s.album_id, s.encryption_key FROM songs s join liked_songs ls on s.id = ls.song_id WHERE ls.user_id = $1;
+        SELECT s.id, s.title, s.duration, s.album_id, s.encryption_key, a.album_art_id  as albumCover FROM songs s join liked_songs ls on s.id = ls.song_id join albums a on s.album_id = a.id WHERE ls.user_id = $1;
     `;
     const values = [userId];
 
