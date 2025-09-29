@@ -13,7 +13,7 @@ import morgan from "morgan";
 import pool from "./config/db.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
-
+import recommendationRoutes from "./routes/recommendationRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -35,6 +35,7 @@ app.use("/api/songs", songsRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/recommend", recommendationRoutes);
 
 const startServer = async () => {
   try {
