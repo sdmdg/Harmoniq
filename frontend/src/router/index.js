@@ -24,6 +24,10 @@ import AdminSongManage from '../views/AdminSongManage.vue'
 import MyAlbumView from '../views/MyAlbumView.vue'
 import LikedSongs from '../views/LikedSongs.vue'
 import AdminUsersManage from '../views/AdminUsersManage.vue'
+
+import PasswordResetView from '../views/PasswordResetView.vue'
+
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -58,6 +62,17 @@ const router = createRouter({
         hideTopNav: true,
         hidePlayer: true,
         requiresAuth: false // Login page doesn't require authentication
+      }
+    },
+    {
+      path: '/password-reset',
+      name: 'password-reset',
+      component: PasswordResetView,
+      meta: {
+        hideSidebar: true,
+        hideTopNav: true,
+        hidePlayer: true,
+        requiresAuth: false
       }
     },
     {
