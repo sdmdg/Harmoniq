@@ -50,7 +50,7 @@ const router = createRouter({
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
-        requiresAuth: false // Login page doesn't require authentication
+        requiresAuth: false // Page doesn't require authentication
       }
     },
     {
@@ -61,7 +61,7 @@ const router = createRouter({
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
-        requiresAuth: false // Login page doesn't require authentication
+        requiresAuth: false // Page doesn't require authentication
       }
     },
     {

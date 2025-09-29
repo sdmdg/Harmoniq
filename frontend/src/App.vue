@@ -123,9 +123,11 @@ const logout = () => {
 
 // Use onMounted to fetch initial data
 onMounted(() => {
-  isPlaying.value = false;
-  fetchUser();
-  fetchUserPlaylists();
+  if (!window.location.pathname.includes("password-reset")){
+    isPlaying.value = false;
+    fetchUser();
+    fetchUserPlaylists();
+  }
 });
 
 
