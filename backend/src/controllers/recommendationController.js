@@ -132,3 +132,51 @@ export const recommendByGenre = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+import db from "../config/db.js";
+export const createPlaylistWithRecommendations = async (req, res) => {
+  try {
+    const { userId, title, type, mood, genre } = req.body;
+
+    // 1. Insert playlist metadata
+    const playlistRes = await db.query(
+      `INSERT INTO public.playlist (title, release_date, created_at, user_id)
+       VALUES ($1, NOW(), NOW(), $2)
+       RETURNING *`,
+      [title, userId]
+    );
+    const playlist = playlistRes.rows[0];
+
+    // 2. Fetch user songs and build vector
+    const userSongs = await getUserSongs(userId);
+    if (!userSongs.length) {
+      return res.status(404).json({ message: "No songs found for recommendations" });
+    }
+
+    const userVector = buildUserVector(userSongs);
+
+    // 3. Get recommendations
+    let recommendations = [];
+    if (type === "mood" && mood) {
+      recommendations = await getRecommendationsFiltered(userVector, "mood", mood.toLowerCase(), 20);
+    } else if (type === "genre" && genre) {
+      recommendations = await getRecommendationsFiltered(userVector, "genre", genre.toLowerCase(), 20);
+    }
+
+    // 4. Insert recommended songs into playlist_songs
+    for (const song of recommendations) {
+      await db.query(
+        `INSERT INTO public.playlist_songs (playlist_id, song_id, created_at)
+         VALUES ($1, $2, NOW())`,
+        [playlist.id, song.id]
+      );
+    }
+
+    res.json({
+      playlist,
+      songs: recommendations,
+    });
+  } catch (err) {
+    console.error("❌ Error in createPlaylistWithRecommendations:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

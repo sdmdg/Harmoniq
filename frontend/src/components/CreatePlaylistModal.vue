@@ -76,18 +76,19 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, watch } from 'vue';
+import { ref, defineProps, defineEmits, watch ,onMounted} from 'vue';
 import apiClient from '../utils/axios';
-
+import { useRoute, useRouter } from 'vue-router';
 const props = defineProps({
     isOpen: {
         type: Boolean,
         required: true,
     },
 });
-
+const router = useRouter();
+const route = useRoute();
 const emit = defineEmits(['close', 'playlistCreated']);
-
+const user = ref(null);
 const playlistName = ref('');
 const selectedOption = ref('');
 const selectedMood = ref('');
@@ -106,35 +107,48 @@ watch(() => props.isOpen, (newValue) => {
         selectedGenre.value = '';
     }
 });
-
-const createPlaylist = async () => {
-    if (!playlistName.value) return;
-
-    try {
-        const payload = {
-            name: playlistName.value, // Using 'name' as per your backend (title is used in the UI for clarity)
-            type: selectedOption.value || 'custom', // Default to 'custom' if no option is selected
-            mood: selectedMood.value,
-            genre: selectedGenre.value,
-        };
-
-        // Send the playlist data to the backend
-        const response = await apiClient.post('api/playlist/add', payload);
-
-        // Ensure the emitted playlist has a 'title' property for the frontend to display
-        // Assuming your backend response.data contains a 'name' field that can be used as 'title'
-        emit('playlistCreated', { ...response.data, title: response.data.name }); 
-        
-        // The fields will be reset by the watcher when the modal closes, so we can emit 'close'
-        // This makes the logic cleaner since we only have one place to handle resetting
-        emit('close');
-
-    } catch (error) {
-        console.error('Failed to create playlist:', error);
-        // Optionally, add user feedback for error
-        alert('Failed to create playlist. Please try again.');
-    }
+const fetchUser = () => {
+  const userData = localStorage.getItem('user_data');
+  if (userData) {
+    user.value = JSON.parse(userData);
+    console.log('User data:', user.value);
+  } else {
+    router.push('/login');
+  }
 };
+
+onMounted(() => {
+  fetchUser();
+});
+const createPlaylist = async () => {
+  if (!playlistName.value) return;
+
+  try {
+    const payload = {
+      userId: user.value.id,
+      title: playlistName.value,  // ✅ match DB column
+      type: selectedOption.value || "custom",
+      mood: selectedMood.value,
+      genre: selectedGenre.value,
+    };
+
+    const response = await apiClient.post(
+      "api/recommend/createWithRecommendations",
+      payload
+    );
+
+    emit("playlistCreated", {
+      ...response.data.playlist,
+      songs: response.data.songs,
+    });
+
+    emit("close");
+  } catch (error) {
+    console.error("Failed to create playlist:", error);
+    alert("Failed to create playlist. Please try again.");
+  }
+};
+
 </script>
 
 <style scoped>
