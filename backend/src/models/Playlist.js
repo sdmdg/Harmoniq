@@ -86,3 +86,14 @@ export const getPlaylistDetailsById = async (playlistId) => {
   );
   return result.rows[0];
 };
+export const getPlaylistAlbumsModel = async (playlistId) => {
+    const result = await db.query(
+        `SELECT distinct  a.album_art_id as "albumCover"
+        FROM albums a
+        JOIN songs s ON a.id = s.album_id
+        JOIN playlist_songs ps ON s.id = ps.song_id
+        WHERE ps.playlist_id = $1`,
+        [playlistId]
+    );
+    return result.rows;
+};

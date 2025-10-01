@@ -1,6 +1,6 @@
 // controllers/playlistController.js
 import {createPlaylist as createPlaylistModel,
-        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById } from '../models/Playlist.js';
+        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById, getPlaylistAlbumsModel } from '../models/Playlist.js';
 
 export const createPlaylist = async (req, res) => {
     try {
@@ -129,6 +129,16 @@ export const getPlaylistDetails = async (req, res) => {
         res.status(200).json(playlist);
     } catch (error) {
         console.error("Get Playlist Details Error:", error);
+        res.status(500).json({ message: `Internal server error: ${error.message}` });
+    }
+};
+export const getPlaylistAlbums = async (req, res) => {
+    const { playlist_id } = req.params;
+    try {
+        const albums = await getPlaylistAlbumsModel(playlist_id);
+        res.status(200).json(albums);
+    } catch (error) {
+        console.error("Get Playlist Albums Error:", error);
         res.status(500).json({ message: `Internal server error: ${error.message}` });
     }
 };
