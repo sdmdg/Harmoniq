@@ -24,6 +24,7 @@ import AdminSongManage from '../views/AdminSongManage.vue'
 import MyAlbumView from '../views/MyAlbumView.vue'
 import LikedSongs from '../views/LikedSongs.vue'
 import AdminUsersManage from '../views/AdminUsersManage.vue'
+import Userprofile from '../views/userprofile.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -118,6 +119,18 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
+      meta: {
+        hideSidebar: true,
+        hideTopNav: true,
+        hidePlayer: true,
+        requiresAuth: true,
+        allowedRoles: ['artist', 'listener', 'admin']
+      }
+    },
+     {
+      path: '/listener/:id',
+      name: 'userprofile',
+      component: Userprofile,
       meta: {
         hideSidebar: true,
         hideTopNav: true,
