@@ -61,40 +61,104 @@ onBeforeUnmount(() => {
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <!-- Users -->
-      <RouterLink to="/adminUsersManage" 
-        class="block bg-gray-800/50 p-6 rounded-lg shadow-md
-        hover:bg-gray-800/70 focus:outline-none focus:ring-2
-        focus:ring-green-500 cursor-pointer" aria-label="View all users" >
+      <RouterLink
+        to="/adminUsersManage"
+        class="block bg-gray-800/50 p-6 rounded-lg shadow-md hover:bg-gray-800/70 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+        aria-label="View all users"
+      >
         <h2 class="text-lg font-semibold text-gray-300">Total Users</h2>
         <p class="text-4xl font-bold text-white mt-2">{{ totalUsers }}</p>
       </RouterLink>
       <RouterLink
-        to="/adminUsersManage"    
-        class="block bg-gray-800/50 p-6 rounded-lg shadow-md hover:bg-gray-800/70
-               focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+        to="/adminUsersManage"
+        class="block bg-gray-800/50 p-6 rounded-lg shadow-md hover:bg-gray-800/70 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
         aria-label="View all artists"
       >
         <h2 class="text-lg font-semibold text-gray-300">Total Artists</h2>
         <p class="text-4xl font-bold text-white mt-2">{{ totalArtists }}</p>
       </RouterLink>
       <RouterLink
-        to="/adminSongsManage"     
-        class="block bg-gray-800/50 p-6 rounded-lg shadow-md hover:bg-gray-800/70
-               focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+        to="/adminSongsManage"
+        class="block bg-gray-800/50 p-6 rounded-lg shadow-md hover:bg-gray-800/70 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
         aria-label="View all songs"
       >
         <h2 class="text-lg font-semibold text-gray-300">Total Songs</h2>
         <p class="text-4xl font-bold text-white mt-2">{{ totalSongs }}</p>
       </RouterLink>
-       <RouterLink
-        to="/admin/playlists" 
-        class="block bg-gray-800/50 p-6 rounded-lg shadow-md hover:bg-gray-800/70
-               focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+      <RouterLink
+        to="/admin/playlists"
+        class="block bg-gray-800/50 p-6 rounded-lg shadow-md hover:bg-gray-800/70 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
         aria-label="View all playlists"
       >
         <h2 class="text-lg font-semibold text-gray-300">Total Playlists</h2>
         <p class="text-4xl font-bold text-white mt-2">{{ totalPlaylists }}</p>
       </RouterLink>
+    </div>
+
+    <!-- Admin Actions -->
+    <div class="bg-gray-800/50 p-6 rounded-lg shadow-md mb-8">
+      <h2 class="text-xl font-bold text-white mb-4">Admin Actions</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <RouterLink
+          to="/admin/model-upload"
+          class="flex items-center justify-center p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
+          </svg>
+          Upload AI Models
+        </RouterLink>
+
+        <RouterLink
+          to="/adminUsersManage"
+          class="flex items-center justify-center p-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-semibold"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+            />
+          </svg>
+          Manage Users
+        </RouterLink>
+
+        <RouterLink
+          to="/adminSongsManage"
+          class="flex items-center justify-center p-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+            />
+          </svg>
+          Manage Songs
+        </RouterLink>
+      </div>
     </div>
 
     <!--         <div class="bg-[#181818] p-6 rounded-lg shadow-md mb-8">
