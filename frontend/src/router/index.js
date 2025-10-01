@@ -1,318 +1,321 @@
+import { createRouter, createWebHistory } from "vue-router";
+import LoginPage from "../views/LoginPage.vue";
+import RegisterPage from "../views/RegisterPage.vue";
+import HomeView from "../views/HomeView.vue";
+import NotFoundView from "../views/NotFoundView.vue";
+import ForbiddenView from "../views/ForbiddenView.vue";
+import ProfileView from "../views/Profile.vue";
+import LibraryView from "../views/LibraryView.vue";
+import AlbumView from "../views/AlbumView.vue";
+import ArtistView from "../views/ArtistView.vue";
+import UploadView from "../views/UploadView.vue";
+import PlaylistView from "../views/PlaylistView.vue";
+import AdminDash from "../views/AdminDash.vue";
+import AdminModelUpload from "../views/AdminModelUpload.vue";
 
-import { createRouter, createWebHistory } from 'vue-router'
-import LoginPage from '../views/LoginPage.vue'
-import RegisterPage from '../views/RegisterPage.vue'
-import HomeView from '../views/HomeView.vue'
-import NotFoundView from '../views/NotFoundView.vue'
-import ForbiddenView from '../views/ForbiddenView.vue'
-import ProfileView from '../views/Profile.vue'
-import LibraryView from '../views/LibraryView.vue'
-import AlbumView from '../views/AlbumView.vue'
-import ArtistView from '../views/ArtistView.vue'
-import UploadView from '../views/UploadView.vue'
-import PlaylistView from '../views/PlaylistView.vue'
-import AdminDash from '../views/AdminDash.vue'
+import ArtistUploadView from "../views/ArtistUploadView.vue";
 
-import ArtistUploadView from '../views/ArtistUploadView.vue'
+import ReportView from "../views/ReportView.vue";
+import ReportIssue from "../views/ReportIssue.vue";
+import ReportingGuide from "../views/ReportingGuide.vue";
+import ReportDetail from "../views/ReportDetail.vue";
+import AdminUserDetail from "../views/AdminUserDetail.vue";
+import AdminSongManage from "../views/AdminSongManage.vue";
+import MyAlbumView from "../views/MyAlbumView.vue";
+import LikedSongs from "../views/LikedSongs.vue";
+import AdminUsersManage from "../views/AdminUsersManage.vue";
 
-import ReportView from '../views/ReportView.vue'
-import ReportIssue from '../views/ReportIssue.vue'
-import ReportingGuide from '../views/ReportingGuide.vue'
-import ReportDetail from '../views/ReportDetail.vue'
-import AdminUserDetail from '../views/AdminUserDetail.vue'
-import AdminSongManage from '../views/AdminSongManage.vue'
-import MyAlbumView from '../views/MyAlbumView.vue'
-import LikedSongs from '../views/LikedSongs.vue'
-import AdminUsersManage from '../views/AdminUsersManage.vue'
+import PasswordResetView from "../views/PasswordResetView.vue";
 
-import PasswordResetView from '../views/PasswordResetView.vue'
-
-
-import Userprofile from '../views/userprofile.vue'
+import Userprofile from "../views/userprofile.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'root',
+      path: "/",
+      name: "root",
       component: LoginPage,
       meta: {
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
-        requiresAuth: false // Login page doesn't require authentication
-      }
+        requiresAuth: false, // Login page doesn't require authentication
+      },
     },
     {
-      path: '/login',
-      name: 'login',
+      path: "/login",
+      name: "login",
       component: LoginPage,
       meta: {
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
-        requiresAuth: false // Page doesn't require authentication
-      }
+        requiresAuth: false, // Page doesn't require authentication
+      },
     },
     {
-      path: '/register',
-      name: 'register',
+      path: "/register",
+      name: "register",
       component: RegisterPage,
       meta: {
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
-        requiresAuth: false // Page doesn't require authentication
-      }
+        requiresAuth: false, // Page doesn't require authentication
+      },
     },
     {
-      path: '/password-reset',
-      name: 'password-reset',
+      path: "/password-reset",
+      name: "password-reset",
       component: PasswordResetView,
       meta: {
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
-        requiresAuth: false
-      }
+        requiresAuth: false,
+      },
     },
     {
-      path: '/home',
-      name: 'home',
+      path: "/home",
+      name: "home",
       component: HomeView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener']
-      }
+        allowedRoles: ["artist", "listener"],
+      },
     },
     {
-      path: '/reports',
-      name: 'reports',
+      path: "/reports",
+      name: "reports",
       component: ReportView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['admin']
-      }
+        allowedRoles: ["admin"],
+      },
     },
     {
-      path: '/reportIssue',
-      name: 'reportIssue',
+      path: "/reportIssue",
+      name: "reportIssue",
       component: ReportIssue,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['listener', 'artist']
-      }
+        allowedRoles: ["listener", "artist"],
+      },
     },
-     {
-    path: '/support/reporting-guidelines',
-    name: 'ReportingGuidelines',
-    component: ReportingGuide
-  },
-  {
-      path: '/adminUsersManage',
-      name: 'adminUsersManage',
+    {
+      path: "/support/reporting-guidelines",
+      name: "ReportingGuidelines",
+      component: ReportingGuide,
+    },
+    {
+      path: "/adminUsersManage",
+      name: "adminUsersManage",
       component: AdminUsersManage,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['admin']
-      }
+        allowedRoles: ["admin"],
+      },
     },
 
     {
-      path: '/profile',
-      name: 'profile',
+      path: "/profile",
+      name: "profile",
       component: ProfileView,
       meta: {
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
+        allowedRoles: ["artist", "listener", "admin"],
+      },
     },
-     {
-      path: '/listener/:id',
-      name: 'userprofile',
+    {
+      path: "/listener/:id",
+      name: "userprofile",
       component: Userprofile,
       meta: {
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
+        allowedRoles: ["artist", "listener", "admin"],
+      },
     },
     {
-      path: '/artist/:id',
-      name: 'artist',
+      path: "/artist/:id",
+      name: "artist",
       component: ArtistView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
+        allowedRoles: ["artist", "listener", "admin"],
+      },
     },
     {
-      path: '/album/:id',
-      name: 'AlbumView',
+      path: "/album/:id",
+      name: "AlbumView",
       component: AlbumView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
+        allowedRoles: ["artist", "listener", "admin"],
+      },
     },
     {
-      path: '/albums',
-      name: 'album',
+      path: "/albums",
+      name: "album",
       component: MyAlbumView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'admin']
-      }
+        allowedRoles: ["artist", "admin"],
+      },
     },
 
     {
-      path: '/playlist/:id',
-      name: 'playlist',
+      path: "/playlist/:id",
+      name: "playlist",
       component: PlaylistView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener']
-      }
+        allowedRoles: ["artist", "listener"],
+      },
     },
     {
-  path: '/reports/:id',
-  name: 'report-detail',
-  component: ReportDetail,
-  meta: { requiresAuth: true, allowedRoles: ['admin'], hideSidebar:false, hideTopNav:false, hidePlayer:false }
-}
-,
+      path: "/reports/:id",
+      name: "report-detail",
+      component: ReportDetail,
+      meta: {
+        requiresAuth: true,
+        allowedRoles: ["admin"],
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+      },
+    },
     {
-      path: '/liked-songs/',
-      name: 'liked',
+      path: "/liked-songs/",
+      name: "liked",
       component: LikedSongs,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener']
-      }
+        allowedRoles: ["artist", "listener"],
+      },
     },
 
-     {
-      path: '/get_playlist',
-      name: 'get_playlist',
+    {
+      path: "/get_playlist",
+      name: "get_playlist",
       component: PlaylistView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener']
-      }
+        allowedRoles: ["artist", "listener"],
+      },
     },
-   
 
-
- {
-      path: '/usersignup/:id',
-      name: 'AdminUserDetail',
-      component: AdminUserDetail,
-       meta: {
-        hideSidebar: false,
-        hideTopNav: false,
-        hidePlayer: false,
-        requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
-     },
-     {
-      path: '/upload',
-      name: 'upload',
-      component: UploadView,
-       meta: {
-        hideSidebar: false,
-        hideTopNav: false,
-        hidePlayer: false,
-        requiresAuth: true,
-        allowedRoles: ['artist', 'listener', 'admin']
-      }
-     },
     {
-      path: '/library',
-      name: 'library',
+      path: "/usersignup/:id",
+      name: "AdminUserDetail",
+      component: AdminUserDetail,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ["artist", "listener", "admin"],
+      },
+    },
+    {
+      path: "/upload",
+      name: "upload",
+      component: UploadView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ["artist", "listener", "admin"],
+      },
+    },
+    {
+      path: "/library",
+      name: "library",
       component: LibraryView,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['artist', 'listener']
-      }
+        allowedRoles: ["artist", "listener"],
+      },
     },
-    
-{
-  path: '/artist/upload',
-  name: 'artist-upload',
-  component: ArtistUploadView,
-  meta: {
-    hideSidebar: false,
-    hideTopNav: false,
-    hidePlayer: false,
-    requiresAuth: true,
-    allowedRoles: ['artist']
-  }
-},
-    
 
     {
-  path: '/upload',
-  name: 'upload',
-  component: UploadView,
-  beforeEnter: (to, from, next) => {
-    // read role the same way your global guard does
-    const data = localStorage.getItem('user_data')
-    let role = null
-    try { role = data ? JSON.parse(data).role : null } catch (_) {}
-    if (role === 'artist') return next({ name: 'artist-upload' })
-    next()
-  },
-  meta: {
-    hideSidebar: false,
-    hideTopNav: false,
-    hidePlayer: false,
-    requiresAuth: true,
-    allowedRoles: ['artist', 'listener', 'admin']
-  }
-},
+      path: "/artist/upload",
+      name: "artist-upload",
+      component: ArtistUploadView,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ["artist"],
+      },
+    },
+
+    {
+      path: "/upload",
+      name: "upload",
+      component: UploadView,
+      beforeEnter: (to, from, next) => {
+        // read role the same way your global guard does
+        const data = localStorage.getItem("user_data");
+        let role = null;
+        try {
+          role = data ? JSON.parse(data).role : null;
+        } catch (_) {}
+        if (role === "artist") return next({ name: "artist-upload" });
+        next();
+      },
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ["artist", "listener", "admin"],
+      },
+    },
     // Example of an admin-only route
     {
-      path: '/admin-dashboard',
-      name: 'admin-dashboard',
+      path: "/admin-dashboard",
+      name: "admin-dashboard",
       // component: AdminDashboardView,
       component: AdminDash, // Using HomeView as a placeholder for now
       meta: {
@@ -320,53 +323,65 @@ const router = createRouter({
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['admin'] // Only admin can access this route
-      }
+        allowedRoles: ["admin"], // Only admin can access this route
+      },
     },
     {
-      path: '/adminSongsManage',
-      name: 'Songs Management',
-      
-      component:AdminSongManage, 
+      path: "/adminSongsManage",
+      name: "Songs Management",
+
+      component: AdminSongManage,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ['admin'] // Only admin can access this route
-      }
+        allowedRoles: ["admin"], // Only admin can access this route
+      },
     },
     {
-      path: '/forbidden',
-      name: 'forbidden',
+      path: "/admin/model-upload",
+      name: "model-upload",
+      component: AdminModelUpload,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ["admin"], // Only admin can access this route
+      },
+    },
+    {
+      path: "/forbidden",
+      name: "forbidden",
       component: ForbiddenView,
       meta: {
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
-        requiresAuth: false // NotFound page doesn't require authentication
-      }
+        requiresAuth: false, // NotFound page doesn't require authentication
+      },
     },
 
     // The CATCH-ALL ROUTE
     {
-      path: '/:pathMatch(.*)*',
-      name: 'NotFound',
+      path: "/:pathMatch(.*)*",
+      name: "NotFound",
       component: NotFoundView,
       meta: {
         hideSidebar: true,
         hideTopNav: true,
         hidePlayer: true,
-        requiresAuth: false // NotFound page doesn't require authentication
-      }
-    }
-  ]
+        requiresAuth: false, // NotFound page doesn't require authentication
+      },
+    },
+  ],
 });
 
 // Global Navigation Guard
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('jwt_token'); // Check if token exists
-  const userDataString = localStorage.getItem('user_data');
+  const isAuthenticated = localStorage.getItem("jwt_token"); // Check if token exists
+  const userDataString = localStorage.getItem("user_data");
   let userRole = null;
 
   if (userDataString) {
@@ -376,7 +391,7 @@ router.beforeEach((to, from, next) => {
     } catch (e) {
       console.error("Error parsing user data from localStorage:", e);
       // Handle corrupted data, maybe clear it
-      localStorage.removeItem('user_data');
+      localStorage.removeItem("user_data");
     }
   }
 
@@ -384,37 +399,47 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     if (!isAuthenticated) {
       // If not authenticated, redirect to login page
-      console.log(`Access denied: Route ${to.path} requires authentication. Redirecting to login.`);
-      next({ name: 'login' });
+      console.log(
+        `Access denied: Route ${to.path} requires authentication. Redirecting to login.`
+      );
+      next({ name: "login" });
     } else {
       // If authenticated, check roles
       if (to.meta.allowedRoles && to.meta.allowedRoles.length > 0) {
         if (userRole && to.meta.allowedRoles.includes(userRole)) {
           // User has the required role, proceed
-          console.log(`Access granted: User role '${userRole}' is allowed on ${to.path}.`);
+          console.log(
+            `Access granted: User role '${userRole}' is allowed on ${to.path}.`
+          );
           next();
         } else {
           // User does not have the required role, redirect to unauthorized or home
-          console.warn(`Access denied: User role '${userRole}' not allowed on ${to.path}. Redirecting to home.`);
+          console.warn(
+            `Access denied: User role '${userRole}' not allowed on ${to.path}. Redirecting to home.`
+          );
           // 403 Forbidden page or a more appropriate fallback
-          next({ name: 'forbidden' });
+          next({ name: "forbidden" });
         }
       } else {
         // Route requires authentication but doesn't specify roles, just proceed
-        console.log(`Access granted: Route ${to.path} requires authentication, no specific roles needed.`);
+        console.log(
+          `Access granted: Route ${to.path} requires authentication, no specific roles needed.`
+        );
         next();
       }
     }
   } else {
     // If the route does NOT require authentication (e.g., login, public pages)
-    if (to.name === 'login' && isAuthenticated) {
-        // If user is already authenticated and tries to go to login page, redirect to home
-        console.log(`Already authenticated. Redirecting from login page to home.`);
-        next({ name: 'home' });
+    if (to.name === "login" && isAuthenticated) {
+      // If user is already authenticated and tries to go to login page, redirect to home
+      console.log(
+        `Already authenticated. Redirecting from login page to home.`
+      );
+      next({ name: "home" });
     } else {
-        // For all other public routes or if not authenticated and trying to access login, proceed
-        console.log(`Proceeding to public route: ${to.path}.`);
-        next();
+      // For all other public routes or if not authenticated and trying to access login, proceed
+      console.log(`Proceeding to public route: ${to.path}.`);
+      next();
     }
   }
 });
