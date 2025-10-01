@@ -1,12 +1,16 @@
 <script setup>
-const emit = defineEmits(["play"])
+const emit = defineEmits(["play"]);
 
+// Props
 defineProps({
   track: { type: Object, required: true },
   index: { type: Number, required: true },
   duration: { type: String, default: '' },
-  albumImage: { type: String, default: '/heart.jpeg' }
+  albumImage: { type: String, default: '/heart.jpeg' } // Use the passed album image
 });
+
+// Define file server base URL inside this component
+const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
 </script>
 
 <template>
@@ -18,10 +22,10 @@ defineProps({
     <div class="flex items-center space-x-3">
       <span class="text-gray-400 w-6">{{ index }}</span>
 
-      <img
-        :src="albumImage"
-        alt="cover"
-        class="w-10 h-10 rounded object-cover"
+      <img 
+        class="w-[30px] h-[30px] rounded-sm brightness-[0.5]" 
+        :src="`${fileServerBaseUrl}/public/images/${albumImage || track.albumcover || 'default_album.png'}`"
+        alt="Album Cover"
       />
 
       <span class="text-white font-medium truncate">{{ track.title }}</span>
@@ -33,6 +37,7 @@ defineProps({
     </div>
   </div>
 </template>
+
 <style scoped>
 div:hover {
   transition: background-color 0.2s ease-in-out;

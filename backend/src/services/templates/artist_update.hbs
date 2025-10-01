@@ -1,0 +1,40 @@
+<!-- Container -->
+<div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; overflow: hidden;">
+
+  <!-- Header -->
+  <div style="background: #1ED760; padding: 20px; text-align: center; color: white;">
+    <h1 style="margin: 0; font-size: 24px;">Your Artist Profile Has Been Updated 🎶</h1>
+  </div>
+
+  <!-- Body -->
+  <div style="padding: 25px; line-height: 1.6;">
+    <p style="font-size: 16px; margin: 0 0 15px 0;">Hello <strong>{{userName}}</strong>,</p>
+
+    <p style="font-size: 15px; margin: 0 0 15px 0;">
+      Your <strong>Harmoniq Artist Profile</strong> has been successfully updated.
+    </p>
+
+    <p style="font-size: 15px; margin: 0 0 15px 0;">
+      <strong>Updated Details:</strong><br>
+      <span style="color: #1ED760;">User Name:</span> {{userName}} <br>
+      <span style="color: #1ED760;">Artist Name:</span> {{artistName}} <br>
+      <span style="color: #1ED760;">Description:</span> {{artistDescription}}
+    </p>
+
+    <p style="font-size: 15px; margin: 0 0 15px 0;">
+      These changes are now live on your profile. Fans and listeners will see your latest updates immediately.
+    </p>
+
+    <div style="text-align: center; margin: 25px 0;">
+      <a href="{{appUrl}}/profile" 
+         style="background: #1ED760; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-size: 16px; display: inline-block;">
+         View My Profile
+      </a>
+    </div>
+
+    <p style="font-size: 14px; margin: 0;">
+      Keep creating, <br>
+      <span style="color: #555;">The Harmoniq Team</span>
+    </p>
+  </div>
+</div>

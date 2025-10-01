@@ -59,7 +59,7 @@ const handleLogin = async () => {
         <!-- Login form container, positioned above the canvas -->
         <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
             <div class="w-full max-w-md bg-[#181818] rounded-lg shadow-lg p-8">
-                <center><img src="images/icons/logo.png" style="width: 80%;"></center>
+                <center><img src="/images/icons/logo.png" style="width: 80%;" alt="Logo"></center>
                 <h4 class="text-white text-3xl font-bold text-center mb-6">Log In</h4>
 
                 <form @submit.prevent="handleLogin">

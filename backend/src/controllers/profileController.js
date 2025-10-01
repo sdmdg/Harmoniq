@@ -7,9 +7,12 @@ import {ModelgetProPic,
         updateArtistProfile } from '../models/User.js';
 import { uploadFileToServer } from '../services/fileService.js';
 
+import { sendEmail } from "../services/emailService.js";
+
 import { getRecentSongsByUser, getTrendingAlbums, getRecentReleases, getMostPlayedSongs, getTrendingArtists} from '../models/SongHistory.js';
 
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export const getProPic = async (req, res) => {
     try {
@@ -52,6 +55,8 @@ export const setProPic = async (req, res) => {
 export const updatePassword = async (req, res) => {
     try {
         const userId = req.user.id;
+        const username = req.user.username;
+        const email = req.user.email;
         const { currentPassword, newPassword } = req.body;
 
         if (!currentPassword || !newPassword) {
@@ -77,6 +82,15 @@ export const updatePassword = async (req, res) => {
         // Update the password in the database
         await updatePasswordInDb(userId, hashedNewPassword);
 
+        const token = jwt.sign({ id: userId, request: "PASSWORD-RESET-BY-MAIL" }, process.env.JWT_SECRET, { expiresIn: '2d' });
+
+        // --- Email ---
+        sendEmail("user_password_update", {
+            name: username,
+            token: token,
+            sender: "Harmoniq Team"
+        }, email, "Password Updated Successfully 🔒");     
+
         res.status(200).json({ message: 'Password updated successfully!' });
     } catch (error) {
         console.error('Password update failed:', error);
@@ -87,6 +101,7 @@ export const updatePassword = async (req, res) => {
 export const becomeArtist = async (req, res) => {
     try {
         const userId = req.user.id;
+        const email = req.user.email;
         const { artistName, artistDescription } = req.body;
 
         if (!artistName) {
@@ -98,6 +113,12 @@ export const becomeArtist = async (req, res) => {
 
         // 2. Create a new entry in the artists table
         await createArtistProfile(userId, artistName, artistDescription);
+
+        // --- Email ---
+        sendEmail("artist_upgrade", {
+            name: artistName,
+            sender: "Harmoniq Team"
+        }, email, "Your account has been upgraded to an Artist Profile. 🚀");
 
         // 3. Send a success response with the updated user data
         res.status(200).json({
@@ -131,6 +152,9 @@ export const getArtistDetails = async (req, res) => {
 export const updateArtistDetails = async (req, res) => {
     try {
         const userId = req.user.id;
+        const email = req.user.email;
+        const username = req.user.username;
+
         const { artistName, artistDescription } = req.body;
 
         if (!artistName) {
@@ -143,6 +167,14 @@ export const updateArtistDetails = async (req, res) => {
         if (!updatedArtist) {
             return res.status(404).json({ message: 'Artist profile not found.' });
         }
+
+        // --- Email ---
+        sendEmail("artist_update", {
+            userName: username,
+            artistName: artistName,
+            artistDescription: artistDescription,
+            sender: "Harmoniq Team"
+        }, email, "Your Artist Profile Has Been Updated 🎶");
 
         // The model returns the updated artist data, which we send back to the client
         res.status(200).json({
@@ -180,3 +212,4 @@ export const getHomePage = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch home page' });
   }
 };
+

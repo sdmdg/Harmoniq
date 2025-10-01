@@ -1,6 +1,6 @@
 // controllers/playlistController.js
 import {createPlaylist as createPlaylistModel,
-        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel } from '../models/Playlist.js';
+        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById, getPlaylistAlbumsModel } from '../models/Playlist.js';
 
 export const createPlaylist = async (req, res) => {
     try {
@@ -91,6 +91,54 @@ export const getPlaylist = async (req, res) => {
         res.status(200).json(sampleAlbum);
     } catch (error) {
         console.error("Get Album Error:", error);
+        res.status(500).json({ message: `Internal server error: ${error.message}` });
+    }
+};
+
+export const getPlaylists = async (req, res) => {
+  const { playlist_id } = req.params;
+  try { 
+    const tracks = await getPlaylistById(playlist_id);
+    if (!tracks || tracks.length === 0) {
+      return res.status(404).json({ message: "Playlist not found" });
+    }
+    // Build playlist object for frontend
+    const playlist = {
+      name: "Playlist", // You can fetch playlist name if needed
+      artist: "User",   // Or fetch actual artist/owner
+      tracks
+    };
+    res.status(200).json(playlist);
+  } catch (error) {
+    console.error("Get Playlist Error:", error);
+    res.status(500).json({ message: `Internal server error: ${error.message}` });
+  }
+};
+export const getPlaylistDetails = async (req, res) => {
+  const { playlist_id } = req.params;       
+    try {
+        const tracks = await getPlaylistDetailsById(playlist_id);
+        if (!tracks || tracks.length === 0) {
+            return res.status(404).json({ message: "Playlist not found" });
+        }                   
+        // Build playlist object for frontend
+        const playlist = {
+            name: tracks.title, // You can fetch playlist name if needed
+            creator: tracks.created_by, // Or fetch actual artist/owner
+            tracks        };
+        res.status(200).json(playlist);
+    } catch (error) {
+        console.error("Get Playlist Details Error:", error);
+        res.status(500).json({ message: `Internal server error: ${error.message}` });
+    }
+};
+export const getPlaylistAlbums = async (req, res) => {
+    const { playlist_id } = req.params;
+    try {
+        const albums = await getPlaylistAlbumsModel(playlist_id);
+        res.status(200).json(albums);
+    } catch (error) {
+        console.error("Get Playlist Albums Error:", error);
         res.status(500).json({ message: `Internal server error: ${error.message}` });
     }
 };

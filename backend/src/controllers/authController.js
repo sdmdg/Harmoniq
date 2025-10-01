@@ -1,7 +1,10 @@
 // controllers/authController.js
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { findUserByEmail, createUser } from '../models/User.js';
+import { findUserByEmail, createUser, findUserById, updatePasswordInDb} from '../models/User.js';
+
+import { sendEmail } from "../services/emailService.js";
+
 
 export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
@@ -24,12 +27,20 @@ export const registerUser = async (req, res) => {
 
     const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
+    // --- Email ---
+    sendEmail("welcome", {
+      name: username,
+      sender: "Harmoniq Team"
+    }, email, "Welcome to Harmoniq 🎶");
+
+
     res.status(200).json({
       token,
       user: {
         id: newUser.id,
         username: newUser.user_name,
         role: newUser.role,
+        email: email
       }
     });
 
@@ -65,5 +76,48 @@ export const loginUser = async (req, res) => {
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({ message: `Internal server error: ${error.message}` });
+  }
+};
+
+export const pwdChangeWithToken = async (req, res) => {
+  const { new_password, token } = req.body;
+
+  try {
+    if (!new_password || !token) {
+      return res.status(400).json({ message: 'Token and new password are required.' });
+    }
+
+    // Verify the token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ message: 'Invalid or expired token.' });
+    }
+
+
+    // Find user request
+    const request = decoded.request;
+    if (request !== "PASSWORD-RESET-BY-MAIL" && request !== "PASSWORD-RESET-BY-FORGOTPWD") {
+      return res.status(400).json({ message: 'request not found.' });
+    }
+
+    // Find user by decoded token id
+    const user = await findUserById(decoded.id);
+    if (!user) {
+      return res.status(400).json({ message: 'User not found.' });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    // Update the user's password in the database
+    await updatePasswordInDb(user.id, hashedPassword);
+
+    return res.status(200).json({ message: 'Password updated successfully!' });
+
+  } catch (error) {
+    console.error('Password Reset Error:', error);
+    return res.status(500).json({ message: 'Internal server error during password reset.' });
   }
 };
