@@ -163,13 +163,20 @@ export const createPlaylistWithRecommendations = async (req, res) => {
     }
 
     // 4. Insert recommended songs into playlist_songs
+    const dbSongs = await db.query(`SELECT id, title FROM songs WHERE title = ANY($1)`, [recommendations.map(r => r.title)]);
+    const songIdMap = Object.fromEntries(dbSongs.rows.map(s => [s.title, s.id]));
+
     for (const song of recommendations) {
-      await db.query(
-        `INSERT INTO public.playlist_songs (playlist_id, song_id, created_at)
-         VALUES ($1, $2, NOW())`,
-        [playlist.id, song.id]
-      );
+      const songId = songIdMap[song.title];
+      if (songId) {
+        await db.query(
+          `INSERT INTO public.playlist_songs (playlist_id, song_id, created_at)
+          VALUES ($1, $2, NOW())`,
+          [playlist.id, songId]
+        );
+      }
     }
+
 
     res.json({
       playlist,
