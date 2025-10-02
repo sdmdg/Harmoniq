@@ -122,7 +122,7 @@ export async function getAllUsers({ q = '', role = '', limit = 10, offset = 0 })
   const sql = `
     SELECT
       u.id, u.user_name, u.email, u.role, u.created_at,
-      u.pic_path AS profile_pic,
+      u.pic_path,
        a.id AS artist_id,  
       a.artist_name, a.description
     FROM users u
