@@ -286,13 +286,6 @@ onMounted(() => {
             </div>
           </div>
         </div>
-
-        <button
-          @click="fetchModelStatus"
-          class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-        >
-          Refresh Status
-        </button>
       </div>
 
       <!-- Upload Sections -->
@@ -557,9 +550,7 @@ onMounted(() => {
             • The models will be automatically deployed to the AI module after
             successful upload
           </li>
-          <li>
-            • Check the model status after upload to ensure they are active
-          </li>
+          <li>• You can upload multiple models.</li>
         </ul>
       </div>
     </div>
