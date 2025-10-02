@@ -8,19 +8,50 @@ from keras.models import load_model
 from collections import Counter
 from PIL import Image
 import tempfile
+from datetime import datetime
+import re
 
 # === Configuration ===
-MODEL_PATH = "./backend/ai_module/genre/models/genre_classifier_model_final.keras"
+MODEL_DIR = "./backend/ai_module/genre/models/"
+#MODEL_PATH = "./backend/ai_module/genre/models/genre_classifier_model_final.keras"
 TARGET_SHAPE = (288, 288)
 CLASSES = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock']
 
 
 # === 1. Load Trained Model ===
-def load_trained_model(model_path):
+def load_trained_model():
     try:
-        model = load_model(model_path)
-        print(f"Model loaded successfully from {model_path}")
-        return model
+            directory = MODEL_DIR
+    
+            # List all files with .keras or .h5 and the timestamp pattern
+            files = [
+                f for f in os.listdir(directory)
+                if re.match(r"genre_classifier_model_\d{8}_\d{6}\.(keras|h5)$", f)
+            ]
+
+            latest_file = None
+
+            if files:
+                # Extract datetime from filename
+                def get_datetime_from_filename(f):
+                    match = re.search(r"_(\d{8}_\d{6})\.(keras|h5)$", f)
+                    if match:
+                        return datetime.strptime(match.group(1), "%Y%m%d_%H%M%S")
+                    return datetime.min
+
+                # Get the latest file based on timestamp in filename
+                latest_file = max(files, key=get_datetime_from_filename)
+            else:
+                print("No matching model files found.")
+
+            if (latest_file):
+                model_path = os.path.join(MODEL_DIR, latest_file)
+                model = load_model(model_path)
+                print(f"Model loaded successfully from {latest_file}")
+                return model
+            else:
+                return None
+            
     except Exception as e:
         print(f"Error loading model: {e}")
         print(f"Please ensure the model path is correct.")
@@ -100,7 +131,7 @@ def predict_genre_chunk(model, chunk, sr, classes):
 
 
 # === 4. Main Genre Prediction Function ===
-def predict_genre(audio_path, model_path=MODEL_PATH, chunk_duration=30, overlap_duration=15):
+def predict_genre(audio_path, chunk_duration=30, overlap_duration=15):
     print("=" * 60)
     print("MUSIC GENRE PREDICTION")
     print("=" * 60)
@@ -109,7 +140,7 @@ def predict_genre(audio_path, model_path=MODEL_PATH, chunk_duration=30, overlap_
         print(f"Audio file '{audio_path}' not found.")
         return None
 
-    model = load_trained_model(model_path)
+    model = load_trained_model()
     if model is None:
         return None
 

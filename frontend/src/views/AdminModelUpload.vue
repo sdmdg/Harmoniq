@@ -41,7 +41,7 @@ const onMoodFileSelect = (event) => {
       errors.value.mood = "";
     } else {
       errors.value.mood =
-        "Please select a valid model file (.pkl, .h5, .pt, .pth, .onnx, .tflite)";
+        "Please select a valid model file (.h5, .keras)";
       event.target.value = "";
     }
   }
@@ -57,7 +57,7 @@ const onGenreFileSelect = (event) => {
       errors.value.genre = "";
     } else {
       errors.value.genre =
-        "Please select a valid model file (.pkl, .h5, .pt, .pth, .onnx, .tflite)";
+        "Please select a valid model file (.pkl, .h5, .keras)";
       event.target.value = "";
     }
   }
@@ -65,7 +65,7 @@ const onGenreFileSelect = (event) => {
 
 // File validation
 const validateModelFile = (file) => {
-  const validExtensions = [".pkl", ".h5", ".pt", ".pth", ".onnx", ".tflite"];
+  const validExtensions = [".pkl", ".h5", ".keras"];
   const fileName = file.name.toLowerCase();
   return validExtensions.some((ext) => fileName.endsWith(ext));
 };
@@ -305,29 +305,27 @@ onMounted(() => {
               ref="moodFileInput"
               type="file"
               @change="onMoodFileSelect"
-              accept=".pkl,.h5,.pt,.pth,.onnx,.tflite"
+              accept=".pkl,.h5,.keras"
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700"
             />
             <p class="text-xs text-gray-400 mt-1">
-              Supported formats: .pkl, .h5, .pt, .pth, .onnx, .tflite (Max:
-              100MB)
+              Supported formats: .pkl, .h5, .keras (Max:
+              300MB)
             </p>
           </div>
 
           <!-- Custom Filename Input -->
-          <div class="mb-4">
+          <div class="mb-4" v-if="0">
             <label class="block text-sm font-medium text-gray-300 mb-2">
               Model Filename
             </label>
             <input
               v-model="moodFileName"
               type="text"
+              readonly
               placeholder="Enter model filename (e.g., my_mood_model_v1.pkl)"
-              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
-            <p class="text-xs text-gray-400 mt-1">
-              This will be the filename saved in the AI module
-            </p>
           </div>
 
           <!-- Selected File Info -->
@@ -335,10 +333,7 @@ onMounted(() => {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-white">
-                  Original: {{ moodFile.name }}
-                </p>
-                <p class="text-sm text-green-400">
-                  Will save as: {{ moodFileName }}
+                  {{ moodFile.name }}
                 </p>
                 <p class="text-xs text-gray-400">
                   {{ formatFileSize(moodFile.size) }}
@@ -426,29 +421,27 @@ onMounted(() => {
               ref="genreFileInput"
               type="file"
               @change="onGenreFileSelect"
-              accept=".pkl,.h5,.pt,.pth,.onnx,.tflite"
+              accept=".h5,.keras"
               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700"
             />
             <p class="text-xs text-gray-400 mt-1">
-              Supported formats: .pkl, .h5, .pt, .pth, .onnx, .tflite (Max:
-              100MB)
+              Supported formats: .h5, .keras (Max:
+              300MB)
             </p>
           </div>
 
           <!-- Custom Filename Input -->
-          <div class="mb-4">
+          <div class="mb-4" v-if="0">
             <label class="block text-sm font-medium text-gray-300 mb-2">
               Model Filename
             </label>
-            <input
+            <input 
               v-model="genreFileName"
               type="text"
+              readonly
               placeholder="Enter model filename (e.g., my_genre_model_v1.pkl)"
-              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
-            <p class="text-xs text-gray-400 mt-1">
-              This will be the filename saved in the AI module
-            </p>
           </div>
 
           <!-- Selected File Info -->
@@ -456,10 +449,7 @@ onMounted(() => {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-white">
-                  Original: {{ genreFile.name }}
-                </p>
-                <p class="text-sm text-blue-400">
-                  Will save as: {{ genreFileName }}
+                  {{ genreFile.name }}
                 </p>
                 <p class="text-xs text-gray-400">
                   {{ formatFileSize(genreFile.size) }}
@@ -542,13 +532,15 @@ onMounted(() => {
             uploading models
           </li>
           <li>
-            • Supported model formats: .pkl (Pickle), .h5 (Keras), .pt/.pth
-            (PyTorch), .onnx (ONNX), .tflite (TensorFlow Lite)
+            • Supported model formats: .pkl (Pickle), .h5, .Keras
           </li>
-          <li>• Maximum file size is 100MB per model</li>
+          <li>• Maximum file size is 300MB per model</li>
           <li>
             • The models will be automatically deployed to the AI module after
             successful upload
+          </li>
+          <li>
+            • Ensure that the scaler associated with the mood model is also updated.
           </li>
           <li>• You can upload multiple models.</li>
         </ul>

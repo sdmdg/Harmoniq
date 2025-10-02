@@ -13,7 +13,7 @@ const router = Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB limit for model files
+    fileSize: 300 * 1024 * 1024, // 300MB limit for model files
   },
   fileFilter: (req, file, cb) => {
     // Accept common model file formats

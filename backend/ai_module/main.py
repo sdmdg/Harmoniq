@@ -9,7 +9,9 @@ from genre.genre_ai import predict_genre
 from mood.mood_ai import predict_mood
 from bpm.bpm import detect_bpm, get_duration
 import json
+from datetime import datetime
 
+MAIN_DIR = "./backend/ai_module/"
 app = FastAPI()
 
 @app.get("/predict")
@@ -117,7 +119,7 @@ async def upload_mood_model(model_file: UploadFile = File(...)):
         print(f"Uploading mood model: {model_file.filename}")
         
         # Validate file type
-        allowed_extensions = ['.pkl', '.h5', '.pt', '.pth', '.onnx', '.tflite']
+        allowed_extensions = ['.pkl', '.h5', '.keras']
         file_extension = os.path.splitext(model_file.filename)[1].lower()
         
         if file_extension not in allowed_extensions:
@@ -127,15 +129,19 @@ async def upload_mood_model(model_file: UploadFile = File(...)):
             )
         
         # Create models directory if it doesn't exist
-        mood_models_dir = os.path.join("mood", "models")
+        mood_models_dir = os.path.join(MAIN_DIR, "mood", "models")
         os.makedirs(mood_models_dir, exist_ok=True)
+
+        base_name = "mood_classifier_model"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{base_name}_{timestamp}{file_extension}"
         
         # Use original filename - no renaming
-        model_path = os.path.join(mood_models_dir, model_file.filename)
+        model_path = os.path.join(mood_models_dir, file_name)
         
         # Check if file already exists
         if os.path.exists(model_path):
-            print(f"Warning: File {model_file.filename} already exists and will be overwritten")
+            print(f"Warning: File {file_name} already exists and will be overwritten")
         
         # Save new model with original name
         with open(model_path, "wb") as buffer:
@@ -148,7 +154,7 @@ async def upload_mood_model(model_file: UploadFile = File(...)):
             status_code=200,
             content={
                 "message": "Mood model uploaded successfully",
-                "filename": model_file.filename,
+                "filename": file_name,
                 "path": model_path,
                 "size": len(content)
             }
@@ -165,7 +171,7 @@ async def upload_genre_model(model_file: UploadFile = File(...)):
         print(f"Uploading genre model: {model_file.filename}")
         
         # Validate file type
-        allowed_extensions = ['.pkl', '.h5', '.pt', '.pth', '.onnx', '.tflite']
+        allowed_extensions = ['.keras', '.h5']
         file_extension = os.path.splitext(model_file.filename)[1].lower()
         
         if file_extension not in allowed_extensions:
@@ -175,15 +181,19 @@ async def upload_genre_model(model_file: UploadFile = File(...)):
             )
         
         # Create models directory if it doesn't exist
-        genre_models_dir = os.path.join("genre", "models")
+        genre_models_dir = os.path.join(MAIN_DIR, "genre", "models")
         os.makedirs(genre_models_dir, exist_ok=True)
+
+        base_name = "genre_classifier_model"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{base_name}_{timestamp}{file_extension}"
         
         # Use original filename - no renaming
-        model_path = os.path.join(genre_models_dir, model_file.filename)
+        model_path = os.path.join(genre_models_dir, file_name)
         
         # Check if file already exists
         if os.path.exists(model_path):
-            print(f"Warning: File {model_file.filename} already exists and will be overwritten")
+            print(f"Warning: File {file_name} already exists and will be overwritten")
         
         # Save new model with original name
         with open(model_path, "wb") as buffer:
@@ -196,7 +206,7 @@ async def upload_genre_model(model_file: UploadFile = File(...)):
             status_code=200,
             content={
                 "message": "Genre model uploaded successfully",
-                "filename": model_file.filename,
+                "filename": file_name,
                 "path": model_path,
                 "size": len(content)
             }
@@ -214,10 +224,10 @@ async def get_model_status():
         genre_models = []
         
         # Check mood models
-        mood_models_dir = os.path.join("mood", "models")
+        mood_models_dir = os.path.join(MAIN_DIR, "mood", "models")
         if os.path.exists(mood_models_dir):
             for file in os.listdir(mood_models_dir):
-                if file.endswith(('.pkl', '.h5', '.pt', '.pth', '.onnx', '.tflite')):
+                if file.endswith(('.pkl', '.h5', '.keras')):
                     file_path = os.path.join(mood_models_dir, file)
                     file_size = os.path.getsize(file_path)
                     mood_models.append({
@@ -227,10 +237,10 @@ async def get_model_status():
                     })
         
         # Check genre models
-        genre_models_dir = os.path.join("genre", "models")
+        genre_models_dir = os.path.join(MAIN_DIR, "genre", "models")
         if os.path.exists(genre_models_dir):
             for file in os.listdir(genre_models_dir):
-                if file.endswith(('.pkl', '.h5', '.pt', '.pth', '.onnx', '.tflite')):
+                if file.endswith(('.pkl', '.h5', '.keras')):
                     file_path = os.path.join(genre_models_dir, file)
                     file_size = os.path.getsize(file_path)
                     genre_models.append({

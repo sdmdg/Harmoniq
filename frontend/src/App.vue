@@ -272,7 +272,7 @@ onUnmounted(() => {
         backdrop-filter: blur(10px);
       ">
 
-    <div class="relative flex items-center" ref="searchContainer">
+    <div v-if="userRole !== 'admin'" class="relative flex items-center" ref="searchContainer">
         <input
             type="text"
             v-model="searchQuery"
@@ -299,7 +299,7 @@ onUnmounted(() => {
         </div>
     </div>
 
-      <div class="relative">
+      <div class="relative ml-auto">
         <button
           @click="openMenu = !openMenu"
           :class="openMenu ? 'bg-[#282828]' : 'bg-black'"
