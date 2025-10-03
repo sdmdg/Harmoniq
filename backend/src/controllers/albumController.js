@@ -1,7 +1,7 @@
 // controller.js
 import { findAlbumsByUserId, createAlbum , findSongsByAlbumId} from '../models/Artist.js';
 import { uploadFileToServer } from '../services/fileService.js';
-import { fetchAlbumData } from '../models/Album.js';
+import { fetchAlbumData, ModelDeleteAlbum } from '../models/Album.js';
 
 export const getAlbum = async (req, res) => {
     const { album_id } = req.params;
@@ -97,4 +97,17 @@ export const uploadAlbumArt = async (req, res) => {
     console.error('Album art upload error:', err);
     res.status(500).json({ message: 'Album art upload failed' });
   }
+};
+export const deleteAlbum = async (req, res) => {
+    const { albumId } = req.params;     
+    try {
+        const deletedAlbum = await ModelDeleteAlbum(albumId);
+        if (!deletedAlbum) {
+            return res.status(404).json({ message: 'Album not found' });
+        }
+        res.status(200).json({ message: 'Album deleted successfully', album: deletedAlbum });
+    } catch (error) {
+        console.error('Controller error (deleteAlbum):', error);
+        res.status(500).json({ message: 'Server error while deleting album' });
+    }   
 };
