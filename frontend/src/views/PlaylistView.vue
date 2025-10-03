@@ -36,8 +36,12 @@ const fetchData = async () => {
 
   try {
     const { id } = route.params;
-    const response = await apiClient.get(`/api/playlist/get/${id}`);
+
+    // Get playlist metadata
     playlistData.value = (await apiClient.get(`/api/playlist/playlist_details/${id}`)).data;
+
+    // Get playlist tracks
+    const response = await apiClient.get(`/api/playlist/get/${id}`);
     console.log('Fetched playlist data:', playlistData.value);
     console.log('Fetched collection:', response.data);
 
@@ -54,20 +58,22 @@ const fetchData = async () => {
       artist: response.data.artist,
       tracks
     };
-
   } catch (err) {
     console.error('Error fetching playlist:', err);
-    error.value = 'Failed to load playlist.';
+
+    // If API returns no songs, still show empty playlist instead of error
+    if (err.response && err.response.status === 404) {
+      collection.value = { name: "", artist: "", tracks: [] };
+    } else {
+      error.value = 'Failed to load playlist.';
+    }
   } finally {
     loading.value = false;
   }
 };
 
-
-// Fetch initially
 onMounted(fetchData);
 
-// Watch route param changes and fetch new playlist
 watch(
   () => route.params.id,
   () => {
@@ -94,14 +100,17 @@ const formatDuration = (durationString) => {
         <!-- Left side: Album info (1/3) -->
         <div class="w-1/3 pr-6 flex flex-col items-center text-center">
 
-            <p class="text-gray-300 text-sm mt-3 font-semibold">
+          <p class="text-gray-300 text-sm mt-3 font-semibold">
             Your personal collection of loved tracks, curated just for you.
-            </p>
-            <img
-              :src="`${fileServerBaseUrl}/public/images/${currentTrack?.albumCover || collection.tracks[0]?.albumCover }`"
-              alt="Album Cover"
-              class="w-2/3 mx-auto rounded-xl shadow-lg mt-4"
-            />
+          </p>
+
+          <!-- Only show album cover if songs exist -->
+          <img
+            v-if="collection.tracks.length > 0"
+            :src="`${fileServerBaseUrl}/public/images/${currentTrack?.albumCover || collection.tracks[0]?.albumCover}`"
+            alt="Album Cover"
+            class="w-2/3 mx-auto rounded-xl shadow-lg mt-4"
+          />
 
           <p class="text-gray-300 text-sm mt-2">
             {{ collection.tracks.length }} songs
@@ -124,7 +133,7 @@ const formatDuration = (durationString) => {
         <div class="w-2/3">
           <!-- No songs message -->
           <div v-if="collection.tracks.length === 0" class="text-gray-400 text-center mt-6">
-            No songs inside the playlist
+            No songs related to this playlist were found.
           </div>
 
           <!-- Song list -->
@@ -159,12 +168,11 @@ const formatDuration = (durationString) => {
   </div>
 </template>
 
-
 <style scoped>
 .circle {
-    width: 4px;
-    height: 4px;
-    background-color: rgb(189, 189, 189);
-    border-radius: 100%;
+  width: 4px;
+  height: 4px;
+  background-color: rgb(189, 189, 189);
+  border-radius: 100%;
 }
 </style>

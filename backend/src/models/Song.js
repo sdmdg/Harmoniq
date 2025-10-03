@@ -205,3 +205,24 @@ export async function ModelDeleteSong(id) {
   await pool.query(`DELETE FROM songs WHERE id = $1`, [id]);
   return true;
 }
+
+export const ModelInsertLikedSongs = async (userId, songIds) => {
+  const query = `
+    INSERT INTO public.liked_songs (user_id, song_id)
+    SELECT $1, unnest($2::uuid[])
+    ON CONFLICT (user_id, song_id) DO NOTHING;
+  `;
+  const values = [userId, songIds];   
+  await db.query(query, values);
+  return true;
+};
+
+export const ModelRemoveLikedSongs = async (userId, songIds) => {
+  const query = `
+    DELETE FROM public.liked_songs
+    WHERE user_id = $1 AND song_id = ANY($2::uuid[]);
+  `;
+  const values = [userId, songIds];   
+  await db.query(query, values);
+  return true;
+};  
