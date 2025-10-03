@@ -1,6 +1,6 @@
 import express from "express";
 import multer from 'multer';
-import { setSong,setUserSong, updateSong , deleteSong,getSongById,listSongsAdmin, updateSongProgress} from "../controllers/songController.js";
+import { setSong,setUserSong, updateSong , deleteSong,getSongById,listSongsAdmin, updateSongProgress,likeSong,unlikeSong} from "../controllers/songController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 
@@ -16,4 +16,7 @@ router.post('/update', protect(["listener","artist"]), updateSongProgress);
 
 router.get("/:id", protect(["admin", "listener", "artist"]), getSongById);
 router.delete("/:id", protect(["admin"]), deleteSong);
+
+router.post('/like', protect(["listener","artist"]), likeSong);
+router.post('/unlike', protect(["listener","artist"]), unlikeSong);
 export default router;

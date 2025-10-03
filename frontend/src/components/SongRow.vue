@@ -3,7 +3,7 @@ import { ref, toRefs } from 'vue'
 import Heart from 'vue-material-design-icons/Heart.vue';
 import Play from 'vue-material-design-icons/Play.vue';
 import Pause from 'vue-material-design-icons/Pause.vue';
-
+import apiClient from '../utils/axios'
 import { useSongStore } from '../stores/song'
 import { storeToRefs } from 'pinia';
 const useSong = useSongStore()
@@ -12,7 +12,7 @@ const { isPlaying, currentTrack } = storeToRefs(useSong)
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
 
 let isHover = ref(false)
-
+let isLiked = ref(false)
 const props = defineProps({
     track: Object,
     artist: Object,
@@ -21,6 +21,19 @@ const props = defineProps({
 })
 
 const { track, artist, index, duration } = toRefs(props)
+const toggleLike = async () => {
+  try {
+    if (!isLiked.value) {
+      await apiClient.post('/api/songs/like', { songId: track.value.id })
+      isLiked.value = true
+    } else {
+      await apiClient.post('/api/songs/unlike', { songId: track.value.id })
+      isLiked.value = false
+    }
+  } catch (err) {
+    console.error("Toggle like error:", err)
+  }
+}
 </script>
 
 <template>
@@ -69,11 +82,12 @@ const { track, artist, index, duration } = toRefs(props)
             </div>
         </div>
         <div class="flex items-center">
-            <button type="button" v-if="isHover">
-                <Heart fillColor="#1BD760" :size="22"/>
+            <button type="button" v-if="isHover" @click="toggleLike">
+                <Heart :fillColor="isLiked ? '#1BD760' : '#FFFFFF'" :size="22"/>  
             </button>
             <div class="text-xs mx-5 text-gray-400">
-                {{ duration }}             </div>
-        </div>
+                {{ duration }}
+            </div>
+    </div>
     </li>
 </template>
