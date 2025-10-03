@@ -95,12 +95,14 @@ const toggleAlbum = async (albumId) => {
   if (!albumSongs.value[albumId]) {
     try {
       const response = await apiClient.get(`/api/album/album_songs/${albumId}`);
+      console.log("songs:", response.data);
       albumSongs.value[albumId] = response.data.map((song) => {
         return {
           id: song.id,
           name: song.title,
           key: song.encryption_key,     
           path: song.id,     
+          albumCover: song.albumcover || '/default.jpg',
         };
       });
     } catch (err) {
@@ -155,25 +157,54 @@ onMounted(() => {
         </div>
 
         <!-- Songs Section -->
-        <ul v-if="expandedAlbumId === album.id" class="w-full mt-2 px-2 space-y-1 max-h-48 overflow-y-auto">
-          <SongRow
-            v-for="(song, index) in albumSongs[album.id] || []"
-            :key="song.id"
-            :track="song"
-            :artist="album"
-            :index="index + 1"
-          />
-          <li v-if="(albumSongs[album.id] || []).length === 0" class="text-gray-500 text-sm text-center">
-            No songs found.
-          </li>
-        </ul>
+        <!-- Songs Section -->
+<ul
+  v-if="expandedAlbumId === album.id"
+  class="w-full mt-3 px-3 space-y-2 max-h-64 overflow-y-auto bg-[#121212] rounded-lg shadow-inner"
+>
+  <SongRow
+    v-for="(song, index) in albumSongs[album.id] || []"
+    :key="song.id"
+    :track="song"
+    :artist="album"
+    :index="index + 1"
+    class="border-b border-gray-700 last:border-none"
+  />
+  <li
+    v-if="(albumSongs[album.id] || []).length === 0"
+    class="text-gray-500 text-sm text-center py-2"
+  >
+    No songs found.
+  </li>
+</ul>
+
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-div:hover {
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+/* Make the song list scroll nicely */
+ul::-webkit-scrollbar {
+  width: 6px;
+}
+ul::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+ul::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Add breathing space between rows */
+ul li {
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+/* Highlight rows slightly on hover */
+ul li:hover {
+  background-color: #1e1e1e;
+  transition: background 0.2s ease-in-out;
 }
 </style>
