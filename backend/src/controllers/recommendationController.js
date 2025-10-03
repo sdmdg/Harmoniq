@@ -83,7 +83,7 @@ export const recommendSongs = async (req, res) => {
     const recommendations = await getTopRecommendations(userVector, 10);
     res.json({ userVector, recommendations });
   } catch (err) {
-    console.error("❌ Error in recommendSongs:", err);
+    console.error(" Error in recommendSongs:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -94,7 +94,7 @@ export const getSongBasedRecommendations = async (req, res) => {
     const recommendations = await generateSongBasedPlaylist(songId);
     res.json({ recommendations });
   } catch (err) {
-    console.error("❌ Error in getSongBasedRecommendations:", err);
+    console.error(" Error in getSongBasedRecommendations:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -104,14 +104,32 @@ export const recommendByMood = async (req, res) => {
     const { userId, mood } = req.params;
     const userSongs = await getUserSongs(userId);
 
-    if (!userSongs.length) return res.status(404).json({ message: "No songs found" });
+    if (!userSongs.length) {
+      return res.status(404).json({ message: "No songs found" });
+    }
 
     const userVector = buildUserVector(userSongs);
-    const recommendations = await getRecommendationsFiltered(userVector, "mood", mood.toLowerCase(), 20);
+
+    
+    const normalizedMood = Object.keys(moodMap).find(
+      (m) => m.toLowerCase() === decodeURIComponent(mood).toLowerCase()
+    );
+
+    if (!normalizedMood) {
+      return res.status(400).json({ message: `Invalid mood: ${mood}` });
+    }
+
+    // Pass normalized mood (exact DB string, e.g. "Happy / Excited")
+    const recommendations = await getRecommendationsFiltered(
+      userVector,
+      "mood",
+      normalizedMood,
+      20
+    );
 
     res.json({ userVector, recommendations });
   } catch (err) {
-    console.error("❌ Error in recommendByMood:", err);
+    console.error(" Error in recommendByMood:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -128,7 +146,7 @@ export const recommendByGenre = async (req, res) => {
 
     res.json({ userVector, recommendations });
   } catch (err) {
-    console.error("❌ Error in recommendByGenre:", err);
+    console.error(" Error in recommendByGenre:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -149,39 +167,56 @@ export const createPlaylistWithRecommendations = async (req, res) => {
     // 2. Fetch user songs and build vector
     const userSongs = await getUserSongs(userId);
     if (!userSongs.length) {
-      return res.status(404).json({ message: "No songs found for recommendations" });
+        return res.json({ playlist, songs: [] }); 
     }
-
     const userVector = buildUserVector(userSongs);
 
     // 3. Get recommendations
     let recommendations = [];
     if (type === "mood" && mood) {
-      recommendations = await getRecommendationsFiltered(userVector, "mood", mood.toLowerCase(), 20);
-    } else if (type === "genre" && genre) {
+  const decodedMood = decodeURIComponent(mood);
+
+
+  const moodAlias = {
+    "Happy": "Happy / Excited",
+    "Energetic": "Happy / Excited",
+    "Angry": "Angry / Tense",
+    "Tense": "Angry / Tense",
+    "Sad": "Sad / Calm",
+    "Chill": "Calm / Relaxed",
+    "Relaxing": "Calm / Relaxed",
+    "Romantic": "Mixed / Uncertain Mood"
+  };
+
+  const normalizedMood = moodAlias[decodedMood] || null;
+
+
+  if (!normalizedMood) {
+    return res.status(400).json({ message: `Invalid mood: ${mood}` });
+  }
+
+  recommendations = await getRecommendationsFiltered(
+    userVector,
+    "mood",
+    normalizedMood,
+    20
+  );
+}else if (type === "genre" && genre) {
       recommendations = await getRecommendationsFiltered(userVector, "genre", genre.toLowerCase(), 20);
     }
 
-    // 4. Insert recommended songs into playlist_songs
-    const dbSongs = await db.query(`SELECT id, title FROM songs WHERE title = ANY($1)`, [recommendations.map(r => r.title)]);
-    const songIdMap = Object.fromEntries(dbSongs.rows.map(s => [s.title, s.id]));
-
+    // 4. Insert recommended songs directly by ID
     for (const song of recommendations) {
-      const songId = songIdMap[song.title];
-      if (songId) {
+      if (song.id) {
         await db.query(
           `INSERT INTO public.playlist_songs (playlist_id, song_id, created_at)
-          VALUES ($1, $2, NOW())`,
-          [playlist.id, songId]
+           VALUES ($1, $2, NOW())`,
+          [playlist.id, song.id]
         );
       }
     }
 
-
-    res.json({
-      playlist,
-      songs: recommendations,
-    });
+    res.json({ playlist, songs: recommendations });
   } catch (err) {
     console.error("❌ Error in createPlaylistWithRecommendations:", err);
     res.status(500).json({ error: "Internal Server Error" });

@@ -18,6 +18,7 @@ export const getUserSongs = async (userId) => {
 };
 // models/recommendationModel.js
 export const getRecommendationsFiltered = async (userVector, filter, value, limit = 20) => {
+  console.log('getRecommendationsFiltered:', filter, value);
   const query = `
     WITH user_vec AS (
       SELECT $1::REAL[] AS vector
