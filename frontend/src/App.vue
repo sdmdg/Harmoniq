@@ -123,15 +123,14 @@ const logout = () => {
 
 // Use onMounted to fetch initial data
 onMounted(() => {
-  if (!window.location.pathname.includes("password-reset")){
+  if (!window.location.pathname.includes("password-reset")) {
     isPlaying.value = false;
     fetchUser();
     fetchUserPlaylists();
   }
 });
 
-
-const searchQuery = ref('');
+const searchQuery = ref("");
 const searchResults = ref(null);
 const isSearching = ref(false);
 const searchContainer = ref(null);
@@ -143,17 +142,19 @@ const handleSearch = async () => {
   }
   try {
     isSearching.value = true;
-    const response = await apiClient.get(`/api/search/all?query=${encodeURIComponent(searchQuery.value)}`);
+    const response = await apiClient.get(
+      `/api/search/all?query=${encodeURIComponent(searchQuery.value)}`
+    );
     searchResults.value = response.data; // { tracks:[], albums:[], artists:[] }
   } catch (error) {
-    console.error('Search failed:', error);
+    console.error("Search failed:", error);
   } finally {
     isSearching.value = false;
   }
 };
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
+  document.addEventListener("click", handleClickOutside);
 });
 
 const handleClickOutside = (event) => {
@@ -163,9 +164,8 @@ const handleClickOutside = (event) => {
 };
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener("click", handleClickOutside);
 });
-
 </script>
 
 <template>
@@ -175,9 +175,13 @@ onUnmounted(() => {
       id="SideNav"
       class="h-[100%] p-6 w-[240px] fixed z-50 bg-black"
     >
-
       <RouterLink to="/home">
-        <img class="transition-transform duration-200" width="180" src="/images/icons/logo.png" alt="Logo"/>
+        <img
+          class="transition-transform duration-200"
+          width="180"
+          src="/images/icons/logo.png"
+          alt="Logo"
+        />
       </RouterLink>
 
       <div class="my-8"></div>
@@ -185,18 +189,20 @@ onUnmounted(() => {
       <ul>
         <!--  Listener & Artist   -->
         <RouterLink v-if="userRole !== 'admin'" to="/home">
-          <MenuItem :iconSize="23" name="Home" iconString="home"/>
+          <MenuItem :iconSize="23" name="Home" iconString="home" />
         </RouterLink>
         <RouterLink v-if="userRole !== 'admin'" to="/library">
-          <MenuItem :iconSize="23" name="Your Library" iconString="library"/>
+          <MenuItem :iconSize="23" name="Your Library" iconString="library" />
         </RouterLink>
         <RouterLink v-if="userRole !== 'admin'" to="/liked-songs">
-          <MenuItem :iconSize="23" name="Liked Songs" iconString="liked"/>
+          <MenuItem :iconSize="23" name="Liked Songs" iconString="liked" />
         </RouterLink>
 
-
         <!--  Specific Features   -->
-        <div v-if="userRole !== 'admin'" class="border-b border-b-gray-700 my-4"></div>
+        <div
+          v-if="userRole !== 'admin'"
+          class="border-b border-b-gray-700 my-4"
+        ></div>
         <RouterLink v-if="userRole !== 'admin'" to="/upload">
           <MenuItem :iconSize="23" name="Upload Songs" iconString="playlist" />
         </RouterLink>
@@ -204,9 +210,12 @@ onUnmounted(() => {
           <MenuItem :iconSize="23" name="My Albums" iconString="playlist" />
         </RouterLink>
         <RouterLink v-if="userRole !== 'admin'" to="/reportIssue">
-          <MenuItem :iconSize="23" name="Report an Issue" iconString="playlist"/>
+          <MenuItem
+            :iconSize="23"
+            name="Report an Issue"
+            iconString="playlist"
+          />
         </RouterLink>
-
 
         <!--  Admin   -->
         <RouterLink v-if="userRole == 'admin'" to="/admin-dashboard">
@@ -221,11 +230,37 @@ onUnmounted(() => {
         <RouterLink v-if="userRole == 'admin'" to="/adminUsersManage">
           <MenuItem :iconSize="23" name="Users" iconString="playlist" />
         </RouterLink>
+        <RouterLink v-if="userRole == 'admin'" to="/admin/model-upload">
+          <li class="flex items-center justify-start pb-4 cursor-pointer group">
+            <div class="flex items-center">
+              <svg
+                class="w-6 h-6 text-gray-400 group-hover:text-white transition-colors"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                />
+              </svg>
+              <div
+                class="font-semibold text-[14px] ml-4 mt-0.5 text-gray-400 group-hover:text-white transition-colors"
+              >
+                <span> AI Models</span>
+              </div>
+            </div>
+          </li>
+        </RouterLink>
       </ul>
 
-
       <!--  Playlist  -->
-      <div v-if="userRole !== 'admin'" class="border-b border-b-gray-700 my-4"></div>
+      <div
+        v-if="userRole !== 'admin'"
+        class="border-b border-b-gray-700 my-4"
+      ></div>
 
       <div>
         <button
@@ -258,10 +293,12 @@ onUnmounted(() => {
           </ul>
         </div>
       </div>
-      <CreatePlaylistModal :isOpen="isModalOpen" @close="isModalOpen = false" @playlist-created="handlePlaylistCreated"/>
+      <CreatePlaylistModal
+        :isOpen="isModalOpen"
+        @close="isModalOpen = false"
+        @playlist-created="handlePlaylistCreated"
+      />
     </div>
-
-
 
     <div
       v-if="!hideTopNav()"
@@ -270,34 +307,48 @@ onUnmounted(() => {
       style="
         background-color: rgba(16, 16, 16, 0.8);
         backdrop-filter: blur(10px);
-      ">
-
-    <div v-if="userRole !== 'admin'" class="relative flex items-center" ref="searchContainer">
+      "
+    >
+      <div
+        v-if="userRole !== 'admin'"
+        class="relative flex items-center"
+        ref="searchContainer"
+      >
         <input
-            type="text"
-            v-model="searchQuery"
-            @input="handleSearch"
-            placeholder="What do you want to listen to?"
-            class="w-full md:w-[300px] bg-[#282828] text-white rounded-full py-2 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
+          type="text"
+          v-model="searchQuery"
+          @input="handleSearch"
+          placeholder="What do you want to listen to?"
+          class="w-full md:w-[300px] bg-[#282828] text-white rounded-full py-2 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
         />
-        <svg class="absolute right-3 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <svg
+          class="absolute right-3 w-5 h-5 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
         </svg>
 
         <!-- Search Results Dropdown -->
         <div
-            v-if="searchResults"
-            class="absolute top-12 left-0 w-[400px] max-h-[500px] rounded-lg shadow-lg z-50"
-            style="background-color: rgba(24,24,24,0.98);"
-            >
-            <div class="overflow-y-auto max-h-[500px] rounded-lg">
-                <SearchResults 
-                :results="searchResults" 
-                @item-selected="searchResults = null" 
-                />
-            </div>
+          v-if="searchResults"
+          class="absolute top-12 left-0 w-[400px] max-h-[500px] rounded-lg shadow-lg z-50"
+          style="background-color: rgba(24, 24, 24, 0.98)"
+        >
+          <div class="overflow-y-auto max-h-[500px] rounded-lg">
+            <SearchResults
+              :results="searchResults"
+              @item-selected="searchResults = null"
+            />
+          </div>
         </div>
-    </div>
+      </div>
 
       <div class="relative ml-auto">
         <button
