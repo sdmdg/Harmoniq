@@ -110,6 +110,45 @@
               {{ song.title }}
             </h1>
 
+            <!-- Artist and Album Info -->
+            <div class="flex flex-wrap items-center gap-4 mb-3 text-sm">
+              <div class="flex items-center gap-2">
+                <svg
+                  class="w-4 h-4 text-gray-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+                <span class="text-gray-300">by</span>
+                <span class="text-white font-medium">{{
+                  song.artist_name || "Unknown Artist"
+                }}</span>
+              </div>
+              <div v-if="song.album_name" class="flex items-center gap-2">
+                <svg
+                  class="w-4 h-4 text-gray-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"></path>
+                  <path
+                    fill-rule="evenodd"
+                    d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+                <span class="text-gray-300">from</span>
+                <span class="text-white font-medium">{{
+                  song.album_name
+                }}</span>
+              </div>
+            </div>
+
             <!-- Buffering indicator -->
             <div
               v-if="
@@ -202,6 +241,30 @@
               <span
                 class="text-white text-right max-w-xs break-words text-sm font-semibold"
                 >{{ song.title }}</span
+              >
+            </div>
+            <div class="flex justify-between items-start">
+              <span class="text-gray-300 font-medium text-sm">Artist:</span>
+              <span
+                class="text-green-300 text-right max-w-xs break-words text-sm font-semibold"
+                >{{ song.artist_name || "Unknown Artist" }}</span
+              >
+            </div>
+            <div class="flex justify-between items-start">
+              <span class="text-gray-300 font-medium text-sm">Album:</span>
+              <span
+                class="text-blue-300 text-right max-w-xs break-words text-sm font-semibold"
+                >{{ song.album_name || "No Album" }}</span
+              >
+            </div>
+            <div
+              v-if="song.durationSeconds"
+              class="flex justify-between items-start"
+            >
+              <span class="text-gray-300 font-medium text-sm">Duration:</span>
+              <span
+                class="text-white text-right text-sm font-mono font-semibold"
+                >{{ formatTime(song.durationSeconds) }}</span
               >
             </div>
             <div class="flex justify-between items-start">
