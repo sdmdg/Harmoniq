@@ -1,5 +1,5 @@
 import express from "express";
-import { getAlbum, getAlbumsByUserId ,addAlbum ,uploadAlbumArt,getSongsByAlbumId } from "../controllers/albumController.js";
+import { getAlbum, getAlbumsByUserId ,addAlbum ,uploadAlbumArt,getSongsByAlbumId, deleteAlbum } from "../controllers/albumController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import multer from "multer";
 const router = express.Router();
@@ -9,4 +9,5 @@ router.get("/user/:userId", protect(["artist"]), getAlbumsByUserId);
 router.post("/add", protect(["admin", "artist"]), addAlbum);
 router.post("/upload-art", protect(["admin", "artist"]), upload.single("file"), uploadAlbumArt);
 router.get("/album_songs/:albumId", protect(["admin", "listener", "artist"]), getSongsByAlbumId);
+router.delete("/delete/:albumId", protect(["admin", "artist"]),deleteAlbum);
 export default router;

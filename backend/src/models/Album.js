@@ -79,3 +79,9 @@ export const fetchAlbumData = async (albumId) => {
 
     return fullAlbum;
 };
+
+export const ModelDeleteAlbum = async (albumId) => {
+    const deleteAlbumQuery = 'DELETE FROM albums WHERE id = $1 RETURNING *';
+    const result = await pool.query(deleteAlbumQuery, [albumId]);
+    return result.rows[0];
+};

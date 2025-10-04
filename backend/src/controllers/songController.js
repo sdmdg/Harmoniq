@@ -356,3 +356,32 @@ export const updateSongProgress = async (req, res) => {
   }
 }
 
+export const likeSong = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { songId } = req.body; 
+    if (!songId) {
+      return res.status(400).json({ message: "songId is required" });
+    }
+    await ModelInsertLikedSongs(userId, songId);
+    return res.status(200).json({ message: "Song liked" });
+  } catch (err) {
+    console.error("likeSong error:", err);
+    return res.status(500).json({ message: "Failed to like song." });
+  } 
+};
+
+export const unlikeSong = async (req, res) => {   
+  try {
+    const userId = req.user.id;
+    const { songId } = req.body;
+    if (!songId) {
+      return res.status(400).json({ message: "songId is required" });
+    }
+    await ModelRemoveLikedSongs(userId, songId);
+    return res.status(200).json({ message: "Song unliked" });
+  } catch (err) {
+    console.error("unlikeSong error:", err);
+    return res.status(500).json({ message: "Failed to unlike song." });
+  }   
+};

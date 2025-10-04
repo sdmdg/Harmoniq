@@ -12,11 +12,24 @@ const router = useRouter();
 
 const VITE_FILE_SERVER = import.meta.env.VITE_FILE_SERVER; 
 
-// Track which album is expanded
 const expandedAlbumId = ref(null);
-const albumSongs = ref({}); // { albumId: [songs] }
+const albumSongs = ref({});
 
-// Get user from localStorage
+// Delete album function
+const deleteAlbum = async (albumId) => {
+  if (!confirm("Are you sure you want to delete this album?")) return;
+
+  try {
+    await apiClient.delete(`/api/album/delete/${albumId}`);
+    albums.value = albums.value.filter((album) => album.id !== albumId); 
+    delete albumSongs.value[albumId]; 
+  } catch (err) {
+    console.error("Error deleting album:", err);
+    alert(err.response?.data?.message || "Failed to delete album.");
+  }
+};
+
+// Get user
 const fetchUser = () => {
   const userData = localStorage.getItem('user_data');
   if (userData) {
@@ -26,7 +39,6 @@ const fetchUser = () => {
   }
 };
 
-// Check if an image exists by trying to load it
 function imageExists(url) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -36,38 +48,30 @@ function imageExists(url) {
   });
 }
 
-// Fetch albums using apiClient
+// Fetch albums
 const fetchAlbums = async () => {
   if (!user.value) return;
   loading.value = true;
   errorMessage.value = '';
   try {
     const response = await apiClient.get(`api/album/user/${user.value.id}`);
-    console.log('Albums API response:', response.data);
-
+    console.log(response.data);
     const base = `${VITE_FILE_SERVER}/public/images`;
     const exts = ['.png', '.jpg', '.jpeg'];
 
     albums.value = await Promise.all(
       response.data.map(async (album) => {
         let coverUrl = null;
-
         for (const ext of exts) {
           const url = `${base}/${album.album_art_id}${ext}`;
-          console.log(`Trying URL: ${url}`);
-          // eslint-disable-next-line no-await-in-loop
           if (await imageExists(url)) {
             coverUrl = url;
-            console.log(`Found cover for "${album.title}": ${url}`);
             break;
           }
         }
-
         if (!coverUrl) {
-          console.warn(`No cover found for "${album.title}", using placeholder`);
           coverUrl = 'https://via.placeholder.com/300x300?text=No+Cover';
         }
-
         return { ...album, coverUrl };
       })
     );
@@ -80,7 +84,7 @@ const fetchAlbums = async () => {
   }
 };
 
-// Toggle album expansion + fetch songs if not loaded
+// Toggle expand + fetch songs
 const toggleAlbum = async (albumId) => {
   if (expandedAlbumId.value === albumId) {
     expandedAlbumId.value = null; 
@@ -89,25 +93,22 @@ const toggleAlbum = async (albumId) => {
   expandedAlbumId.value = albumId;
 
   if (!albumSongs.value[albumId]) {
-    console.log('Fetching songs for album:', albumId);
     try {
       const response = await apiClient.get(`/api/album/album_songs/${albumId}`);
-      console.log(`Songs fetched for album ${albumId}:`, response.data);
-
+      console.log("songs:", response.data);
       albumSongs.value[albumId] = response.data.map((song) => {
         return {
           id: song.id,
           name: song.title,
           key: song.encryption_key,     
           path: song.id,     
+          albumCover: song.albumcover || '/default.jpg',
         };
       });
     } catch (err) {
       console.error('Error fetching songs:', err);
       albumSongs.value[albumId] = [];
     }
-  } else {
-    console.log('Songs already loaded for album:', albumId);
   }
 };
 
@@ -118,67 +119,92 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-black p-6">
-    <h2 class="text-3xl font-bold text-white mb-6 text-center">My Albums</h2>
+  <div class="min-h-screen bg-black p-4 sm:p-6">
+    <h2 class="text-2xl sm:text-3xl font-bold text-white mb-6 text-center">My Albums</h2>
 
     <div v-if="loading" class="text-gray-400 text-center">Loading albums...</div>
     <div v-else-if="errorMessage" class="text-red-500 text-center">{{ errorMessage }}</div>
     <div v-else-if="albums.length === 0" class="text-gray-400 text-center">No albums found.</div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
       <div
         v-for="album in albums"
         :key="album.id"
-        class="bg-[#181818] rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
-        @click="toggleAlbum(album.id)"
+        class="relative bg-[#181818] rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer flex flex-col items-center"
       >
-          <!-- Delete Button at top-right -->
-      <button
-        @click.stop="deleteAlbum(album.id)"
-        class="absolute top-2 right-2 flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-all duration-300 hover:scale-105"
-      >
-        <!-- Optional Trash Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-        Delete
-      </button>
+        <!-- Delete Button always visible -->
+        <button
+          @click.stop="deleteAlbum(album.id)"
+          class="absolute top-2 right-2 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white text-sm w-7 h-7 rounded-full shadow-md transition-all duration-300 z-10"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
 
+        <!-- Album cover -->
         <img
           :src="album.coverUrl || 'https://via.placeholder.com/300x300?text=No+Cover'"
           alt="Album Cover"
-          class="w-48 h-48 object-cover mx-auto"
+          class="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 object-cover rounded-lg mt-4"
+          @click="toggleAlbum(album.id)"
         />
 
-        <div class="p-4">
-          <h3 class="text-white font-semibold text-lg truncate">{{ album.title }}</h3>
-          <p class="text-gray-400 text-sm mt-1">Artist: {{ album.artistName || 'You' }}</p>
-
-          <!-- Songs Section -->
-          <ul v-if="expandedAlbumId === album.id" class="mt-3 space-y-2">
-            <SongRow
-              v-for="(song, index) in albumSongs[album.id] || []"
-              :key="song.id"
-              :track="song"
-              :artist="album"
-              :index="index + 1"
- 
-            />
-            <li
-              v-if="(albumSongs[album.id] || []).length === 0"
-              class="text-gray-500 text-sm"
-            >
-              No songs found.
-            </li>
-          </ul>
+        <!-- Album info -->
+        <div class="p-2 text-center w-full">
+          <h3 class="text-white font-semibold text-sm sm:text-base truncate">{{ album.title }}</h3>
+          <p class="text-gray-400 text-xs sm:text-sm mt-1 truncate">Artist: {{ album.artistName || 'You' }}</p>
         </div>
+
+        <!-- Songs Section -->
+        <!-- Songs Section -->
+<ul
+  v-if="expandedAlbumId === album.id"
+  class="w-full mt-3 px-3 space-y-2 max-h-64 overflow-y-auto bg-[#121212] rounded-lg shadow-inner"
+>
+  <SongRow
+    v-for="(song, index) in albumSongs[album.id] || []"
+    :key="song.id"
+    :track="song"
+    :artist="album"
+    :index="index + 1"
+    class="border-b border-gray-700 last:border-none"
+  />
+  <li
+    v-if="(albumSongs[album.id] || []).length === 0"
+    class="text-gray-500 text-sm text-center py-2"
+  >
+    No songs found.
+  </li>
+</ul>
+
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-div:hover {
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+/* Make the song list scroll nicely */
+ul::-webkit-scrollbar {
+  width: 6px;
+}
+ul::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+ul::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Add breathing space between rows */
+ul li {
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+/* Highlight rows slightly on hover */
+ul li:hover {
+  background-color: #1e1e1e;
+  transition: background 0.2s ease-in-out;
 }
 </style>
