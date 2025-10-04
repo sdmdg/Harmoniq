@@ -75,7 +75,7 @@ async function goToEntity(a) {
   else if (type === "playlist") path = `/playlist/${id}`;
   else if (type === "report") path = `/reports/${id}`;
   else if (type === "user") path = `/usersignup/${id}`;
-  else if (type === "song") console.warn("[goToEntity] No /song/:id route yet");
+  else if (type === "song") path = `/song/${id}`;
   else console.warn("[goToEntity] No matching route for", type);
 
   if (!path) return;
