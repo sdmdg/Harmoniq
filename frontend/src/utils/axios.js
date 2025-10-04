@@ -2,9 +2,11 @@
 import axios from 'axios';
 import router from '../router';
 
+const backendServerBaseUrl = import.meta.env.VITE_BACKEND_SERVER;
+
 // Create a custom Axios instance
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/',
+  baseURL: backendServerBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },

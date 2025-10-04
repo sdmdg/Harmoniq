@@ -2,6 +2,8 @@
 import { useRouter } from "vue-router";
 import { useSongStore } from "../stores/song";
 
+const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER;
+
 const props = defineProps({
   type: { type: String, required: true }, // "track" | "album" | "artist"
   item: { type: Object, required: true },
@@ -35,12 +37,12 @@ const goToArtist = (id) => router.push(`/artist/${id}`);
     <!-- Cover or photo -->
     <img
       v-if="type === 'track' || type === 'album'"
-      :src="`http://localhost:3000/public/images/${item.albumCover}`"
+      :src="`${fileServerBaseUrl}/public/images/${item.albumCover}`"
       class="w-12 h-12 rounded object-cover mr-4"
     />
     <img
       v-else-if="type === 'artist'"
-      :src="`http://localhost:3000/public/images/${item.photo}`"
+      :src="`${fileServerBaseUrl}/public/images/${item.photo}`"
       class="w-12 h-12 rounded-full object-cover mr-4"
     />
 
