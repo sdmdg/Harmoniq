@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import CryptoJS from "crypto-js"; // npm install crypto-js
 
 // --- Config ---
 const fileServerBaseUrl =
@@ -15,23 +16,89 @@ function hexToBytes(hex) {
   return bytes;
 }
 
-async function decryptAesCbcToArrayBuffer(
-  encryptedArrayBuffer,
-  ENCRYPTION_KEY_HEX
-) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    hexToBytes(ENCRYPTION_KEY_HEX),
-    { name: "AES-CBC" },
-    false,
-    ["decrypt"]
-  );
-  const iv = hexToBytes(ENCRYPTION_IV_HEX);
-  return crypto.subtle.decrypt(
-    { name: "AES-CBC", iv },
-    key,
-    encryptedArrayBuffer
-  );
+// --- Helpers for CryptoJS fallback ---
+// ArrayBuffer -> CryptoJS WordArray
+function arrayBufferToWordArray(ab) {
+  const u8 = new Uint8Array(ab);
+  const words = [];
+  for (let i = 0; i < u8.length; i += 4) {
+    words.push(
+      ((u8[i] || 0) << 24) |
+      ((u8[i + 1] || 0) << 16) |
+      ((u8[i + 2] || 0) << 8) |
+      ((u8[i + 3] || 0))
+    );
+  }
+  return CryptoJS.lib.WordArray.create(words, u8.length);
+}
+
+// CryptoJS WordArray -> ArrayBuffer
+function wordArrayToArrayBuffer(wordArray) {
+  const { words, sigBytes } = wordArray;
+  const ab = new ArrayBuffer(sigBytes);
+  const u8 = new Uint8Array(ab);
+  let idx = 0;
+  for (let i = 0; i < words.length; i++) {
+    let w = words[i];
+    if (idx < sigBytes) u8[idx++] = (w >>> 24) & 0xff;
+    if (idx < sigBytes) u8[idx++] = (w >>> 16) & 0xff;
+    if (idx < sigBytes) u8[idx++] = (w >>> 8) & 0xff;
+    if (idx < sigBytes) u8[idx++] = w & 0xff;
+  }
+  return ab;
+}
+
+function hexToWordArray(hex) {
+  const u8 = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    u8[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+  }
+  return arrayBufferToWordArray(u8.buffer);
+}
+
+// The unified decrypt function: tries WebCrypto first, falls back to CryptoJS
+async function decryptAesCbcToArrayBuffer(encryptedArrayBuffer, ENCRYPTION_KEY_HEX) {
+  // If Web Crypto is available and has importKey, use it (secure, fast)
+  if (typeof crypto !== "undefined" && crypto.subtle && typeof crypto.subtle.importKey === "function") {
+    try {
+      const keyBytes = hexToBytes(ENCRYPTION_KEY_HEX);
+      const key = await crypto.subtle.importKey(
+        "raw",
+        keyBytes,
+        { name: "AES-CBC" },
+        false,
+        ["decrypt"]
+      );
+      const iv = hexToBytes(ENCRYPTION_IV_HEX);
+      return await crypto.subtle.decrypt({ name: "AES-CBC", iv }, key, encryptedArrayBuffer);
+    } catch (e) {
+      console.warn("WebCrypto decryption failed or unavailable, falling back to crypto-js:", e);
+      // fall through to CryptoJS fallback
+    }
+  }
+
+  // CryptoJS fallback (works without HTTPS) - AES-CBC PKCS7
+  try {
+    const keyWA = hexToWordArray(ENCRYPTION_KEY_HEX);
+    const ivWA = hexToWordArray(ENCRYPTION_IV_HEX);
+    const cipherWA = arrayBufferToWordArray(encryptedArrayBuffer);
+
+    // Build CipherParams
+    const cipherParams = CryptoJS.lib.CipherParams.create({ ciphertext: cipherWA });
+
+    const decryptedWA = CryptoJS.AES.decrypt(cipherParams, keyWA, {
+      iv: ivWA,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7,
+    });
+
+    const outAb = wordArrayToArrayBuffer(decryptedWA);
+    return outAb;
+  } catch (e) {
+    // If fallback fails, rethrow so the caller can handle/reset state
+    console.error("CryptoJS fallback decryption failed:", e);
+    throw e;
+  }
 }
 
 export const useSongStore = defineStore("song", {
@@ -60,8 +127,8 @@ export const useSongStore = defineStore("song", {
       this.downloadProgress = 0;
 
       try {
-        // Check if the track has an encryption key
-        const hasEncryptionKey = track.key && track.key.trim() !== "";
+        // Check if the track has an encryption key (truthy string)
+        const hasEncryptionKey = !!(track && track.key && String(track.key).trim() !== "");
 
         if (hasEncryptionKey) {
           // ---- ENCRYPTED SONG FLOW ----
@@ -90,9 +157,7 @@ export const useSongStore = defineStore("song", {
               chunks.push(value);
               received += value.byteLength;
               if (contentLength) {
-                this.downloadProgress = Math.round(
-                  (received / contentLength) * 100
-                );
+                this.downloadProgress = Math.round((received / contentLength) * 100);
               }
             }
             const merged = new Uint8Array(received);
@@ -111,11 +176,15 @@ export const useSongStore = defineStore("song", {
           // If user switched tracks mid-download
           if (controller.signal.aborted) return;
 
-          // ---- 2) Decrypt fully in memory ----
-          const decryptedArrayBuffer = await decryptAesCbcToArrayBuffer(
-            encryptedBuffer,
-            track.key
-          );
+          // ---- 2) Decrypt fully in memory (with fallback) ----
+          const keyHex = String(track.key).trim();
+          let decryptedArrayBuffer;
+          try {
+            decryptedArrayBuffer = await decryptAesCbcToArrayBuffer(encryptedBuffer, keyHex);
+          } catch (e) {
+            console.error("Decryption failed:", e);
+            throw e;
+          }
 
           // ---- 3) Create Blob URL and play ----
           const blob = new Blob([decryptedArrayBuffer], { type: "audio/mpeg" });
