@@ -1,14 +1,16 @@
-import db from '../config/db.js';
-import pool from "../config/db.js";  
-
-
+import db from "../config/db.js";
+import pool from "../config/db.js";
 
 export async function ModelListSongs({ query, page = 1, limit = 10 }) {
   const params = [];
   let i = 1;
 
   const where = [];
-  if (query) { where.push(`(s.title ILIKE $${i})`); params.push(`%${query}%`); i++; }
+  if (query) {
+    where.push(`(s.title ILIKE $${i})`);
+    params.push(`%${query}%`);
+    i++;
+  }
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
   const l = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
@@ -106,9 +108,7 @@ export const ModelSetSong = async (
   const result = await db.query(query, values);
   return result.rows.length > 0 ? result.rows[0] : null;
 };
-export const ModelSetUserSong = async (
-  user_id,
-  song_id) => {
+export const ModelSetUserSong = async (user_id, song_id) => {
   const query = `
     INSERT INTO public.users_songs (user_id, song_id)
     VALUES ($1, $2)
@@ -123,12 +123,12 @@ export const ModelUpdateSong = async (songId, features, encryptionKey) => {
   // Map the camelCase keys from the features object to SQL snake_case column names.
   // Note: Your initial code already uses snake_case for the database columns.
   const columnMap = {
-    duration: 'duration',
-    bpm: 'bpm',
-    valence: 'valence',
-    arousal: 'arousal',
-    genre: 'genre',
-    mood: 'mood',
+    duration: "duration",
+    bpm: "bpm",
+    valence: "valence",
+    arousal: "arousal",
+    genre: "genre",
+    mood: "mood",
   };
 
   const updates = [];
@@ -142,10 +142,9 @@ export const ModelUpdateSong = async (songId, features, encryptionKey) => {
       let value = features[key];
 
       // Handle the special case for duration, converting seconds to an interval.
-      if (key === 'duration') {
-        value = (value !== null && value !== undefined)
-          ? `${value} seconds`
-          : null;
+      if (key === "duration") {
+        value =
+          value !== null && value !== undefined ? `${value} seconds` : null;
         updates.push(`${sqlColumn} = $${valueIndex}::interval`);
       } else {
         updates.push(`${sqlColumn} = $${valueIndex}`);
@@ -171,7 +170,7 @@ export const ModelUpdateSong = async (songId, features, encryptionKey) => {
   const query = `
     UPDATE public.songs
     SET
-      ${updates.join(', ')}
+      ${updates.join(", ")}
     WHERE id = $1
     RETURNING *;
   `;
@@ -183,18 +182,22 @@ export const ModelUpdateSong = async (songId, features, encryptionKey) => {
 export const ModelGetSongById = async (songId) => {
   const query = `
     SELECT
-      id,
-      album_id AS "albumId",
-      title,
-      EXTRACT(EPOCH FROM duration) AS "durationSeconds",
-      track_number AS "trackNumber",
-      bpm,
-      valence,
-      arousal,
-      genre,
-      mood
-    FROM public.songs
-    WHERE id = $1;
+      s.id,
+      s.album_id AS "albumId",
+      s.title,
+      EXTRACT(EPOCH FROM s.duration) AS "durationSeconds",
+      s.track_number AS "trackNumber",
+      s.bpm,
+      s.valence,
+      s.arousal,
+      s.genre,
+      s.mood,
+      a.title AS album_name,
+      ar.artist_name AS artist_name
+    FROM public.songs s
+    LEFT JOIN albums a ON a.id = s.album_id
+    LEFT JOIN artists ar ON ar.user_id = a.artist
+    WHERE s.id = $1;
   `;
   const values = [songId];
 
@@ -225,4 +228,4 @@ export const ModelRemoveLikedSongs = async (userId, songId) => {
   const values = [userId, songId];
   await db.query(query, values);
   return true;
-};  
+};
