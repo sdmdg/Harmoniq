@@ -2,10 +2,13 @@
 import { ref, onMounted, watch, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "@/utils/axios"; // your axios wrapper
+import { useSongStore } from "@/stores/song";
+import MusicPlayer from "@/components/MusicPlayer.vue";
 
 const route = useRoute();
 const router = useRouter();
 const id = route.params.id;
+const songStore = useSongStore();
 
 // File server configuration
 const fileServerBaseUrl =
@@ -211,6 +214,30 @@ async function updateStatus(r) {
     saving.value[r.id] = false;
   }
 }
+
+// Play function for uploaded songs
+function playUploadedSong(song) {
+  const track = {
+    id: song.id,
+    name: song.title,
+    key: song.encryption_key || "", // Most user uploads won't have encryption keys
+    path: song.id,
+  };
+
+  const artist = {
+    id: "user-uploads",
+    title: "User Uploads",
+    tracks: uploads.value.map((s) => ({
+      id: s.id,
+      name: s.title,
+      key: s.encryption_key || "",
+      path: s.id,
+    })),
+  };
+
+  songStore.playOrPauseThisSong(artist, track);
+}
+
 onMounted(async () => {
   try {
     await loadSummary();
@@ -1127,11 +1154,12 @@ watch(tab, (t) => {
             <div v-else class="space-y-4">
               <!-- Table Header -->
               <div
-                class="hidden md:grid grid-cols-3 gap-4 px-4 py-2 text-sm font-medium text-gray-400 border-b border-gray-700/50"
+                class="hidden md:grid grid-cols-4 gap-4 px-4 py-2 text-sm font-medium text-gray-400 border-b border-gray-700/50"
               >
                 <div>Song</div>
                 <div>Artist</div>
                 <div>Upload Date</div>
+                <div>Actions</div>
               </div>
 
               <!-- Uploads List -->
@@ -1139,7 +1167,7 @@ watch(tab, (t) => {
                 <div
                   v-for="s in uploads"
                   :key="s.id"
-                  class="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-gradient-to-br from-gray-800/40 to-black/60 rounded-lg border border-green-500/20 hover:border-green-500/40 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300"
+                  class="grid grid-cols-1 md:grid-cols-4 gap-4 p-3 bg-gradient-to-br from-gray-800/40 to-black/60 rounded-lg border border-green-500/20 hover:border-green-500/40 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300"
                 >
                   <!-- Song Title -->
                   <div class="flex items-center gap-3">
@@ -1180,6 +1208,21 @@ watch(tab, (t) => {
                     <span class="text-gray-400 text-sm">{{
                       fmtDate(s.created_at)
                     }}</span>
+                  </div>
+
+                  <!-- Actions (Desktop) -->
+                  <div class="hidden md:flex items-center">
+                    <button
+                      @click="playUploadedSong(s)"
+                      class="px-3 py-1.5 rounded-lg text-sm font-medium bg-green-600 hover:bg-green-500 text-white transition-colors"
+                    >
+                      {{
+                        songStore.currentTrack?.id === s.id &&
+                        songStore.isPlaying
+                          ? "Pause"
+                          : "Play"
+                      }}
+                    </button>
                   </div>
                 </div>
 
@@ -1298,12 +1341,12 @@ watch(tab, (t) => {
                     <div class="text-xs text-gray-400 mb-1">
                       {{ fmtDate(r.created_at) }}
                     </div>
-                    <div class="text-white font-medium truncate">
+                    <!-- <div class="text-white font-medium truncate">
                       {{ r.reporter_name || "Unknown User" }}
                     </div>
                     <div class="text-xs text-gray-500 truncate">
                       {{ r.reporter_email || "No email provided" }}
-                    </div>
+                    </div> -->
                   </div>
                   <div class="flex flex-col items-end gap-2 shrink-0">
                     <span
@@ -1335,12 +1378,12 @@ watch(tab, (t) => {
                 </div>
 
                 <!-- Description Preview -->
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                   <div class="text-xs text-gray-400 mb-1">Description</div>
                   <div class="text-sm text-gray-300 line-clamp-2">
                     {{ r.description || "No description provided" }}
                   </div>
-                </div>
+                </div> -->
 
                 <!-- Actions -->
                 <footer
@@ -1449,7 +1492,7 @@ watch(tab, (t) => {
 
                 <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div>
+                    <!-- <div>
                       <div class="text-xs text-gray-400 mb-1">Reporter</div>
                       <div class="text-white font-medium">
                         {{ activeReport.reporter_name || "Unknown User" }}
@@ -1460,7 +1503,7 @@ watch(tab, (t) => {
                       <div class="text-green-400">
                         {{ activeReport.reporter_email || "Not provided" }}
                       </div>
-                    </div>
+                    </div> -->
                     <div>
                       <div class="text-xs text-gray-400 mb-1">Report ID</div>
                       <div class="text-white font-mono">
@@ -1558,6 +1601,13 @@ watch(tab, (t) => {
         ></div>
         <p class="text-gray-400">Loading user profile...</p>
       </div>
+    </div>
+
+    <!-- Music Player -->
+    <div
+      class="fixed left-0 right-0 bottom-0 z-50 border-t border-gray-800 bg-gray-900 md:left-60"
+    >
+      <MusicPlayer />
     </div>
   </div>
 </template>
