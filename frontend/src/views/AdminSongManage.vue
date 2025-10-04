@@ -260,6 +260,12 @@
                     }}
                   </button>
                   <button
+                    @click="viewSong(song)"
+                    class="px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                  >
+                    View
+                  </button>
+                  <button
                     @click="askDelete(song)"
                     class="px-3 py-1.5 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-500 text-white transition-colors"
                   >
@@ -359,6 +365,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import apiClient from "@/utils/axios";
 
@@ -366,6 +373,7 @@ import apiClient from "@/utils/axios";
 import { useSongStore } from "@/stores/song";
 import MusicPlayer from "@/components/MusicPlayer.vue";
 
+const router = useRouter();
 const songStore = useSongStore();
 
 // --- table/query state ---
@@ -564,6 +572,10 @@ function playRow(row) {
     })),
   };
   songStore.playOrPauseThisSong(a, track);
+}
+
+function viewSong(song) {
+  router.push(`/song/${song.id}`);
 }
 
 // Watch for filter changes and reset to first page
