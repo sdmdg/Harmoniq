@@ -212,7 +212,7 @@ const router = createRouter({
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ["artist", "listener"],
+        allowedRoles: ["artist", "listener", "admin"],
       },
     },
     {
@@ -249,7 +249,7 @@ const router = createRouter({
         hideTopNav: false,
         hidePlayer: false,
         requiresAuth: true,
-        allowedRoles: ["artist", "listener"],
+        allowedRoles: ["artist", "listener", "admin"],
       },
     },
 
