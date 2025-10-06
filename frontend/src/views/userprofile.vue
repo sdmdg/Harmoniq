@@ -135,6 +135,55 @@ function badgeClass(status) {
     return `${base} bg-yellow-900/40 text-yellow-300 border border-yellow-800`;
   return `${base} bg-zinc-700 text-zinc-300 border border-zinc-600`;
 }
+
+// navigation
+function openPlaylist(playlistId) {
+  router.push(`/playlist/${playlistId}`);
+}
+
+// music player functions
+function playSong(song) {
+  console.log("Playing liked song - original data:", song);
+
+  // Create artist object (simple format)
+  const artistData = {
+    name: song.artists || "Unknown Artist",
+  };
+
+  // Create track object with the exact format the store expects
+  const trackData = {
+    id: song.song_id || song.id,
+    name: song.title,
+    artist: song.artists || "Unknown Artist",
+    duration: song.duration,
+    albumCover: song.albumCover || "default.png",
+    key: song.encryption_key || "", // Store expects 'key', not 'encryption_key'
+    encryption_key: song.encryption_key || "", // Keep both for compatibility
+    album_id: song.album_id || null,
+    path: song.song_id
+      ? `${song.song_id}.mp3`
+      : song.id
+      ? `${song.id}.mp3`
+      : "", // Store expects 'path'
+  };
+
+  console.log("Final artist data:", artistData);
+  console.log("Final track data:", trackData);
+
+  // Use the exact same method as SongRow component
+  try {
+    songStore.loadSong(artistData, trackData);
+  } catch (error) {
+    console.error("Error in loadSong:", error);
+    // Fallback to the other method if loadSong fails
+    try {
+      songStore.playOrPauseThisSong(artistData, trackData);
+    } catch (fallbackError) {
+      console.error("Error in fallback method:", fallbackError);
+    }
+  }
+}
+
 // loaders
 async function loadSummary() {
   const { data } = await api.get(`/api/admin/users/${id}/summary`);
@@ -823,8 +872,8 @@ watch(tab, (t) => {
                 class="hidden md:grid grid-cols-4 gap-4 px-4 py-2 text-sm font-medium text-gray-400 border-b border-gray-700/50"
               >
                 <div>Song</div>
-                <div>Artists</div>
-                <div>Duration</div>
+                <!-- <div>Artists</div>
+                <div>Duration</div> -->
                 <div>Liked At</div>
               </div>
 
@@ -835,29 +884,31 @@ watch(tab, (t) => {
                 <div
                   v-for="s in liked"
                   :key="s.song_id + s.created_at"
-                  class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-800/30 rounded-xl border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200"
+                  class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-800/30 rounded-xl border border-gray-700/30 hover:border-green-500/50 hover:bg-gray-800/60 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-200 cursor-pointer"
+                  @click="playSong(s)"
                 >
                   <!-- Song Title -->
                   <div class="flex items-center gap-3">
                     <div
-                      class="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-600 to-gray-700 flex items-center justify-center"
+                      class="relative w-12 h-12 rounded-lg bg-gradient-to-br from-green-600/20 to-green-700/20 border border-green-500/30 flex items-center justify-center hover:from-green-600 hover:to-green-700 hover:border-green-500 transition-all duration-200"
                     >
+                      <!-- Play button -->
                       <svg
-                        class="w-6 h-6 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                        class="w-6 h-6 text-green-400 hover:text-white transition-colors duration-200"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
                       >
                         <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                          clip-rule="evenodd"
                         />
                       </svg>
                     </div>
                     <div class="min-w-0">
-                      <p class="text-white font-medium truncate">
+                      <p
+                        class="text-white font-medium truncate hover:text-green-300 transition-colors duration-200"
+                      >
                         {{ s.title }}
                       </p>
                       <p class="text-sm text-gray-400 md:hidden">
@@ -867,18 +918,18 @@ watch(tab, (t) => {
                   </div>
 
                   <!-- Artists -->
-                  <div class="hidden md:flex items-center">
+                  <!-- <div class="hidden md:flex items-center">
                     <p class="text-gray-300 truncate">
                       {{ s.artists || "Unknown Artist" }}
                     </p>
-                  </div>
+                  </div> -->
 
                   <!-- Duration -->
-                  <div class="hidden md:flex items-center">
+                  <!-- <div class="hidden md:flex items-center">
                     <span class="text-gray-400 font-mono">{{
                       fmtDur(s.duration)
                     }}</span>
-                  </div>
+                  </div> -->
 
                   <!-- Liked At -->
                   <div
@@ -1002,6 +1053,7 @@ watch(tab, (t) => {
                 v-for="p in playlists"
                 :key="p.id"
                 class="group bg-gradient-to-br from-gray-800/40 to-black/60 rounded-2xl p-5 border border-gray-600/50 hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300 cursor-pointer"
+                @click="openPlaylist(p.id)"
               >
                 <!-- Playlist Artwork -->
                 <div class="relative mb-4">
@@ -1026,6 +1078,7 @@ watch(tab, (t) => {
                   <!-- Play Button Overlay -->
                   <div
                     class="absolute inset-0 flex items-center justify-center bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    @click.stop="openPlaylist(p.id)"
                   >
                     <div
                       class="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300"
