@@ -334,6 +334,7 @@ export async function getUserPlaylists(req, res) {
 
     const playlists = playlistsResult.rows;
 
+   
     // For each playlist, get its songs using the same query as getPlaylistById
     const playlistsWithSongs = await Promise.all(
       playlists.map(async (playlist) => {
