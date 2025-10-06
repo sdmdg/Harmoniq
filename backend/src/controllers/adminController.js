@@ -293,18 +293,22 @@ export async function getUserLikedSongs(req, res) {
 
     const sql = `
       SELECT
-        s.song_id,
-        s.created_at,
+        ls.song_id,
+        ls.created_at,
         sg.title,
         sg.duration,
+        sg.encryption_key,
+        sg.album_id,
+        a.album_art_id as albumCover,
         NULLIF(string_agg(DISTINCT ar.artist_name, ', '), '') AS artists
-      FROM liked_songs s
-      JOIN songs sg            ON sg.id = s.song_id
+      FROM liked_songs ls
+      JOIN songs sg ON sg.id = ls.song_id
+      LEFT JOIN albums a ON a.id = sg.album_id
       LEFT JOIN users_songs us ON us.song_id = sg.id
-      LEFT JOIN artists ar     ON ar.user_id = us.user_id
-      WHERE s.user_id = $1
-      GROUP BY s.song_id, s.created_at, sg.title, sg.duration
-      ORDER BY s.created_at DESC
+      LEFT JOIN artists ar ON ar.user_id = us.user_id
+      WHERE ls.user_id = $1
+      GROUP BY ls.song_id, ls.created_at, sg.title, sg.duration, sg.encryption_key, sg.album_id, a.album_art_id
+      ORDER BY ls.created_at DESC
       OFFSET $2 LIMIT $3;
     `;
     const count = `SELECT COUNT(*)::int AS c FROM liked_songs WHERE user_id = $1;`;
@@ -321,13 +325,45 @@ export async function getUserLikedSongs(req, res) {
 export async function getUserPlaylists(req, res) {
   try {
     const { id } = req.params;
-    const rows = (
-      await pool.query(
-        `SELECT id, title, created_at FROM playlist WHERE user_id=$1 ORDER BY created_at DESC`,
-        [id]
-      )
-    ).rows;
-    res.json(rows);
+
+    // First get all playlists for the user
+    const playlistsResult = await pool.query(
+      `SELECT id, title, created_at FROM playlist WHERE user_id=$1 ORDER BY created_at DESC`,
+      [id]
+    );
+
+    const playlists = playlistsResult.rows;
+
+    // For each playlist, get its songs using the same query as getPlaylistById
+    const playlistsWithSongs = await Promise.all(
+      playlists.map(async (playlist) => {
+        const songsResult = await pool.query(
+          `SELECT 
+             s.id,
+             s.title as name,
+             u.user_name as artist,
+             LPAD(EXTRACT(MINUTE FROM s.duration)::text, 2, '0') || ':' ||
+             LPAD(EXTRACT(SECOND FROM s.duration)::text, 2, '0') AS duration,
+             s.album_id,
+             s.encryption_key,
+             a.album_art_id AS "albumCover"
+           FROM songs s
+           JOIN playlist_songs ps ON s.id = ps.song_id
+           JOIN albums a ON s.album_id = a.id
+           JOIN users u ON a.artist = u.id
+           WHERE ps.playlist_id = $1`,
+          [playlist.id]
+        );
+
+        return {
+          ...playlist,
+          songs: songsResult.rows,
+          song_count: songsResult.rows.length,
+        };
+      })
+    );
+
+    res.json(playlistsWithSongs);
   } catch (e) {
     console.error("getUserPlaylists failed:", e);
     res.status(500).json({ message: "Failed to load playlists" });
