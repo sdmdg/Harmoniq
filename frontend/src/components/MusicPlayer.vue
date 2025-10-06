@@ -14,7 +14,7 @@ import { useSongStore } from '../stores/song'
 import { storeToRefs } from 'pinia'
 
 const useSong = useSongStore()
-const { isPlaying, audio, currentTrack, currentArtist } = storeToRefs(useSong)
+const { isPlaying, audio, currentTrack, currentArtist, isBuffering } = storeToRefs(useSong)
 
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000'
 
@@ -100,13 +100,25 @@ watch(currentTrack, () => {
         class="flex items-center transition-all duration-500 ease-in-out"
         :class="isExpanded ? 'w-1/3 flex-col justify-center' : 'w-1/4 flex-row'"
       >
-        <img
-          :src="`${fileServerBaseUrl}/public/images/${currentTrack.albumCover || currentArtist.albumCover || currentTrack.albumcover || currentArtist.albumcover || 'default_album.png'}`"
-            class="rounded-md shadow-2xl transition-all duration-500 ease-in-out hover:scale-105 cursor-pointer"
-            :onerror="`this.onerror=null;this.src='/heart.jpeg'`"
-          :class="isExpanded ? 'w-56 h-56 mb-6' : 'w-14 h-14 mr-4'"
-          @click="isExpanded = !isExpanded"
-        />
+        <div class="relative">
+          <img
+            :src="`${fileServerBaseUrl}/public/images/${currentTrack.albumCover || currentArtist.albumCover || currentTrack.albumcover || currentArtist.albumcover || 'default_album.png'}`"
+              class="rounded-md shadow-2xl transition-all duration-500 ease-in-out hover:scale-105 cursor-pointer"
+              :onerror="`this.onerror=null;this.src='/heart.jpeg'`"
+            :class="isExpanded ? 'w-56 h-56 mb-6' : 'w-14 h-14 mr-4'"
+            @click="isExpanded = !isExpanded"
+          />
+          <!-- Spinner overlay -->
+          <div 
+            v-if="isBuffering & !isExpanded"
+            class="absolute top-0 left-0 w-14 h-14 flex items-center justify-center bg-black bg-opacity-50 rounded-md"
+          >
+            <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+          </div>
+        </div>
         <div 
           class="flex flex-col transition-all duration-500 ease-in-out"
           :class="isExpanded ? 'items-center text-center' : 'items-start'"
