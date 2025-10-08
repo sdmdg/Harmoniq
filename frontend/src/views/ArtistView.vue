@@ -1,5 +1,28 @@
 <template>
   <div class="relative w-full h-full bg-[#000000] overflow-auto">
+    <!-- Back Button -->
+    <div class="absolute top-4 left-4 z-20">
+      <button
+        @click="goBack"
+        class="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200 bg-black/50 backdrop-blur-sm rounded-full px-3 py-2 group"
+      >
+        <svg
+          class="w-5 h-5 group-hover:transform group-hover:-translate-x-1 transition-transform duration-200"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          ></path>
+        </svg>
+        <span class="text-sm font-medium">Back</span>
+      </button>
+    </div>
+
     <!-- Artist Header -->
     <div
       v-if="artist"
@@ -7,16 +30,20 @@
       :style="{
         backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,1)), url(${fileServerBaseUrl}/public/images/${artist.image})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center'
+        backgroundPosition: 'center',
       }"
     >
       <div class="relative z-10 flex flex-col justify-end w-full h-full">
         <p class="text-xs font-bold mb-1">Artist</p>
-        <h1 class="text-3xl md:text-6xl font-bold font-sans">{{ artist.name }}</h1>
+        <h1 class="text-3xl md:text-6xl font-bold font-sans">
+          {{ artist.name }}
+        </h1>
         <div class="flex items-center text-sm font-light mt-2">
           <p>{{ formatNumber(artist.audience) }} listeners</p>
         </div>
-        <p class="text-sm font-light text-gray-300 mt-2 max-w-2xl">{{ artist.description }}</p>
+        <p class="text-sm font-light text-gray-300 mt-2 max-w-2xl">
+          {{ artist.description }}
+        </p>
       </div>
     </div>
 
@@ -33,19 +60,20 @@
         </button>
 
         <!-- Follow/Unfollow Button -->
-        <button 
+        <button
           v-if="userId && user && user.userid && userId !== user.userid"
           class="ml-4 px-6 py-3 rounded-full font-bold transition-colors duration-200"
-          :class="following
-            ? 'bg-gray-700 text-white hover:bg-gray-600'
-            : 'bg-green-600 text-white hover:bg-green-700'"
+          :class="
+            following
+              ? 'bg-gray-700 text-white hover:bg-gray-600'
+              : 'bg-green-600 text-white hover:bg-green-700'
+          "
           :disabled="isProcessing"
           @click="toggleFollow"
         >
           <span v-if="!following">Follow</span>
           <span v-else>Unfollow</span>
         </button>
-
       </div>
 
       <!-- Top Tracks -->
@@ -53,7 +81,9 @@
         <h1 class="text-white text-2xl font-semibold">Top songs</h1>
         <div class="py-1.5"></div>
 
-        <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+        <div
+          class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900"
+        >
           <div class="grid grid-rows-2 grid-flow-col auto-cols-max gap-4">
             <transition-group
               name="fade-slide"
@@ -74,7 +104,6 @@
           </div>
         </div>
       </div>
-
 
       <!-- Releases -->
       <div v-if="albums.length" class="p-8">
@@ -97,7 +126,6 @@
           />
         </transition-group>
       </div>
-
     </div>
 
     <!-- Loading State -->
@@ -106,16 +134,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import Play from 'vue-material-design-icons/Play.vue';
-import apiClient from '../utils/axios';
-import QuickPickCard from '../components/SongCardRow.vue'
+import { ref, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import Play from "vue-material-design-icons/Play.vue";
+import apiClient from "../utils/axios";
+import QuickPickCard from "../components/SongCardRow.vue";
 
-import AlbumItem from '../components/AlbumCard.vue'
+import AlbumItem from "../components/AlbumCard.vue";
 
-import { useSongStore } from '../stores/song';
-import { storeToRefs } from 'pinia';
+import { useSongStore } from "../stores/song";
+import { storeToRefs } from "pinia";
 
 const userId = ref(null);
 const useSong = useSongStore();
@@ -129,12 +157,13 @@ const topTracks = ref([]);
 const albums = ref([]);
 
 const player = ref({
-  tracks:[]
+  tracks: [],
 });
 
 const route = useRoute();
-const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
-
+const router = useRouter();
+const fileServerBaseUrl =
+  import.meta.env.VITE_FILE_SERVER || "http://localhost:3000";
 
 const fetchArtistData = async () => {
   const artistId = route.params.id;
@@ -146,7 +175,7 @@ const fetchArtistData = async () => {
     albums.value = response.data.albums;
     user.value = response.data.user; // <-- important
 
-    const userDataString = localStorage.getItem('user_data');
+    const userDataString = localStorage.getItem("user_data");
     if (userDataString) {
       try {
         const userData = JSON.parse(userDataString);
@@ -157,9 +186,8 @@ const fetchArtistData = async () => {
         console.error("Error parsing user data from localStorage:", e);
       }
     }
-
   } catch (error) {
-    console.error('Failed to fetch artist data:', error);
+    console.error("Failed to fetch artist data:", error);
     artist.value = null;
   }
 };
@@ -175,14 +203,16 @@ const toggleFollow = async () => {
   isProcessing.value = true;
   try {
     if (!following.value) {
-      await apiClient.post('/api/artist/follow', { artistId: artist.value.id });
+      await apiClient.post("/api/artist/follow", { artistId: artist.value.id });
       following.value = true;
     } else {
-      await apiClient.post('/api/artist/unfollow', { artistId: artist.value.id });
+      await apiClient.post("/api/artist/unfollow", {
+        artistId: artist.value.id,
+      });
       following.value = false;
     }
   } catch (error) {
-    console.error('Failed to update follow state', error);
+    console.error("Failed to update follow state", error);
   } finally {
     isProcessing.value = false;
   }
@@ -211,6 +241,17 @@ const handleShuffle = () => {
   useSong.loadSong(player.value, firstTrack);
 };
 
+// Function to go back to previous page
+const goBack = () => {
+  // Check if there's history to go back to
+  if (window.history.length > 1) {
+    router.back();
+  } else {
+    // If no history, go to a default page (like dashboard or home)
+    router.push("/dashboard");
+  }
+};
+
 onMounted(() => {
   fetchArtistData();
 });
@@ -221,5 +262,4 @@ watch(
     fetchArtistData();
   }
 );
-
 </script>
