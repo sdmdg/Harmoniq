@@ -230,6 +230,9 @@ onUnmounted(() => {
         <RouterLink v-if="userRole == 'admin'" to="/adminUsersManage">
           <MenuItem :iconSize="23" name="Users" iconString="playlist" />
         </RouterLink>
+        <RouterLink v-if="userRole == 'admin'" to="/adminAlbumsManage">
+          <MenuItem :iconSize="23" name="Albums" iconString="playlist" />
+        </RouterLink>
         <RouterLink v-if="userRole == 'admin'" to="/admin/model-upload">
           <li class="flex items-center justify-start pb-4 cursor-pointer group">
             <div class="flex items-center">
