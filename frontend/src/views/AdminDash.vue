@@ -7,6 +7,7 @@ const router = useRouter();
 const totalUsers = ref(0);
 const totalArtists = ref(0);
 const totalSongs = ref(0);
+const totalAlbums = ref(0);
 
 const loading = ref(false);
 const err = ref("");
@@ -19,6 +20,7 @@ async function fetchDashboardData() {
     totalUsers.value = data.totalUsers ?? 0;
     totalArtists.value = data.totalArtists ?? 0;
     totalSongs.value = data.totalSongs ?? 0;
+    totalAlbums.value = data.totalAlbums ?? 0;
   } catch (error) {
     console.error("Failed to fetch admin dashboard data:", error);
     const status = error?.response?.status;
@@ -61,7 +63,7 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Stats Cards with better layout -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
       <!-- Users -->
       <RouterLink
         to="/adminUsersManage"
@@ -155,6 +157,40 @@ onBeforeUnmount(() => {
           class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-green-600 rounded-b-xl"
         ></div>
       </RouterLink>
+
+      <!-- Albums -->
+      <RouterLink
+        to="/adminAlbumsManage"
+        class="group relative bg-gradient-to-br from-orange-600/20 to-red-800/20 border border-orange-500/30 p-6 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer transition-all duration-300"
+        aria-label="View all albums"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <div
+            class="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center group-hover:bg-orange-500/30 transition-colors"
+          >
+            <svg
+              class="w-6 h-6 text-orange-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+          </div>
+          <div class="text-right">
+            <h2 class="text-sm font-medium text-orange-300 mb-1">
+              Total Albums
+            </h2>
+            <p class="text-3xl font-bold text-white">{{ totalAlbums }}</p>
+          </div>
+        </div>
+        <div
+          class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-red-600 rounded-b-xl"
+        ></div>
+      </RouterLink>
     </div>
 
     <!-- Admin Actions -->
@@ -165,7 +201,7 @@ onBeforeUnmount(() => {
         <h2 class="text-2xl font-bold text-white mb-2">Admin Actions</h2>
         <p class="text-gray-400">Quick access to administrative functions</p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <RouterLink
           to="/admin/model-upload"
           class="group flex items-center justify-center p-4 bg-gradient-to-br from-teal-600/20 to-cyan-800/20 border border-teal-500/30 text-white rounded-lg transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:scale-105 hover:from-teal-600/30 hover:to-cyan-800/30"
@@ -224,6 +260,26 @@ onBeforeUnmount(() => {
             />
           </svg>
           Manage Songs
+        </RouterLink>
+
+        <RouterLink
+          to="/adminAlbumsManage"
+          class="group flex items-center justify-center p-4 bg-gradient-to-br from-orange-600/20 to-red-800/20 border border-orange-500/30 text-white rounded-lg transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:scale-105 hover:from-orange-600/30 hover:to-red-800/30"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
+          Manage Albums
         </RouterLink>
       </div>
     </div>
