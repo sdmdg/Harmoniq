@@ -118,20 +118,26 @@ export const getRecentActivity = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const [usersResult, artistsResult, songsResult, playlistsResult] =
-      await Promise.all([
-        pool.query("SELECT COUNT(*) FROM users"),
-
-        pool.query("SELECT COUNT(*) FROM artists"),
-        pool.query("SELECT COUNT(*) FROM songs"),
-        pool.query("SELECT COUNT(*) FROM playlist"),
-      ]);
+    const [
+      usersResult,
+      artistsResult,
+      songsResult,
+      playlistsResult,
+      albumsResult,
+    ] = await Promise.all([
+      pool.query("SELECT COUNT(*) FROM users"),
+      pool.query("SELECT COUNT(*) FROM artists"),
+      pool.query("SELECT COUNT(*) FROM songs"),
+      pool.query("SELECT COUNT(*) FROM playlist"),
+      pool.query("SELECT COUNT(*) FROM albums"),
+    ]);
 
     res.json({
       totalUsers: parseInt(usersResult.rows[0].count, 10),
       totalArtists: parseInt(artistsResult.rows[0].count, 10),
       totalSongs: parseInt(songsResult.rows[0].count, 10),
       totalPlaylists: parseInt(playlistsResult.rows[0].count, 10),
+      totalAlbums: parseInt(albumsResult.rows[0].count, 10),
     });
   } catch (error) {
     console.error("Admin Dashboard Error:", error);
@@ -334,7 +340,6 @@ export async function getUserPlaylists(req, res) {
 
     const playlists = playlistsResult.rows;
 
-   
     // For each playlist, get its songs using the same query as getPlaylistById
     const playlistsWithSongs = await Promise.all(
       playlists.map(async (playlist) => {
