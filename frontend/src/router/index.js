@@ -21,6 +21,7 @@ import ReportingGuide from "../views/ReportingGuide.vue";
 import ReportDetail from "../views/ReportDetail.vue";
 import AdminUserDetail from "../views/AdminUserDetail.vue";
 import AdminSongManage from "../views/AdminSongManage.vue";
+import AdminAlbumManage from "../views/AdminAlbumManage.vue";
 import SongDetail from "../views/SongDetail.vue";
 import MyAlbumView from "../views/MyAlbumView.vue";
 import LikedSongs from "../views/LikedSongs.vue";
@@ -344,6 +345,18 @@ const router = createRouter({
       name: "Songs Management",
 
       component: AdminSongManage,
+      meta: {
+        hideSidebar: false,
+        hideTopNav: false,
+        hidePlayer: false,
+        requiresAuth: true,
+        allowedRoles: ["admin"], // Only admin can access this route
+      },
+    },
+    {
+      path: "/adminAlbumsManage",
+      name: "Albums Management",
+      component: AdminAlbumManage,
       meta: {
         hideSidebar: false,
         hideTopNav: false,
