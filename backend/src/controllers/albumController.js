@@ -1,60 +1,71 @@
 // controller.js
-import { findAlbumsByUserId, createAlbum , findSongsByAlbumId} from '../models/Artist.js';
-import { uploadFileToServer } from '../services/fileService.js';
-import { fetchAlbumData, ModelDeleteAlbum } from '../models/Album.js';
+import {
+  findAlbumsByUserId,
+  createAlbum,
+  findSongsByAlbumId,
+} from "../models/Artist.js";
+import { uploadFileToServer } from "../services/fileService.js";
+import {
+  fetchAlbumData,
+  ModelDeleteAlbum,
+  listAllAlbumsmodel,
+  blockAlbummodel,
+  unBlockAlbummodel,
+} from "../models/Album.js";
 
 export const getAlbum = async (req, res) => {
-    const { album_id } = req.params;
+  const { album_id } = req.params;
 
-    try {
-        const fullAlbum = await fetchAlbumData(album_id);
+  try {
+    const fullAlbum = await fetchAlbumData(album_id);
 
-        if (!fullAlbum) {
-            // The model returns null if the album is not found
-            return res.status(404).json({ message: "Album not found." });
-        }
-
-        res.status(200).json(fullAlbum);
-    } catch (error) {
-        console.error("Get Album Error:", error);
-        res.status(500).json({ message: `Internal server error: ${error.message}` });
+    if (!fullAlbum) {
+      // The model returns null if the album is not found
+      return res.status(404).json({ message: "Album not found." });
     }
-};
 
+    res.status(200).json(fullAlbum);
+  } catch (error) {
+    console.error("Get Album Error:", error);
+    res
+      .status(500)
+      .json({ message: `Internal server error: ${error.message}` });
+  }
+};
 
 // GET albums by user ID
 export const getAlbumsByUserId = async (req, res) => {
-    const { userId } = req.params;
+  const { userId } = req.params;
 
-    try {
-        const albums = await findAlbumsByUserId(userId);
+  try {
+    const albums = await findAlbumsByUserId(userId);
 
-        if (!albums || albums.length === 0) {
-            return res.status(404).json({ message: 'No albums found for this user' });
-        }
-
-        res.status(200).json(albums);
-    } catch (error) {
-        console.error('Controller error (getAlbumsByUserId):', error);
-        res.status(500).json({ message: 'Server error while fetching albums' });
+    if (!albums || albums.length === 0) {
+      return res.status(404).json({ message: "No albums found for this user" });
     }
+
+    res.status(200).json(albums);
+  } catch (error) {
+    console.error("Controller error (getAlbumsByUserId):", error);
+    res.status(500).json({ message: "Server error while fetching albums" });
+  }
 };
 
 export const getSongsByAlbumId = async (req, res) => {
-    const { albumId } = req.params;
+  const { albumId } = req.params;
 
-    try {
-        const songs = await findSongsByAlbumId(albumId);
+  try {
+    const songs = await findSongsByAlbumId(albumId);
 
-        if (!songs || songs.length === 0) {
-            return res.status(404).json({ message: 'No songs found for this album' });
-        }
-
-        res.status(200).json(songs);
-    } catch (error) {
-        console.error('Controller error (getSongsByAlbumId):', error);
-        res.status(500).json({ message: 'Server error while fetching songs' });
+    if (!songs || songs.length === 0) {
+      return res.status(404).json({ message: "No songs found for this album" });
     }
+
+    res.status(200).json(songs);
+  } catch (error) {
+    console.error("Controller error (getSongsByAlbumId):", error);
+    res.status(500).json({ message: "Server error while fetching songs" });
+  }
 };
 
 // POST create new album
@@ -67,7 +78,7 @@ export const addAlbum = async (req, res) => {
 
   try {
     // Strip the extension from the uploaded file name
-    const albumArtUuid = albumArtId.split('.')[0];
+    const albumArtUuid = albumArtId.split(".")[0];
 
     const newAlbum = await createAlbum({
       title,
@@ -83,31 +94,69 @@ export const addAlbum = async (req, res) => {
   }
 };
 
-
 // POST upload album art
-
 
 export const uploadAlbumArt = async (req, res) => {
   try {
     // req.file.buffer contains the file data in memory
     const albumArtId = await uploadFileToServer(req.file); // This sends to file server
-    if (!albumArtId) throw new Error('Upload failed');
+    if (!albumArtId) throw new Error("Upload failed");
     res.status(201).json({ albumArtId });
   } catch (err) {
-    console.error('Album art upload error:', err);
-    res.status(500).json({ message: 'Album art upload failed' });
+    console.error("Album art upload error:", err);
+    res.status(500).json({ message: "Album art upload failed" });
   }
 };
 export const deleteAlbum = async (req, res) => {
-    const { albumId } = req.params;     
-    try {
-        const deletedAlbum = await ModelDeleteAlbum(albumId);
-        if (!deletedAlbum) {
-            return res.status(404).json({ message: 'Album not found' });
-        }
-        res.status(200).json({ message: 'Album deleted successfully', album: deletedAlbum });
-    } catch (error) {
-        console.error('Controller error (deleteAlbum):', error);
-        res.status(500).json({ message: 'Server error while deleting album' });
-    }   
+  const { albumId } = req.params;
+  try {
+    const deletedAlbum = await ModelDeleteAlbum(albumId);
+    if (!deletedAlbum) {
+      return res.status(404).json({ message: "Album not found" });
+    }
+    res
+      .status(200)
+      .json({ message: "Album deleted successfully", album: deletedAlbum });
+  } catch (error) {
+    console.error("Controller error (deleteAlbum):", error);
+    res.status(500).json({ message: "Server error while deleting album" });
+  }
+};
+
+export const listAllAlbums = async (req, res) => {
+  try {
+    const { search, page = 1, limit = 20, includeBlocked = "true" } = req.query;
+    const albums = await listAllAlbumsmodel(
+      search,
+      page,
+      limit,
+      includeBlocked
+    );
+    res.status(200).json(albums);
+  } catch (error) {
+    console.error("Controller error (listAllAlbums):", error);
+    res.status(500).json({ message: "Server error while fetching albums" });
+  }
+};
+
+export const blockAlbum = async (req, res) => {
+  try {
+    const { albumId } = req.params;
+    const blockedAlbum = await blockAlbummodel(albumId);
+    res.status(200).json(blockedAlbum);
+  } catch (error) {
+    console.error("Controller error (blockAlbum):", error);
+    res.status(500).json({ message: "Server error while blocking album" });
+  }
+};
+
+export const unblockAlbum = async (req, res) => {
+  try {
+    const { albumId } = req.params;
+    const unblockedAlbum = await unBlockAlbummodel(albumId);
+    res.status(200).json(unblockedAlbum);
+  } catch (error) {
+    console.error("Controller error (unblockAlbum):", error);
+    res.status(500).json({ message: "Server error while unblocking album" });
+  }
 };

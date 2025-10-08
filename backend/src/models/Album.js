@@ -1,7 +1,9 @@
-import pool from '../config/db.js';
+import pool from "../config/db.js";
 
 export async function findUserByEmail(email) {
-  const result = await pool.query('SELECT * FROM Users WHERE email = $1', [email]);
+  const result = await pool.query("SELECT * FROM Users WHERE email = $1", [
+    email,
+  ]);
   return result.rows[0];
 }
 
@@ -17,8 +19,8 @@ export async function createUser({ username, email, role, password }) {
 }
 
 export const fetchAlbumData = async (albumId) => {
-    // First, check if the album exists and get its details
-    const albumQuery = `
+  // First, check if the album exists and get its details
+  const albumQuery = `
         SELECT
             a.id,
             a.title AS name,
@@ -31,17 +33,17 @@ export const fetchAlbumData = async (albumId) => {
         WHERE a.id = $1;
     `;
 
-    const albumResult = await pool.query(albumQuery, [albumId]);
+  const albumResult = await pool.query(albumQuery, [albumId]);
 
-    // If no album is found, return null
-    if (albumResult.rows.length === 0) {
-        return null;
-    }
+  // If no album is found, return null
+  if (albumResult.rows.length === 0) {
+    return null;
+  }
 
-    const albumData = albumResult.rows[0];
+  const albumData = albumResult.rows[0];
 
-    // Next, get all the songs for this album
-    const songsQuery = `
+  // Next, get all the songs for this album
+  const songsQuery = `
         SELECT
             id,
             title AS name,
@@ -53,35 +55,98 @@ export const fetchAlbumData = async (albumId) => {
         WHERE album_id = $1
         ORDER BY track_number ASC;
     `;
-    const songsResult = await pool.query(songsQuery, [albumId]);
+  const songsResult = await pool.query(songsQuery, [albumId]);
 
-    // Map the database rows to the desired track format, including the new duration object and path
-    const tracks = songsResult.rows.map(song => ({
-        id: song.id,
-        name: song.name,
-        // Construct the path using the song's ID and the ".mp3" extension
-        path: `${song.id}.mp3`,
-        // Create a duration string from the minutes and seconds
-        duration: `${song.minutes};${song.seconds}`,
-        key: song.key,
-    }));
-    
-    // Combine the album details and tracks into a single object
-    const fullAlbum = {
-        id: albumData.id,
-        name: albumData.name,
-        albumCover: albumData.albumCover,
-        artist: albumData.artistName,
-        artistId: albumData.artistid,
-        releaseYear: albumData.releaseYear,
-        tracks: tracks
-    };
+  // Map the database rows to the desired track format, including the new duration object and path
+  const tracks = songsResult.rows.map((song) => ({
+    id: song.id,
+    name: song.name,
+    // Construct the path using the song's ID and the ".mp3" extension
+    path: `${song.id}.mp3`,
+    // Create a duration string from the minutes and seconds
+    duration: `${song.minutes};${song.seconds}`,
+    key: song.key,
+  }));
 
-    return fullAlbum;
+  // Combine the album details and tracks into a single object
+  const fullAlbum = {
+    id: albumData.id,
+    name: albumData.name,
+    albumCover: albumData.albumCover,
+    artist: albumData.artistName,
+    artistId: albumData.artistid,
+    releaseYear: albumData.releaseYear,
+    tracks: tracks,
+  };
+
+  return fullAlbum;
 };
 
 export const ModelDeleteAlbum = async (albumId) => {
-    const deleteAlbumQuery = 'DELETE FROM albums WHERE id = $1 RETURNING *';
-    const result = await pool.query(deleteAlbumQuery, [albumId]);
-    return result.rows[0];
+  const deleteAlbumQuery = "DELETE FROM albums WHERE id = $1 RETURNING *";
+  const result = await pool.query(deleteAlbumQuery, [albumId]);
+  return result.rows[0];
+};
+
+export const listAllAlbumsmodel = async (
+  search = "",
+  page = 1,
+  limit = 20,
+  includeBlocked = "true"
+) => {
+  let whereClause = "";
+  let queryParams = [];
+  let paramIndex = 1;
+
+  // Add search filter if provided
+  if (search && search.trim()) {
+    whereClause = `WHERE (LOWER(a.title) LIKE $${paramIndex} OR LOWER(ar.artist_name) LIKE $${paramIndex})`;
+    queryParams.push(`%${search.toLowerCase()}%`);
+    paramIndex++;
+  }
+
+  // Add blocked filter if not including blocked albums
+  if (includeBlocked !== "true") {
+    if (whereClause) {
+      whereClause += ` AND a.is_blocked = false`;
+    } else {
+      whereClause = `WHERE a.is_blocked = false`;
+    }
+  }
+
+  const query = `SELECT
+        a.id,
+        a.title AS name,
+        ar.artist_name AS "artistName",
+        EXTRACT(YEAR FROM a.release_date) AS "releaseYear",
+        a.album_art_id AS "albumCover",
+        a.is_blocked AS "isBlocked",
+        COUNT(s.id)::int AS "trackCount"
+      FROM albums a
+      JOIN artists ar ON a.artist = ar.user_id
+      LEFT JOIN songs s ON s.album_id = a.id
+      ${whereClause}
+      GROUP BY a.id, ar.artist_name
+      ORDER BY a.created_at DESC;
+    `;
+
+  const result = await pool.query(query, queryParams);
+  return result.rows;
+};
+export const blockAlbummodel = async (albumId) => {
+  const query = `UPDATE albums
+      SET is_blocked = TRUE
+      WHERE id = $1
+      RETURNING id, title AS name, is_blocked AS "isBlocked";`;
+  const result = await pool.query(query, [albumId]);
+  return result.rows[0];
+};
+
+export const unBlockAlbummodel = async (albumId) => {
+  const query = `UPDATE albums
+      SET is_blocked = FALSE
+      WHERE id = $1
+      RETURNING id, title AS name, is_blocked AS "isBlocked";`;
+  const result = await pool.query(query, [albumId]);
+  return result.rows[0];
 };
