@@ -219,12 +219,6 @@
                       View
                     </button>
                     <button
-                      @click="playAlbum(album.id)"
-                      class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors duration-200"
-                    >
-                      Play
-                    </button>
-                    <button
                       v-if="!album.isBlocked"
                       @click="blockAlbum(album)"
                       :disabled="busyId === album.id"
@@ -446,32 +440,6 @@ async function unblockAlbum(album) {
 
 async function viewAlbum(albumId) {
   router.push(`/album/${albumId}`);
-}
-
-async function playAlbum(albumId) {
-  try {
-    // Fetch album details with tracks
-    const response = await apiClient.get(`/api/album/get/${albumId}`);
-    const albumData = response.data;
-
-    if (albumData && albumData.tracks && albumData.tracks.length > 0) {
-      // Create artist object for the song store
-      const artist = {
-        id: albumData.artistId,
-        name: albumData.artist,
-        tracks: albumData.tracks,
-      };
-
-      // Play the first track
-      const firstTrack = albumData.tracks[0];
-      useSong.loadSong(artist, firstTrack);
-    } else {
-      alert("No tracks found in this album.");
-    }
-  } catch (error) {
-    console.error("Failed to play album:", error);
-    alert("Failed to play album. Please try again.");
-  }
 }
 
 // Pagination
