@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import SongRow from '../components/SongRow.vue';
 import ClockTimeThreeOutline from 'vue-material-design-icons/ClockTimeThreeOutline.vue';
@@ -21,12 +21,18 @@ const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:
 const playFunc = () => {
   if (currentTrack.value) {
     useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value);
-  } else if (collection.value && collection.value.tracks && collection.value.tracks.length > 0) {
+  } else if (collection.value?.tracks?.length > 0) {
     const firstTrack = collection.value.tracks[0];
     console.log('Playing first track:', firstTrack);
     useSong.playOrPauseThisSong(firstTrack.artist, firstTrack);
   }
 };
+
+const albumCoverUrl = computed(() => {
+  if (!collection.value?.tracks?.length) return '';
+  const cover = currentTrack.value?.albumCover || collection.value.tracks[0]?.albumCover;
+  return `${fileServerBaseUrl}/public/images/${cover}`;
+});
 
 const fetchData = async () => {
   loading.value = true;
@@ -62,7 +68,7 @@ const fetchData = async () => {
     console.error('Error fetching playlist:', err);
 
     // If API returns no songs, still show empty playlist instead of error
-    if (err.response && err.response.status === 404) {
+    if (err.response?.status === 404) {
       collection.value = { name: "", artist: "", tracks: [] };
     } else {
       error.value = 'Failed to load playlist.';
@@ -81,77 +87,83 @@ watch(
   }
 );
 
+// Function to format duration
 const formatDuration = (durationString) => {
-  if (!durationString) return "00:00";
-  const [minutes, seconds] = durationString.split(":");
-  return `${minutes.padStart(2, "0")}:${seconds.padStart(2, "0")}`;
+  if (!durationString) return '';
+  const [minutes, seconds] = durationString.split(';');
+  return `${minutes}:${seconds.padStart(2, '0')}`;
 };
 </script>
 
 <template>
-  <div class="p-8 overflow-x-hidden">
-    <!-- Loading / Error states -->
-    <div v-if="loading" class="text-white">Loading...</div>
-    <div v-else-if="error" class="text-red-500">{{ error }}</div>
+  <div class="p-4 md:p-8 overflow-x-hidden">
+    <!-- Loading State -->
+    <div v-if="loading" class="text-white text-center py-8">Loading...</div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="text-red-500 text-center py-8">{{ error }}</div>
 
     <!-- Playlist Content -->
     <div v-else-if="collection">
-      <div class="flex w-full">
-        <!-- Left side: Album info (1/3) -->
-        <div class="w-1/3 pr-6 flex flex-col items-center text-center">
-
-          <p class="text-gray-300 text-sm mt-3 font-semibold">
-            Your personal collection of loved tracks, curated just for you.
-          </p>
-
-          <!-- Only show album cover if songs exist -->
-          <img
-            v-if="collection.tracks.length > 0"
-            :src="`${fileServerBaseUrl}/public/images/${currentTrack?.albumCover || collection.tracks[0]?.albumCover}`"
-            alt="Album Cover"
-            class="w-2/3 mx-auto rounded-xl shadow-lg mt-4"
-          />
-
-          <p class="text-gray-300 text-sm mt-2">
-            {{ collection.tracks.length }} songs
-          </p>
-          <div class="text-white cursor-pointer font-semibold mt-2" style="font-size: 15px;">
-            {{ playlistData?.creator }}
+      <div class="flex flex-col md:flex-row gap-6">
+        <!-- Playlist Header Section -->
+        <div class="w-full md:w-1/3 flex flex-col items-center text-center md:pr-6">
+          <!-- Album Cover -->
+          <div v-if="collection.tracks.length > 0" class="w-48 h-48 md:w-64 md:h-64 mb-4">
+            <img
+              :src="albumCoverUrl"
+              alt="Playlist Cover"
+              class="w-full h-full object-cover rounded-xl shadow-lg"
+            />
           </div>
-          <div class="text-white cursor-pointer font-bold mt-1" style="font-size: 28px;">
-            {{ playlistData?.name }}
-          </div>
-          <div class="text-gray-300 text-[13px] flex mt-1 justify-center">
-            <div class="capitalize">{{ route.params.type }}</div>
-            <div class="ml-2">
-              <span>{{ collection.tracks.length }} songs</span>
+
+          <!-- Playlist Info -->
+          <div class="space-y-2 max-w-xs">
+            <h1 class="text-2xl md:text-2xl font-bold text-white line-clamp-2">
+              {{ playlistData?.name || 'Playlist' }}
+            </h1>
+            
+            <p class="text-sm text-gray-300 font-semibold">
+              {{ playlistData?.creator || 'Unknown Creator' }}
+            </p>
+
+            <!-- Desktop Description -->
+            <p class="hidden md:block text-xs text-gray-400 mt-3">
+              Your personal collection of loved tracks, curated just for you.
+            </p>
+
+            <!-- Track Count -->
+            <div class="flex items-center justify-center gap-2 text-xs text-gray-400">
+              <span class="capitalize">{{ route.params.type || 'playlist' }}</span>
+              <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
+              <span>{{ collection.tracks.length }} {{ collection.tracks.length === 1 ? 'song' : 'songs' }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Right side: Song list (2/3) -->
-        <div class="w-2/3">
-          <!-- No songs message -->
-          <div v-if="collection.tracks.length === 0" class="text-gray-400 text-center mt-6">
-            No songs related to this playlist were found.
+        <!-- Tracklist Section -->
+        <div class="w-full md:w-2/3">
+          <!-- Empty State -->
+          <div v-if="collection.tracks.length === 0" class="text-gray-400 text-center py-12">
+            <p class="text-lg">No songs in this playlist yet</p>
+            <p class="text-sm mt-2">Add some tracks to get started</p>
           </div>
 
-          <!-- Song list -->
-          <div v-else>
-            <div class="flex items-center justify-between px-5 pt-2">
+          <!-- Song List -->
+          <div v-else class="mt-6 md:mt-0">
+            <!-- Track List Header -->
+            <div class="flex items-center justify-between px-3 md:px-5 pt-2">
               <div class="flex items-center text-gray-400">
-                <div class="mr-7">#</div>
-                <div class="text-sm">Title</div>
+                <div class="mr-4 md:mr-7 text-xs md:text-sm">#</div>
+                <div class="text-xs md:text-sm">Title</div>
               </div>
-              <div>
-                <ClockTimeThreeOutline fillColor="#FFFFFF" :size="18" />
-              </div>
+              <ClockTimeThreeOutline fillColor="#FFFFFF" :size="18" />
             </div>
 
-            <div class="border-b border-b-[#2A2A2A] mt-2"></div>
-            <div class="mb-4"></div>
+            <div class="border-b border-b-[#2A2A2A] mt-2 mb-3 md:mb-4"></div>
 
-            <ul class="w-full">
+            <!-- Track Rows -->
+            <ul class="w-full space-y-1">
               <li v-for="(track, index) in collection.tracks" :key="track.id">
                 <SongRow
                   :artist="collection"
@@ -169,10 +181,14 @@ const formatDuration = (durationString) => {
 </template>
 
 <style scoped>
-.circle {
-  width: 4px;
-  height: 4px;
-  background-color: rgb(189, 189, 189);
-  border-radius: 100%;
+/* Smooth transitions */
+* {
+  transition: padding 0.2s ease;
+}
+
+/* Ensure images maintain aspect ratio */
+img {
+  max-width: 100%;
+  height: auto;
 }
 </style>
