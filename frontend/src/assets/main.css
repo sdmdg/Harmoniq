@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Scrollbar Styles for WebKit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px; /* Width of the vertical scrollbar */
+  height: 10px; /* Height of the horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #101010; /* Dark background for the scrollbar track */
+  border-radius: 5px; /* Optional: slightly rounded corners for the track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #535353; /* Dark grey for the scrollbar thumb (the draggable part) */
+  border-radius: 5px; /* Rounded corners for the thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6e6e6e; /* Slightly lighter grey on hover for the thumb */
+}
+
+/* Custom Scrollbar Styles for Firefox */
+/* Note: Firefox has more limited styling options for scrollbars compared to WebKit */
+* {
+  scrollbar-width: thin; /* "auto" (default) or "thin" */
+  scrollbar-color: #535353 #101010; /* thumb-color track-color */
+}
+
+/* Fallback for other browsers/older versions if needed, less common now */
+body {
+  /* This is a general hint for the browser's color scheme */
+  color-scheme: dark;
+}
