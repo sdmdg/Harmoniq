@@ -12,3 +12,5 @@
 
 
 /backend/file_server/public
+frontend/.env
+backend/src/.env
