@@ -29,7 +29,7 @@ onMounted(() => {
     <VolumeHigh v-else fillColor="#FFFFFF" :size="20" />
 
     <div
-      class="flex items-center ml-2 w-[150px] relative mt-2 mb-[23px]"
+      class="flex items-center ml-2 w-[100px] relative mt-2 mb-[23px]"
       @mouseenter="isHover = true"
       @mouseleave="isHover = false"
     >

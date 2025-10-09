@@ -30,20 +30,29 @@
       :style="{
         backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,1)), url(${fileServerBaseUrl}/public/images/${artist.image})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center'
       }"
     >
       <div class="relative z-10 flex flex-col justify-end w-full h-full">
-        <p class="text-xs font-bold mb-1">Artist</p>
-        <h1 class="text-3xl md:text-6xl font-bold font-sans">
-          {{ artist.name }}
-        </h1>
-        <div class="flex items-center text-sm font-light mt-2">
+        <p v-if="!isExpanded" class="text-xs font-bold mb-1">Artist</p>
+        <h1 v-if="!isExpanded" class="text-3xl md:text-6xl font-bold font-sans">{{ artist.name }}</h1>
+        <div v-if="!isExpanded" class="flex items-center text-sm font-light mt-2">
           <p>{{ formatNumber(artist.audience) }} listeners</p>
         </div>
-        <p class="text-sm font-light text-gray-300 mt-2 max-w-2xl">
-          {{ artist.description }}
-        </p>
+        
+        <!-- Expandable Description -->
+        <div class="text-sm font-light text-gray-300 mt-2 max-w-2xl">
+          <p :class="{ 'line-clamp-2': !isExpanded && shouldTruncate }">
+            {{ artist.description }}
+          </p>
+          <button 
+            v-if="shouldTruncate"
+            @click="isExpanded = !isExpanded"
+            class="text-white font-semibold hover:underline mt-1 focus:outline-none"
+          >
+            {{ isExpanded ? 'Show less' : 'See more' }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -60,20 +69,19 @@
         </button>
 
         <!-- Follow/Unfollow Button -->
-        <button
+        <button 
           v-if="userId && user && user.userid && userId !== user.userid"
           class="ml-4 px-6 py-3 rounded-full font-bold transition-colors duration-200"
-          :class="
-            following
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-green-600 text-white hover:bg-green-700'
-          "
+          :class="following
+            ? 'bg-gray-700 text-white hover:bg-gray-600'
+            : 'bg-green-600 text-white hover:bg-green-700'"
           :disabled="isProcessing"
           @click="toggleFollow"
         >
           <span v-if="!following">Follow</span>
           <span v-else>Unfollow</span>
         </button>
+
       </div>
 
       <!-- Top Tracks -->
@@ -81,9 +89,7 @@
         <h1 class="text-white text-2xl font-semibold">Top songs</h1>
         <div class="py-1.5"></div>
 
-        <div
-          class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900"
-        >
+        <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
           <div class="grid grid-rows-2 grid-flow-col auto-cols-max gap-4">
             <transition-group
               name="fade-slide"
@@ -104,6 +110,7 @@
           </div>
         </div>
       </div>
+
 
       <!-- Releases -->
       <div v-if="albums.length" class="p-8">
@@ -126,6 +133,7 @@
           />
         </transition-group>
       </div>
+
     </div>
 
     <!-- Loading State -->
@@ -134,16 +142,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import Play from "vue-material-design-icons/Play.vue";
-import apiClient from "../utils/axios";
-import QuickPickCard from "../components/SongCardRow.vue";
+import { ref, onMounted, watch, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import Play from 'vue-material-design-icons/Play.vue';
+import apiClient from '../utils/axios';
+import QuickPickCard from '../components/SongCardRow.vue'
 
-import AlbumItem from "../components/AlbumCard.vue";
+import AlbumItem from '../components/AlbumCard.vue'
 
-import { useSongStore } from "../stores/song";
-import { storeToRefs } from "pinia";
+import { useSongStore } from '../stores/song';
+import { storeToRefs } from 'pinia';
 
 const userId = ref(null);
 const useSong = useSongStore();
@@ -155,15 +163,20 @@ const following = ref(false);
 const isProcessing = ref(false);
 const topTracks = ref([]);
 const albums = ref([]);
+const isExpanded = ref(false);
 
 const player = ref({
-  tracks: [],
+  tracks:[]
 });
 
 const route = useRoute();
 const router = useRouter();
-const fileServerBaseUrl =
-  import.meta.env.VITE_FILE_SERVER || "http://localhost:3000";
+const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
+
+// Check if description should be truncated (more than ~150 characters)
+const shouldTruncate = computed(() => {
+  return artist.value?.description && artist.value.description.length > 150;
+});
 
 const fetchArtistData = async () => {
   const artistId = route.params.id;
@@ -174,8 +187,9 @@ const fetchArtistData = async () => {
     topTracks.value = response.data.topTracks;
     albums.value = response.data.albums;
     user.value = response.data.user; // <-- important
+    isExpanded.value = false; // Reset expansion state on new artist
 
-    const userDataString = localStorage.getItem("user_data");
+    const userDataString = localStorage.getItem('user_data');
     if (userDataString) {
       try {
         const userData = JSON.parse(userDataString);
@@ -186,8 +200,9 @@ const fetchArtistData = async () => {
         console.error("Error parsing user data from localStorage:", e);
       }
     }
+
   } catch (error) {
-    console.error("Failed to fetch artist data:", error);
+    console.error('Failed to fetch artist data:', error);
     artist.value = null;
   }
 };
@@ -203,16 +218,14 @@ const toggleFollow = async () => {
   isProcessing.value = true;
   try {
     if (!following.value) {
-      await apiClient.post("/api/artist/follow", { artistId: artist.value.id });
+      await apiClient.post('/api/artist/follow', { artistId: artist.value.id });
       following.value = true;
     } else {
-      await apiClient.post("/api/artist/unfollow", {
-        artistId: artist.value.id,
-      });
+      await apiClient.post('/api/artist/unfollow', { artistId: artist.value.id });
       following.value = false;
     }
   } catch (error) {
-    console.error("Failed to update follow state", error);
+    console.error('Failed to update follow state', error);
   } finally {
     isProcessing.value = false;
   }
@@ -248,7 +261,7 @@ const goBack = () => {
     router.back();
   } else {
     // If no history, go to a default page (like dashboard or home)
-    router.push("/dashboard");
+    router.push('/dashboard');
   }
 };
 
@@ -262,4 +275,14 @@ watch(
     fetchArtistData();
   }
 );
+
 </script>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

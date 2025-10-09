@@ -33,7 +33,7 @@ const formatPlays = (count) => {
 <template>
 <div>
   <div 
-    class="bg-[#111111] w-[180px] h-[240px] p-4 rounded-md m-2 hover:bg-[#252525] cursor-pointer flex flex-col group"
+    class="opacity-80  bg-[#111111] w-[180px] h-[240px] p-4 rounded-md m-2 hover:bg-[#252525] cursor-pointer flex flex-col group"
     @click.stop="playTrack(track)"
   >
     <!-- Image wrapper with overlay -->
@@ -75,12 +75,6 @@ const formatPlays = (count) => {
       {{ subTitle }}
       <!-- Play count + duration -->
       <div class="flex items-center gap-3 text-gray-400 text-[12px]">
-        <span v-if="formatPlays(track.play_count)">
-          {{ formatPlays(track.play_count) }}
-        </span>
-
-        <!-- Dot separator -->
-        <div v-if="formatPlays(track.play_count)" class="w-1 h-1 rounded-full bg-gray-400"></div>
 
         <span>
           {{ track.duration.replace(";", ":") }}

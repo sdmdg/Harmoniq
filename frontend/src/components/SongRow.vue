@@ -44,7 +44,7 @@ onMounted(async () => {
 
   try {
     const res = await apiClient.get(`/api/playlist/liked-songs/${user.value.id}`)
-    isLiked.value = res.data.some(song => song.id === track.value.id)
+    isLiked.value = res.data.tracks.some(song => song.id === track.value.id)
   } catch (err) {
     console.error("Error fetching liked songs:", err)
   }
@@ -68,13 +68,14 @@ const toggleLike = async () => {
 
 <template>
   <li
-    class="flex items-center justify-between rounded-md hover:bg-[#2A2929] transition-colors duration-200"
+    class="flex h-[50px] items-center justify-between rounded-md hover:bg-[#2A2929] transition-colors duration-200 px-2 py-2.0"
     @mouseenter="isHover = true"
     @mouseleave="isHover = false"
   >
-    <div class="flex items-center w-full py-1.5">
+    <!-- LEFT SECTION -->
+    <div class="flex items-center flex-1 min-w-0">
       <!-- Play/Pause Button -->
-      <div v-if="isHover" class="w-[40px] ml-[14px] mr-[6px] cursor-pointer">
+      <div v-if="isHover" class="w-[50px] ml-[14px] mr-[6px] cursor-pointer">
         <Play
           v-if="!isPlaying"
           fillColor="#FFFFFF"
@@ -91,9 +92,9 @@ const toggleLike = async () => {
       </div>
 
       <!-- Index & Album Cover -->
-      <div v-else class="relative w-[40px] ml-5 flex items-center justify-center">
+      <div v-else class="relative w-[50px] ml-5 flex items-center justify-center">
         <img
-          class="absolute w-[30px] h-[30px] rounded-sm -z-10 brightness-[0.5]"
+          class="absolute w-[40px] h-[40px] rounded-sm -z-10 brightness-[0.5]"
           :src="`${fileServerBaseUrl}/public/images/${track.albumCover || track.albumcover || artist.albumCover || 'default_album.png'}`"
           alt="Album Cover"
         />
@@ -106,28 +107,33 @@ const toggleLike = async () => {
       </div>
 
       <!-- Track & Artist -->
-      <div class="ml-3">
+      <div class="ml-3 flex-1 min-w-0">
         <div
-          :class="{'text-green-500': currentTrack && currentTrack.id === track.id}"
-          class="text-white font-semibold truncate"
+          :class="{
+            'text-green-500': currentTrack && currentTrack.id === track.id
+          }"
+          class="text-white font-semibold truncate leading-tight"
         >
           {{ track.name }}
         </div>
-        <div class="text-sm font-semibold text-gray-400 truncate">
+        <div class="text-sm font-semibold text-gray-400 truncate leading-tight">
           {{ track.artist || artist.name }}
         </div>
       </div>
     </div>
 
-    <!-- Heart + Duration -->
-    <div class="flex items-center space-x-3 mr-4">
+    <!-- RIGHT SECTION -->
+    <div class="flex items-center gap-1 ml-2 shrink-0">
       <button type="button" @click.stop="toggleLike">
-        <Heart :fillColor="isLiked ? '#1BD760' : '#FFFFFF'" :size="22" />
+        <Heart :fillColor="isLiked ? '#1BD760' : '#FFFFFF'" :size="20" />
       </button>
-      <div class="text-xs text-gray-400">{{ duration }}</div>
+      <div class="text-xs text-gray-400 w-[40px] text-right">
+        {{ duration }}
+      </div>
     </div>
   </li>
 </template>
+
 
 <style scoped>
 li:hover {

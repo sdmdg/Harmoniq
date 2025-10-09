@@ -6,9 +6,12 @@ import MusicPlayer from "./components/MusicPlayer.vue";
 import ChevronUp from "vue-material-design-icons/ChevronUp.vue";
 import ChevronDown from "vue-material-design-icons/ChevronDown.vue";
 import Plus from "vue-material-design-icons/Plus.vue";
+import Menu from "vue-material-design-icons/Menu.vue";
+import Close from "vue-material-design-icons/Close.vue";
 import CreatePlaylistModal from "./components/CreatePlaylistModal.vue";
 import SearchResults from "./components/SearchResults.vue";
 import { useSongStore } from "./stores/song";
+import AccentBackground from "./components/AccentBackground.vue";
 
 import { storeToRefs } from "pinia";
 import apiClient from "./utils/axios.js";
@@ -25,6 +28,7 @@ const profileImageUrl = ref("");
 const userPlaylists = ref([]);
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER;
 const userRole = ref(""); // Reactive variable for the user's role
+const isSidebarOpen = ref(false); // Mobile sidebar toggle
 
 const route = useRoute();
 
@@ -55,6 +59,7 @@ watch(
   () => route.fullPath,
   () => {
     updateUserData();
+    isSidebarOpen.value = false; // Close sidebar on route change
   }
 );
 
@@ -166,14 +171,41 @@ const handleClickOutside = (event) => {
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
 });
+
+// Toggle sidebar for mobile
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
 </script>
 
 <template>
   <div class="min-h-screen bg-black">
+    <!-- Mobile Menu Button -->
+    <button
+      v-if="!isSidebarOpen"
+      @click="toggleSidebar"
+      class="lg:hidden fixed top-4 left-4 z-[60] bg-black hover:bg-[#282828] rounded-full p-2 transition-colors"
+    >
+    <Menu class="z-[60]" v-if="!isSidebarOpen && !hideSidebar()" fillColor="#FFFFFF" :size="24" />
+
+    </button>
+
+    <!-- Overlay for mobile sidebar -->
+    <div
+      v-if="isSidebarOpen && !hideSidebar()"
+      @click="isSidebarOpen = false"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+    ></div>
+
+    <!-- Sidebar -->
     <div
       v-if="!hideSidebar()"
       id="SideNav"
-      class="h-[100%] p-6 w-[240px] fixed z-50 bg-black"
+      :class="{
+        'translate-x-0': isSidebarOpen,
+        '-translate-x-full': !isSidebarOpen,
+      }"
+      class="h-full p-6 w-[240px] fixed z-50 bg-black transition-transform duration-300 lg:translate-x-0 overflow-y-auto"
     >
       <RouterLink to="/home">
         <img
@@ -204,16 +236,16 @@ onUnmounted(() => {
           class="border-b border-b-gray-700 my-4"
         ></div>
         <RouterLink v-if="userRole !== 'admin'" to="/upload">
-          <MenuItem :iconSize="23" name="Upload Songs" iconString="playlist" />
+          <MenuItem :iconSize="23" name="Upload Songs" iconString="upload" />
         </RouterLink>
         <RouterLink v-if="userRole == 'artist'" to="/albums">
-          <MenuItem :iconSize="23" name="My Albums" iconString="playlist" />
+          <MenuItem :iconSize="23" name="My Albums" iconString="album" />
         </RouterLink>
         <RouterLink v-if="userRole !== 'admin'" to="/reportIssue">
           <MenuItem
             :iconSize="23"
             name="Report an Issue"
-            iconString="playlist"
+            iconString="report"
           />
         </RouterLink>
 
@@ -222,16 +254,16 @@ onUnmounted(() => {
           <MenuItem :iconSize="23" name="Dashboard" iconString="home" />
         </RouterLink>
         <RouterLink v-if="userRole == 'admin'" to="/reports">
-          <MenuItem :iconSize="23" name="Report" iconString="library" />
+          <MenuItem :iconSize="23" name="Report" iconString="report" />
         </RouterLink>
         <RouterLink v-if="userRole == 'admin'" to="/adminSongsManage">
-          <MenuItem :iconSize="23" name="Songs" iconString="playlist" />
-        </RouterLink>
-        <RouterLink v-if="userRole == 'admin'" to="/adminUsersManage">
-          <MenuItem :iconSize="23" name="Users" iconString="playlist" />
+          <MenuItem :iconSize="23" name="Songs" iconString="song" />
         </RouterLink>
         <RouterLink v-if="userRole == 'admin'" to="/adminAlbumsManage">
-          <MenuItem :iconSize="23" name="Albums" iconString="playlist" />
+          <MenuItem :iconSize="23" name="Albums" iconString="album" />
+        </RouterLink>
+        <RouterLink v-if="userRole == 'admin'" to="/adminUsersManage">
+          <MenuItem :iconSize="23" name="Users" iconString="users" />
         </RouterLink>
         <RouterLink v-if="userRole == 'admin'" to="/admin/model-upload">
           <li class="flex items-center justify-start pb-4 cursor-pointer group">
@@ -282,14 +314,14 @@ onUnmounted(() => {
           class="border-b border-b-gray-700 my-4"
         ></div>
 
-        <div class="overflow-y-auto h-[360px] scrollbar-hidden">
+        <div class="overflow-y-auto h-[360px] scrollbar-hidden pb-4">
           <ul class="space-y-0">
             <li v-for="playlist in userPlaylists" :key="playlist.id">
               <RouterLink :to="`/playlist/${playlist.id}`">
                 <MenuItem
                   :iconSize="24"
                   :name="playlist.title"
-                  iconString="playlist"
+                  iconString="list"
                 />
               </RouterLink>
             </li>
@@ -303,26 +335,30 @@ onUnmounted(() => {
       />
     </div>
 
+    <!-- Top Navigation -->
     <div
       v-if="!hideTopNav()"
       id="TopNav"
-      class="w-[calc(100%-240px)] h-[60px] fixed right-0 z-20 bg-[#101010] bg-opacity-80 flex items-center justify-between px-6"
+      class="w-full lg:w-[calc(100%-240px)] h-[60px] fixed right-0 z-20 bg-[#101010] bg-opacity-80 flex items-center justify-between px-4 lg:px-6"
       style="
         background-color: rgba(16, 16, 16, 0.8);
         backdrop-filter: blur(10px);
       "
     >
+      <!-- Spacer for mobile menu button -->
+      <div class="w-10 lg:hidden"></div>
+
       <div
         v-if="userRole !== 'admin'"
-        class="relative flex items-center"
+        class="relative flex items-center flex-1 mx-4 lg:mx-0 lg:flex-initial"
         ref="searchContainer"
       >
         <input
           type="text"
           v-model="searchQuery"
           @input="handleSearch"
-          placeholder="What do you want to listen to?"
-          class="w-full md:w-[300px] bg-[#282828] text-white rounded-full py-2 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
+          placeholder="Search songs, albums, artists, podcasts"
+          class="w-full md:w-[300px] bg-[#282828] text-white rounded-full py-2 px-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#1ED760]"
         />
         <svg
           class="absolute right-3 w-5 h-5 text-gray-400"
@@ -337,20 +373,6 @@ onUnmounted(() => {
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
           />
         </svg>
-
-        <!-- Search Results Dropdown -->
-        <div
-          v-if="searchResults"
-          class="absolute top-12 left-0 w-[400px] max-h-[500px] rounded-lg shadow-lg z-50"
-          style="background-color: rgba(24, 24, 24, 0.98)"
-        >
-          <div class="overflow-y-auto max-h-[500px] rounded-lg">
-            <SearchResults
-              :results="searchResults"
-              @item-selected="searchResults = null"
-            />
-          </div>
-        </div>
       </div>
 
       <div class="relative ml-auto">
@@ -364,20 +386,20 @@ onUnmounted(() => {
               class="rounded-full object-cover w-8 h-8"
               :src="
                 profileImageUrl ||
-                'http://localhost:3000/public/images/default.png'
+                `${fileServerBaseUrl}/public/images/default.png`
               "
               alt="Profile Image"
             />
-            <div class="text-white text-[14px] ml-1.5 font-semibold">
+            <div class="text-white text-[14px] ml-1.5 font-semibold hidden sm:block">
               {{ userName }}
             </div>
-            <ChevronDown v-if="!openMenu" fillColor="#FFFFFF" :size="25" />
-            <ChevronUp v-else fillColor="#FFFFFF" :size="25" />
+            <ChevronDown v-if="!openMenu" fillColor="#FFFFFF" :size="25" class="hidden sm:block" />
+            <ChevronUp v-else fillColor="#FFFFFF" :size="25" class="hidden sm:block" />
           </div>
         </button>
         <span
           v-if="openMenu"
-          class="fixed w-[190px] bg-[#282828] shadow-2xl z-50 rounded-lg top-[52px] right-[35px] py-2 px-1 text-gray-200"
+          class="fixed w-[190px] bg-[#282828] shadow-2xl z-50 rounded-lg top-[52px] right-[16px] lg:right-[35px] py-2 px-1 text-gray-200"
         >
           <ul class="font-semibold text-sm">
             <RouterLink to="/profile">
@@ -399,13 +421,37 @@ onUnmounted(() => {
       </div>
     </div>
 
+    <!-- Search Results (Teleported outside to avoid positioning issues) -->
+    <Teleport to="body">
+      <div
+        v-if="searchResults && !hideTopNav()"
+        class="fixed z-[60] rounded-lg shadow-2xl"
+        :class="{
+          'top-[70px] left-[16px] right-[16px] md:left-auto md:right-auto md:w-[400px]': true,
+          'md:left-[calc(240px+24px)]': !hideSidebar(),
+          'md:left-[24px]': hideSidebar()
+        }"
+        style="background-color: rgba(24, 24, 24, 0.98); backdrop-filter: blur(10px);"
+      >
+        <div class="overflow-y-auto max-h-[calc(100vh-100px)] rounded-lg">
+          <SearchResults
+            :results="searchResults"
+            @item-selected="searchResults = null"
+          />
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Main Content -->
     <div
       :class="{
         'w-full': hideSidebar(),
-        'w-[calc(100%-240px)]': !hideSidebar(),
+        'w-full lg:w-[calc(100%-240px)]': !hideSidebar(),
       }"
       class="fixed right-0 top-0 overflow-auto h-full bg-gradient-to-b from-[#000] to-black"
     >
+    <!-- Accent Background -->
+    <AccentBackground />
       <div v-if="!hideTopNav()" class="mt-[70px] bg-opacity-0"></div>
       <RouterView />
       <div v-if="!hidePlayer()" class="mb-[100px] bg-opacity-0"></div>

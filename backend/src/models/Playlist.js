@@ -35,9 +35,22 @@ export const getUserPlaylists = async (userId) => {
         throw error;
     }
 };
+
 export const getLikedSongs = async(userId)=>{
     const query = `
-        SELECT s.id, s.title, s.duration, s.album_id, s.encryption_key, a.album_art_id  as albumCover FROM songs s join liked_songs ls on s.id = ls.song_id join albums a on s.album_id = a.id WHERE ls.user_id = $1;
+        SELECT s.id,
+        s.title,
+        LPAD(EXTRACT(MINUTE FROM s.duration)::text, 2, '0') || ';' ||
+        LPAD(EXTRACT(SECOND FROM s.duration)::text, 2, '0') AS duration,
+        s.album_id,
+        s.encryption_key,
+        ar.artist_name as artist,
+        a.album_art_id  as albumCover
+        FROM songs s
+        join liked_songs ls on s.id = ls.song_id
+        join albums a on s.album_id = a.id
+        JOIN artists ar ON a.artist = ar.user_id
+        WHERE ls.user_id = $1;
     `;
     const values = [userId];
 
@@ -55,8 +68,8 @@ export const getPlaylistById = async (playlistId) => {
     `SELECT 
        s.id,
        s.title as name,
-       u.user_name as artist,
-       LPAD(EXTRACT(MINUTE FROM s.duration)::text, 2, '0') || ':' ||
+       ar.artist_name as artist,
+       LPAD(EXTRACT(MINUTE FROM s.duration)::text, 2, '0') || ';' ||
        LPAD(EXTRACT(SECOND FROM s.duration)::text, 2, '0') AS duration,
        s.album_id,
        s.encryption_key,
@@ -64,7 +77,7 @@ export const getPlaylistById = async (playlistId) => {
      FROM songs s
      JOIN playlist_songs ps ON s.id = ps.song_id
      JOIN albums a ON s.album_id = a.id
-     JOIN users u ON a.artist = u.id
+     JOIN artists ar ON a.artist = ar.user_id
      WHERE ps.playlist_id = $1`,
     [playlistId]
   );

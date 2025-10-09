@@ -6,6 +6,7 @@ import joblib
 from datetime import datetime
 import re
 
+# MODEL_DIR = "./mood/models/"
 MODEL_DIR = "./backend/ai_module/mood/models/"
 #MODEL_PATH = "./backend/ai_module/mood/models/best_cnn_model.keras"
 #LABEL_SCALAR_PATH = "./backend/ai_module/mood/models/fitted_label_scaler.pkl"

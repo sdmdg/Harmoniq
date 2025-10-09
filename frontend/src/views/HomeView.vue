@@ -40,8 +40,10 @@ onMounted(fetchData)
 </script>
 
 <template>
-  <div v-if="loading" class="text-gray-400">Loading...</div>
-  <div v-else-if="error" class="text-red-500">{{ error }}</div>
+  <div v-if="loading || error" class="p-8">
+    <div v-if="loading" class="text-gray-400">Loading...</div>
+    <div v-else-if="error" class="text-red-500">{{ error }}</div>
+  </div>
 
   <!-- Recent Songs -->
   <div v-if="recentSongs.length" class="p-8">

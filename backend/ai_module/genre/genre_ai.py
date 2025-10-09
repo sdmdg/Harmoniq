@@ -12,6 +12,7 @@ from datetime import datetime
 import re
 
 # === Configuration ===
+# MODEL_DIR = "./genre/models/"
 MODEL_DIR = "./backend/ai_module/genre/models/"
 #MODEL_PATH = "./backend/ai_module/genre/models/genre_classifier_model_final.keras"
 TARGET_SHAPE = (288, 288)

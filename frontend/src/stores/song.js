@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import CryptoJS from "crypto-js"; // npm install crypto-js
+import CryptoJS from "crypto-js";
 
 // --- Config ---
 const fileServerBaseUrl =

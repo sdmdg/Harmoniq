@@ -32,7 +32,7 @@ const formatPlays = (count) => {
 
 <template>
   <div 
-    class="bg-[#111111] w-[280px] h-[70px] rounded-md flex overflow-hidden shadow-md hover:bg-[#252525] cursor-pointer group"
+    class="opacity-80  bg-[#111111] w-[280px] h-[70px] rounded-md flex overflow-hidden shadow-md hover:bg-[#252525] cursor-pointer group"
     @click.stop="playTrack(track)"
   >
     <!-- Image -->

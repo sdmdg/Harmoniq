@@ -5,6 +5,11 @@ import handlebars from "handlebars";
 
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import dotenv from 'dotenv';
+dotenv.config();
+
+const MAIL_APP_PWD = process.env.MAIL_APP_PWD;
+const MAIL_APP_EMAIL = process.env.MAIL_APP_EMAIL;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,8 +18,8 @@ const __dirname = dirname(__filename);
 let transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "harmoniq.uom@gmail.com",
-    pass: "vjyr aroj lxqu owmo"
+    user: MAIL_APP_EMAIL,
+    pass: MAIL_APP_PWD
   }
 });
 
