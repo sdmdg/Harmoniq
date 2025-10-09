@@ -119,67 +119,87 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-black p-4 sm:p-6">
-    <h2 class="text-2xl sm:text-3xl font-bold text-white mb-6 text-center">My Albums</h2>
+  <div class="my-upload-view min-h-screen bg-[#121212] text-white">
+    <header class="mx-auto max-w-6xl px-6 pt-10">
+      <nav class="text-sm text-neutral-400 mb-3" aria-label="Breadcrumb">
+        <ol class="flex items-center gap-2">
+          <li class="hover:text-white cursor-default">Artist</li>
+          <li class="opacity-60">/</li>
+          <li class="text-white font-medium">My Albums</li>
+        </ol>
+      </nav>
 
-    <div v-if="loading" class="text-gray-400 text-center">Loading albums...</div>
-    <div v-else-if="errorMessage" class="text-red-500 text-center">{{ errorMessage }}</div>
-    <div v-else-if="albums.length === 0" class="text-gray-400 text-center">No albums found.</div>
-
-    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-      <div
-        v-for="album in albums"
-        :key="album.id"
-        class="relative bg-[#181818] rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer flex flex-col items-center"
-      >
-        <!-- Delete Button always visible -->
-        <button
-          @click.stop="deleteAlbum(album.id)"
-          class="absolute top-2 right-2 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white text-sm w-7 h-7 rounded-full shadow-md transition-all duration-300 z-10"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-
-        <!-- Album cover -->
-        <img
-          :src="album.coverUrl || 'https://via.placeholder.com/300x300?text=No+Cover'"
-          alt="Album Cover"
-          class="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 object-cover rounded-lg mt-4"
-          @click="toggleAlbum(album.id)"
-        />
-
-        <!-- Album info -->
-        <div class="p-2 text-center w-full">
-          <h3 class="text-white font-semibold text-sm sm:text-base truncate">{{ album.title }}</h3>
-          <p class="text-gray-400 text-xs sm:text-sm mt-1 truncate">Artist: {{ album.artistName || 'You' }}</p>
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-white">My Albums</h1>
+          <p class="text-neutral-400 mt-1">
+            Your music on the platform.
+          </p>
         </div>
-
-        <!-- Songs Section -->
-        <!-- Songs Section -->
-<ul
-  v-if="expandedAlbumId === album.id"
-  class="w-full mt-3 px-3 space-y-2 max-h-64 overflow-y-auto bg-[#121212] rounded-lg shadow-inner"
->
-  <SongRow
-    v-for="(song, index) in albumSongs[album.id] || []"
-    :key="song.id"
-    :track="song"
-    :artist="album"
-    :index="index + 1"
-    class="border-b border-gray-700 last:border-none"
-  />
-  <li
-    v-if="(albumSongs[album.id] || []).length === 0"
-    class="text-gray-500 text-sm text-center py-2"
-  >
-    No songs found.
-  </li>
-</ul>
-
       </div>
-    </div>
+
+      <div class="border-t border-neutral-800 my-6"></div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-6 pb-16">
+      <div v-if="loading" class="text-gray-400 text-center">Loading albums...</div>
+      <div v-else-if="errorMessage" class="text-red-500 text-center">{{ errorMessage }}</div>
+      <div v-else-if="albums.length === 0" class="text-gray-400 text-center">No albums found.</div>
+
+      <div v-else class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-4">
+        <div
+          v-for="album in albums"
+          :key="album.id"
+          class="relative bg-[#181818] rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer flex flex-col items-center"
+        >
+          <!-- Delete Button always visible -->
+          <button
+            @click.stop="deleteAlbum(album.id)"
+            class="absolute top-2 right-2 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white text-sm w-7 h-7 rounded-full shadow-md transition-all duration-300 z-10"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+
+          <!-- Album cover -->
+          <img
+            :src="album.coverUrl || 'https://via.placeholder.com/300x300?text=No+Cover'"
+            alt="Album Cover"
+            class="w-42 h-42 object-cover rounded-lg mt-4"
+            @click="toggleAlbum(album.id)"
+          />
+
+          <!-- Album info -->
+          <div class="p-2 text-center w-full">
+            <h3 class="text-white font-semibold text-sm sm:text-base truncate">{{ album.title }}</h3>
+          </div>
+
+          <!-- Songs Section -->
+          <!-- Songs Section -->
+          <ul
+            v-if="expandedAlbumId === album.id"
+            class="w-full mt-3 px-3 space-y-2 max-h-64 overflow-y-auto bg-[#121212] rounded-lg shadow-inner"
+          >
+            <SongRow
+              v-for="(song, index) in albumSongs[album.id] || []"
+              :key="song.id"
+              :track="song"
+              :artist="album"
+              :index="index + 1"
+              class="border-b border-gray-700 last:border-none"
+            />
+            <li
+              v-if="(albumSongs[album.id] || []).length === 0"
+              class="text-gray-500 text-sm text-center py-2"
+            >
+              No songs found.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
   </div>
 </template>
 
@@ -206,5 +226,27 @@ ul li {
 ul li:hover {
   background-color: #1e1e1e;
   transition: background 0.2s ease-in-out;
+}
+</style>
+
+
+
+
+<style scoped>
+/* Main Containers & Layout */
+.my-upload-view {
+  background-color: #000;
+}
+
+/* Custom Scrollbar */
+.my-upload-view::-webkit-scrollbar {
+  width: 6px;
+}
+.my-upload-view::-webkit-scrollbar-thumb {
+  background-color: #1DB954;
+  border-radius: 10px;
+}
+.my-upload-view::-webkit-scrollbar-track {
+  background: #2d2d2d;
 }
 </style>
