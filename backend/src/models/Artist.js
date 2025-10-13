@@ -158,7 +158,7 @@ export const getMostPlayedSongsByArtist = async (artistId, limit = 24) => {
     JOIN albums a ON s.album_id = a.id
     JOIN artists ar ON a.artist = ar.user_id
     LEFT JOIN song_history sh ON sh.song_id = s.id
-    WHERE ar.id = $1
+    WHERE ar.id = $1 AND a.is_blocked = false
     GROUP BY s.id, a.id, ar.artist_name, a.album_art_id
     ORDER BY total_listen_seconds DESC
     LIMIT $2
@@ -174,7 +174,7 @@ export const findAlbumsByArtistId = async (artistId) => {
       SELECT al.id, al.title, al.album_art_id as cover, ar.artist_name as artist, al.release_date
       FROM albums al
       JOIN artists ar ON ar.user_id = al.artist
-      WHERE ar.id = $1;
+      WHERE ar.id = $1 AND al.is_blocked = false;
     `;
     const result = await db.query(query, [artistId]);
     return result.rows;

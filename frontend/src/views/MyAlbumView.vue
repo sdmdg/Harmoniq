@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/axios';
 import SongRow from '../components/SongRow.vue'; 
+import Globe from "vue-material-design-icons/Publish.vue";
+import Lock from "vue-material-design-icons/Lock.vue";
 
 const albums = ref([]);
 const loading = ref(true);
@@ -162,20 +164,33 @@ onMounted(() => {
             </svg>
           </button>
 
+          <button
+            @click.stop="toggleAlbum(album.id)"
+            :aria-label="album.isPublic ? 'Make Private' : 'Make Public'"
+            :class="[
+              'absolute top-2 left-2 flex items-center justify-center text-white w-8 h-8 rounded-full shadow-md transition-colors duration-300 z-10',
+              album.isPublic ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'
+            ]"
+          >
+            <Globe v-if="album.isPublic" class="h-6 w-6"/>
+            <Lock v-else class="h-6 w-6" />
+          </button>
+
+
           <!-- Album cover -->
           <img
             :src="album.coverUrl || 'https://via.placeholder.com/300x300?text=No+Cover'"
             alt="Album Cover"
-            class="w-42 h-42 object-cover rounded-lg mt-4"
+            class="w-44 h-44 md:w-40 md:h-40 lg:w-48 lg:h-48 object-cover rounded-lg mt-4 cursor-pointer"
             @click="toggleAlbum(album.id)"
           />
+
 
           <!-- Album info -->
           <div class="p-2 text-center w-full">
             <h3 class="text-white font-semibold text-sm sm:text-base truncate">{{ album.title }}</h3>
           </div>
 
-          <!-- Songs Section -->
           <!-- Songs Section -->
           <ul
             v-if="expandedAlbumId === album.id"

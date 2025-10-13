@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full h-full bg-[#000000] overflow-auto">
+  <div class="relative w-full h-full bg-[#000000]">
     <!-- Back Button -->
     <div class="absolute top-4 left-4 z-20">
       <button

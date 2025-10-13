@@ -7,13 +7,10 @@ import VolumeHigh from 'vue-material-design-icons/VolumeHigh.vue';
 import { useSongStore } from '../stores/song'
 import { storeToRefs } from 'pinia';
 const useSong = useSongStore()
-const { audio } = storeToRefs(useSong)
+
+const { audio, volume, vol } = storeToRefs(useSong)
 
 let isHover = ref(false)
-
-// PLAYER REFS
-let vol = ref(80)
-let volume = ref(null)
 
 onMounted(() => {
     if (!volume.value) return

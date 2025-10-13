@@ -10,7 +10,7 @@ export const searchTracks = async (query) => {
     JOIN albums a ON s.album_id = a.id
     JOIN artists ar ON a.artist = ar.user_id
     LEFT JOIN albums aa ON aa.id = a.id
-    WHERE LOWER(s.title) LIKE LOWER($1) AND a.published = true AND s.encryption_key is not NULL
+    WHERE LOWER(s.title) LIKE LOWER($1) AND a.published = true AND a.is_blocked = false AND s.encryption_key is not NULL
     LIMIT 10
   `;
   const values = [`%${query}%`];
@@ -23,7 +23,7 @@ export const searchAlbums = async (query) => {
     SELECT a.id, a.title AS name, ar.artist_name AS artist, a.album_art_id AS album_cover
     FROM albums a
     JOIN artists ar ON a.artist = ar.user_id
-    WHERE LOWER(a.title) LIKE LOWER($1) AND a.published = true
+    WHERE LOWER(a.title) LIKE LOWER($1) AND a.published = true AND a.is_blocked = false
     LIMIT 10
   `;
   const values = [`%${query}%`];

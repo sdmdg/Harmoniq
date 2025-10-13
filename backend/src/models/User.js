@@ -141,3 +141,26 @@ export async function getAllUsers({ q = '', role = '', limit = 10, offset = 0 })
 
   return { rows, total };
 }
+
+export const getUserSongsModel = async(userId)=>{
+    const query = `
+        SELECT s.id,
+        s.title,
+        LPAD(EXTRACT(MINUTE FROM s.duration)::text, 2, '0') || ';' ||
+        LPAD(EXTRACT(SECOND FROM s.duration)::text, 2, '0') AS duration,
+        s.album_id,
+        s.encryption_key
+        FROM songs s
+        join users_songs us on s.id = us.song_id
+        WHERE us.user_id = $1;
+    `;
+    const values = [userId];
+
+    try {
+        const result = await db.query(query, values);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching user songs from database:', error);
+        throw error;
+    }
+};
