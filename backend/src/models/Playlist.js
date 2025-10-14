@@ -126,3 +126,21 @@ export async function addSongToPlaylistModel(playlistId, songId) {
     throw err;
   }
 }
+
+export const getPlaylistsForSongModel = async (userId, songId) => {
+    const query = `
+        SELECT p.id, p.title
+        FROM playlist p
+        JOIN playlist_songs ps ON p.id = ps.playlist_id
+        WHERE ps.song_id = $2 AND p.user_id = $1
+    `;
+    const values = [userId, songId];
+
+    try {
+        const result = await db.query(query, values);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching playlists for song from database:', error);
+        throw error;
+    }
+};
