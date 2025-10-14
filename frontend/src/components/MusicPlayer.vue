@@ -14,9 +14,22 @@ import PlaylistItem from "../components/SongRow.vue";
 import { useSongStore } from "../stores/song";
 import { storeToRefs } from "pinia";
 
+const isMobile = ref(window.innerWidth <= 768);
+
+const updateIsMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+
+onMounted(() => {
+  window.addEventListener("resize", updateIsMobile);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateIsMobile);
+});
+
 const useSong = useSongStore();
-const { isPlaying, audio, currentTrack, currentArtist, isBuffering } =
-  storeToRefs(useSong);
+const { isPlaying, audio, currentTrack, currentArtist, isBuffering } = storeToRefs(useSong);
 
 const fileServerBaseUrl =
   import.meta.env.VITE_FILE_SERVER || "http://localhost:3000";
@@ -115,9 +128,16 @@ const toggleExpanded = () => {
     v-if="currentTrack"
     id="MusicPlayer"
     class="fixed bottom-0 left-0 w-full z-[60] bg-[#181818] border-t border-t-[#272727] transition-all duration-500 ease-in-out"
-    :class="isExpanded ? 'h-screen md:h-[500px]' : 'h-[80px] md:h-[90px]'"
-    style="background-color: rgba(24, 24, 24, 0.95); backdrop-filter: blur(10px)"
+    :class="isExpanded ? 'expanded' : ''"
+    :style="{
+      backgroundColor: 'rgba(24, 24, 24, 0.95)',
+      backdropFilter: 'blur(10px)',
+      height: isExpanded ? (isMobile ? '100dvh' : '500px') : '80px'
+    }"
   >
+
+
+
     <div
       v-if="!isExpanded"
       class="absolute top-0 left-0 w-full h-[4px]"
@@ -413,4 +433,17 @@ const toggleExpanded = () => {
   transform: scale(1.2);
   background: #1bd760;
 }
+
+#MusicPlayer {
+  height: 100vh;
+  height: 100dvh; /* Respect dynamic viewport height on mobile */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+#MusicPlayer.expanded {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
 </style>

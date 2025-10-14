@@ -40,6 +40,8 @@ app.use("/api/search", searchRoutes);
 app.use("/api/recommend", recommendationRoutes);
 app.use("/api/models", modelRoutes);
 
+export default app;
+
 const startServer = async () => {
   try {
     // Check database connection

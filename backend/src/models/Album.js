@@ -30,7 +30,7 @@ export const fetchAlbumData = async (albumId) => {
             ar.artist_name AS "artistName"
         FROM albums a
         JOIN artists ar ON a.artist = ar.user_id
-        WHERE a.id = $1;
+        WHERE a.id = $1 AND a.is_blocked = false AND a.published = true;
     `;
 
   const albumResult = await pool.query(albumQuery, [albumId]);
@@ -148,5 +148,15 @@ export const unBlockAlbummodel = async (albumId) => {
       WHERE id = $1
       RETURNING id, title AS name, is_blocked AS "isBlocked";`;
   const result = await pool.query(query, [albumId]);
+  return result.rows[0];
+};
+
+
+export const AlbumChangeVisibilityModel = async (albumId, userID, bool) => {
+  const query = `UPDATE albums
+      SET published = $3
+      WHERE id = $1 AND artist = $2
+      RETURNING id, title AS name, is_blocked AS "isBlocked";`;
+  const result = await pool.query(query, [albumId, userID, bool]);
   return result.rows[0];
 };

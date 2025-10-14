@@ -105,6 +105,8 @@ export const useSongStore = defineStore("song", {
   state: () => ({
     isPlaying: false,
     isBuffering: false,
+    volume: 80,
+    vol: 80,
     downloadProgress: 0, // 0..100 (best-effort; only if server sends Content-Length)
     audio: null, // HTMLAudioElement
     objectUrl: null, // current blob URL to revoke

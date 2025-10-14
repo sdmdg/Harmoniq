@@ -1,0 +1,52 @@
+
+<!-- Container -->
+<div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; overflow: hidden;">
+
+  <!-- Header -->
+  <div style="background: #1ED760; padding: 20px; text-align: center; color: white;">
+    <h1 style="margin: 0; font-size: 24px;">New Album from {{artistName}} 🎶</h1>
+  </div>
+
+  <!-- Body -->
+  <div style="padding: 25px; line-height: 1.6;">
+    <!-- Artist Spotlight -->
+        <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+            <!-- Artist Image (Circular) -->
+            <img src="{{ fileUrl }}/api/image-proxy?file={{artistImage}}" 
+                 alt="Artist Image for {{artistName}}" 
+                 style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 5px solid #1ED760; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;"/>
+            <p style="font-size: 20px; margin: 0; color: #1ED760; font-weight: bold;">
+                {{artistName}}
+            </p>
+        </div>
+
+        <!-- Album Announcement -->
+        <h2 style="font-size: 24px; text-align: center; color: #1ED760; margin: 0 0 20px 0; font-weight: 800;">
+            {{albumName}} IS OUT NOW!
+        </h2>
+
+        <!-- Album Cover -->
+        <div style="text-align: center; margin: 25px 0;">
+            <img src="{{ fileUrl }}/api/image-proxy?file={{ albumCover }}" 
+                 alt="Album Cover for {{albumName}}" 
+                 style="max-width: 90%; width: 250px; height: auto; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); display: block; margin: auto;"/>
+        </div>
+
+        <p style="font-size: 16px; margin: 30px 0; text-align: center; color: #555;">
+            Dive into the highly anticipated new album from {{artistName}}. 
+        </p>
+
+        <!-- CTA Button (Primary Action) -->
+        <div style="text-align: center; margin: 35px 0;">
+            <a href="{{ appUrl }}/album/{{ albumId }}" 
+                style="background: #1ED760; color: white; padding: 16px 35px; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; display: inline-block; box-shadow: 0 4px 15px rgba(30, 215, 96, 0.5); letter-spacing: 0.5px;">
+                🎧 Stream
+            </a>
+        </div>
+
+    <p style="font-size: 14px; margin: 0;">
+      Keep listening, <br>
+      <span style="color: #555;">The Harmoniq Team</span>
+    </p>
+  </div>
+</div>

@@ -78,7 +78,7 @@ export const getPlaylistById = async (playlistId) => {
      JOIN playlist_songs ps ON s.id = ps.song_id
      JOIN albums a ON s.album_id = a.id
      JOIN artists ar ON a.artist = ar.user_id
-     WHERE ps.playlist_id = $1`,
+     WHERE ps.playlist_id = $1 AND a.is_blocked = false`,
     [playlistId]
   );
 

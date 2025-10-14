@@ -4,7 +4,8 @@ import {ModelgetProPic,
         findUserById, updateRole,
         createArtistProfile,
         findArtistByUserId,
-        updateArtistProfile } from '../models/User.js';
+        updateArtistProfile,
+        getUserSongsModel } from '../models/User.js';
 import { uploadFileToServer } from '../services/fileService.js';
 
 import { sendEmail } from "../services/emailService.js";
@@ -213,3 +214,17 @@ export const getHomePage = async (req, res) => {
   }
 };
 
+export const getUserSongs = async (req, res) => {
+    try {
+        const userId = req.user.id; // User ID from the authenticated token                 
+        const tracks = await getUserSongsModel(userId);
+        // Build playlist object for frontend
+        const playlist = {
+        tracks
+        };
+        res.status(200).json(playlist);
+    } catch (error) {
+        console.error('Failed to get liked songs:', error);
+        res.status(500).json({ message: 'Server error while fetching liked songs.' });
+    }       
+};

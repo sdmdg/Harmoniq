@@ -161,7 +161,7 @@ export const setUserSong = async (req, res) => {
     console.log("File URL:", file_url);
 
     // 3. Hardcoded album ID
-    const albumId = "9cab5f9a-e869-4838-acd3-e439d8461e02";
+    const albumId = "4cec3d10-17b2-42ec-9dbf-440630bfaaea";
     const { title, trackNumber } = req.body;
     console.log("Metadata:", { albumId, title, trackNumber });
 
@@ -211,9 +211,29 @@ export const setUserSong = async (req, res) => {
       features.mood
     );
     console.log("Saved song:", result);
+
     await ModelSetUserSong(userId, file_id);
 
-    // 7. Respond to frontend
+
+    if (!features && !file_url) {
+      return res.status(400).json({ message: "No data provided to update." });
+    }
+
+    const filename = file_url.split("/").pop();
+    const encryptRes = await encryptFile(filename);
+    if (!encryptRes) return res.status(500).json({ message: "Encryption failed." });
+
+    let encryptionKey = encryptRes.key_hex;
+    let ivHex = encryptRes.iv_hex;
+
+    console.log("Updating song in DB with data:", features);
+    const updatedSong = await ModelUpdateSong(file_id, features, encryptionKey);
+    console.log("Updated song:", updatedSong);
+
+    if (!updatedSong) {
+      return res.status(404).json({ message: "Song not found or failed to update." });
+    }
+
     res.status(201).json({
       message: "Song uploaded successfully",
       song: result,
@@ -224,6 +244,7 @@ export const setUserSong = async (req, res) => {
     console.error("Error in setSong:", err);
     res.status(500).json({ message: "Failed to upload the audio file." });
   }
+
 };
 
 
@@ -276,6 +297,8 @@ export const updateSong = async (req, res) => {
     console.error("Error in updateSong:", err);
     res.status(500).json({ message: "Failed to update the song." });
   }
+
+
 };
 export const deleteSong = async (req, res) => {
   const { id } = req.params;  // UUID

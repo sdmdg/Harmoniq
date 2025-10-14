@@ -63,8 +63,7 @@ const fetchData = async () => {
       name: track.title,
       title: track.title,
       artist: track.artist || "Unknown Artist",
-      albumCover: track.albumcover || "/default.jpg",
-      albumcover: track.albumcover || "/default.jpg",
+      albumCover: track.albumcover || "default_album.png",
       duration: track.duration,
       album_id: track.album_id,
       encryption_key: track.encryption_key || "",
@@ -137,13 +136,11 @@ const formatDuration = (durationString) => {
               Liked Songs
             </h1>
             
-            <p class="text-sm text-gray-300 font-semibold">
-              {{ user?.username || 'Your Library' }}
-            </p>
+         
 
             <!-- Desktop Description -->
             <p class="hidden md:block text-xs text-gray-400 mt-3">
-              Your personal collection of loved tracks, curated just for you.
+              Your personal collection of loved tracks.
             </p>
 
             <!-- Track Count -->
@@ -159,7 +156,7 @@ const formatDuration = (durationString) => {
         <div class="w-full md:w-2/3">
           <!-- Empty State -->
           <div v-if="collection.tracks.length === 0" class="text-gray-400 text-center py-12">
-            <p class="text-lg">No liked songs yet</p>
+            <p class="text-lg font-semibold">No liked songs yet</p>
             <p class="text-sm mt-2">Start liking songs to build your collection</p>
           </div>
 

@@ -97,7 +97,7 @@ export const getRecentSongsByUser = async (userId, limit = 10) => {
     LEFT JOIN songs s ON h.song_id = s.id
     LEFT JOIN albums a ON s.album_id = a.id
     LEFT JOIN artists ar ON a.artist = ar.user_id
-    WHERE h.user_id = $1 AND a.published = true AND s.encryption_key is not NULL
+    WHERE h.user_id = $1 AND a.published = true AND a.is_blocked = false AND s.encryption_key is not NULL
     GROUP BY s.id, s.title, a.title, a.album_art_id, ar.artist_name
     ORDER BY play_count DESC, last_played DESC
     LIMIT $2;
@@ -128,7 +128,7 @@ export const getMostPlayedSongs = async (limit = 24) => {
     JOIN songs s ON sh.song_id = s.id
     JOIN albums a ON s.album_id = a.id
     LEFT JOIN artists ar ON a.artist = ar.user_id
-    WHERE a.published = true AND s.encryption_key is not NULL
+    WHERE a.published = true AND a.is_blocked = false AND s.encryption_key is not NULL
     GROUP BY s.id, a.id, ar.artist_name, a.album_art_id, s.duration
     ORDER BY total_listen_seconds DESC
     LIMIT $1;
@@ -149,7 +149,7 @@ export const getTrendingAlbums = async (limit = 20) => {
     JOIN songs s ON sh.song_id = s.id
     JOIN albums a ON s.album_id = a.id
     LEFT JOIN artists ar ON a.artist = ar.user_id
-    WHERE a.id != '4cec3d10-17b2-42ec-9dbf-440630bfaaea' AND a.published = true AND s.encryption_key is not NULL
+    WHERE a.id != '4cec3d10-17b2-42ec-9dbf-440630bfaaea' AND a.published = true AND a.is_blocked = false AND s.encryption_key is not NULL
     GROUP BY a.id, a.title, ar.artist_name, a.album_art_id
     ORDER BY total_listen_seconds DESC
     LIMIT $1
@@ -170,7 +170,7 @@ export const getRecentReleases = async (limit = 12) => {
       a.release_date
     FROM albums a
     LEFT JOIN artists ar ON a.artist = ar.user_id
-    WHERE a.id != '4cec3d10-17b2-42ec-9dbf-440630bfaaea' AND a.published = true
+    WHERE a.id != '4cec3d10-17b2-42ec-9dbf-440630bfaaea' AND a.published = true AND a.is_blocked = false
     ORDER BY a.release_date DESC
     LIMIT $1
   `;

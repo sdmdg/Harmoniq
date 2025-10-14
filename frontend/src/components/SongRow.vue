@@ -32,10 +32,11 @@ const props = defineProps({
   track: Object,
   artist: Object,
   index: Number,
-  duration: String
+  duration: String,
+  canLiked: { type: Boolean, default: true }
 })
 
-const { track, artist, index, duration } = toRefs(props)
+const { track, artist, index, duration, canLiked } = toRefs(props)
 
 // Fetch liked state on mount
 onMounted(async () => {
@@ -124,7 +125,7 @@ const toggleLike = async () => {
 
     <!-- RIGHT SECTION -->
     <div class="flex items-center gap-1 ml-2 shrink-0">
-      <button type="button" @click.stop="toggleLike">
+      <button v-if="canLiked" type="button" @click.stop="toggleLike">
         <Heart :fillColor="isLiked ? '#1BD760' : '#FFFFFF'" :size="20" />
       </button>
       <div class="text-xs text-gray-400 w-[40px] text-right">

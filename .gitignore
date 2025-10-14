@@ -13,4 +13,7 @@
 
 /backend/file_server/public
 frontend/.env
+*.crt
+*.env
 backend/src/.env
+backend/src/.env.test
