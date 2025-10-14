@@ -11,6 +11,7 @@ import {
   listAllAlbumsmodel,
   blockAlbummodel,
   unBlockAlbummodel,
+  AlbumChangeVisibilityModel,
 } from "../models/Album.js";
 
 export const getAlbum = async (req, res) => {
@@ -158,5 +159,19 @@ export const unblockAlbum = async (req, res) => {
   } catch (error) {
     console.error("Controller error (unblockAlbum):", error);
     res.status(500).json({ message: "Server error while unblocking album" });
+  }
+};
+
+
+export const AlbumChangeVisibility = async (req, res) => {
+  try {
+    const { albumId } = req.params;
+    const userId = req.user.id;
+    const { isPublic } = req.body;
+    const Album = await AlbumChangeVisibilityModel(albumId, userId, isPublic);
+    res.status(200).json(Album);
+  } catch (error) {
+    console.error("Controller error (AlbumChangeVisibility):", error);
+    res.status(500).json({ message: "Server error while changing album visibility" });
   }
 };

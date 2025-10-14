@@ -31,6 +31,33 @@ const deleteAlbum = async (albumId) => {
   }
 };
 
+// Public/Private album function
+const toggleAlbumVisibility = async (albumId, isPublic) => {
+  const message = isPublic
+    ? "Are you sure you want to make this album private?"
+    : "Are you sure you want to publish this album?";
+
+  if (!confirm(message)) return;
+
+  try {
+    // Call API to update album visibility
+    await apiClient.patch(`/api/album/visibility/${albumId}`, {
+      isPublic: !isPublic,
+    });
+
+    // Optionally, update your local state if needed
+    const album = albums.value.find(a => a.id === albumId);
+    if (album) album.isPublic = !isPublic;
+
+    alert("Album visibility updated successfully!");
+    fetchAlbums();
+  } catch (err) {
+    console.error("Error updating album visibility:", err);
+    alert(err.response?.data?.message || "Failed to update album visibility.");
+  }
+};
+
+
 // Get user
 const fetchUser = () => {
   const userData = localStorage.getItem('user_data');
@@ -154,7 +181,7 @@ onMounted(() => {
           :key="album.id"
           class="relative bg-[#181818] rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer flex flex-col items-center"
         >
-          <!-- Delete Button always visible -->
+          <!-- Delete Button -->
           <button
             @click.stop="deleteAlbum(album.id)"
             class="absolute top-2 right-2 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white text-sm w-7 h-7 rounded-full shadow-md transition-all duration-300 z-10"
@@ -164,15 +191,16 @@ onMounted(() => {
             </svg>
           </button>
 
+          <!-- Public/Private Button -->
           <button
-            @click.stop="toggleAlbum(album.id)"
-            :aria-label="album.isPublic ? 'Make Private' : 'Make Public'"
+            @click.stop="toggleAlbumVisibility(album.id, album.published)"
+            :aria-label="album.published ? 'Make Private' : 'Make Public'"
             :class="[
               'absolute top-2 left-2 flex items-center justify-center text-white w-8 h-8 rounded-full shadow-md transition-colors duration-300 z-10',
-              album.isPublic ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'
+              !album.published ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'
             ]"
           >
-            <Globe v-if="album.isPublic" class="h-6 w-6"/>
+            <Globe v-if="!album.published" class="h-6 w-6"/>
             <Lock v-else class="h-6 w-6" />
           </button>
 

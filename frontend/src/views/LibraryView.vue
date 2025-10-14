@@ -1,10 +1,17 @@
 <template>
   <div class="p-8">
     <!-- User Playlists -->
-    <div v-if="userPlaylists.length" class="mb-8">
+    <div class="mb-8">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-white text-2xl font-semibold">Your Playlists</h2>
       </div>
+
+      <!-- Empty State -->
+      <div v-if="!userPlaylists.length" class="text-gray-400 text-center py-6">
+        <p class="text-lg font-semibold">No playlists yet</p>
+        <p class="text-sm mt-2">Start by creating your first playlist and add your favorite tracks!</p>
+      </div>
+
 
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
         <div v-for="playlist in userPlaylists" :key="playlist.id">
@@ -46,8 +53,8 @@
     <div class="mb-8">
       <h2 class="text-white text-2xl font-semibold mb-4">Your Songs</h2>
       <!-- Empty State -->
-      <div v-if="collection && collection.tracks && collection.tracks.length === 0"  class="text-gray-400 text-center py-12">
-        <p class="text-lg">No songs yet</p>
+      <div v-if="collection && collection.tracks && collection.tracks.length === 0"  class="text-gray-400 text-center py-6">
+        <p class="text-lg font-semibold">No songs yet</p>
         <p class="text-sm mt-2">Start uploading songs to build your collection</p>
       </div>
       <!-- Content -->
