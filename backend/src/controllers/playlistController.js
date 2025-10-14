@@ -1,6 +1,6 @@
 // controllers/playlistController.js
 import {createPlaylist as createPlaylistModel,
-        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById, getPlaylistAlbumsModel } from '../models/Playlist.js';
+        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById, getPlaylistAlbumsModel,addSongToPlaylistModel } from '../models/Playlist.js';
 
 export const createPlaylist = async (req, res) => {
     try {
@@ -112,3 +112,17 @@ export const getPlaylistAlbums = async (req, res) => {
         res.status(500).json({ message: `Internal server error: ${error.message}` });
     }
 };
+export const addSongToPlaylist = async (req, res) => {
+    try {
+        const { playlistId, songId } = req.body;
+        console.log(playlistId, songId);
+        if (!playlistId || !songId) {
+            return res.status(400).json({ message: 'Playlist ID and Song ID are required.' });
+        }    // Call the model function to add the song to the playlist
+        await addSongToPlaylistModel(playlistId, songId);
+        res.status(200).json({ message: 'Song added to playlist successfully.' });
+    } catch (error) {
+        console.error('Failed to add song to playlist:', error);
+        res.status(500).json({ message: 'Server error while adding song to playlist.' });
+    }
+};  
