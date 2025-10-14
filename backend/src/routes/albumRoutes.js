@@ -9,6 +9,7 @@ import {
   listAllAlbums,
   blockAlbum,
   unblockAlbum,
+  AlbumChangeVisibility,
 } from "../controllers/albumController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import multer from "multer";
@@ -36,4 +37,5 @@ router.delete("/delete/:albumId", protect(["admin", "artist"]), deleteAlbum);
 router.get("/list", protect(["admin", "listener", "artist"]), listAllAlbums);
 router.patch("/:albumId/block", protect(["admin"]), blockAlbum);
 router.patch("/:albumId/unblock", protect(["admin"]), unblockAlbum);
+router.patch("/visibility/:albumId", protect(["admin", "artist"]), AlbumChangeVisibility);
 export default router;
