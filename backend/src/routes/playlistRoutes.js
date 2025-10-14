@@ -6,11 +6,13 @@ import {
   getLikedSongs,
   getPlaylistDetails,
   getPlaylistAlbums,
+  addSongToPlaylist,
 } from "../controllers/playlistController.js";
 import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
-router.post("/add", protect(["listener", "artist", "admin"]), createPlaylist);
+router.post("/add", protect(["listener", "artist", "admin"]), createPlaylist)
+router.post("/add-song", protect(["listener", "artist", "admin"]), addSongToPlaylist);
 router.get(
   "/get/all",
   protect(["listener", "artist", "admin"]),
