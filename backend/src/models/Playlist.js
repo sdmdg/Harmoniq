@@ -110,3 +110,19 @@ export const getPlaylistAlbumsModel = async (playlistId) => {
     );
     return result.rows;
 };
+
+export async function addSongToPlaylistModel(playlistId, songId) {
+  const sql = `
+    INSERT INTO playlist_songs (playlist_id, song_id)
+    VALUES ($1, $2)
+    ON CONFLICT (playlist_id, song_id) DO NOTHING
+    RETURNING playlist_id, song_id;
+  `;
+  try {
+    const result = await db.query(sql, [playlistId, songId]);
+    return { inserted: result.rowCount > 0 };
+  } catch (err) {
+    console.error("addSongToPlaylistModel error:", err);
+    throw err;
+  }
+}
