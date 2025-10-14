@@ -12,6 +12,10 @@ const useSong = useSongStore()
 const { isPlaying, currentTrack } = storeToRefs(useSong)
 const router = useRouter()
 
+const userPlaylists = ref([])
+const showPlaylistModal = ref(false)
+const selectedSongId = ref(null) //  store the song to add
+
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000'
 
 let isHover = ref(false)
@@ -65,8 +69,48 @@ const toggleLike = async () => {
     console.error("Toggle like error:", err)
   }
 }
-</script>
 
+const openPlaylistModal = async (songId) => {
+  try {
+    selectedSongId.value = songId
+    const response = await apiClient.get("/api/playlist/get/all")
+    let playlists = response.data
+    console.log(playlists)
+
+    // Filter playlists that do NOT already contain this song
+    playlists = playlists.filter(playlist => 
+      !playlist.tracks?.some(track => track.id === songId)
+    )
+
+    userPlaylists.value = playlists
+    showPlaylistModal.value = true
+  } catch (error) {
+    console.error("Failed to fetch user playlists:", error)
+  }
+}
+
+
+// add song to selected playlist
+const addToPlaylist = async (playlistId) => {
+  try {
+    if (!selectedSongId.value) {
+      alert("Song ID not found!")
+      return
+    }
+
+    await apiClient.post(`/api/playlist/add-song`, {
+      playlistId,
+      songId: selectedSongId.value,
+    })
+
+    alert(" Song added to playlist!")
+    showPlaylistModal.value = false
+  } catch (err) {
+    console.error("Failed to add song:", err)
+    alert(" Failed to add song to playlist.")
+  }
+}
+</script>
 <template>
   <li
     class="flex h-[50px] items-center justify-between rounded-md hover:bg-[#2A2929] transition-colors duration-200 px-2 py-2.0"
@@ -128,10 +172,65 @@ const toggleLike = async () => {
       <button v-if="canLiked" type="button" @click.stop="toggleLike">
         <Heart :fillColor="isLiked ? '#1BD760' : '#FFFFFF'" :size="20" />
       </button>
+      <button type="button" @click.stop="openPlaylistModal(track.id)">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-white hover:text-green-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
       <div class="text-xs text-gray-400 w-[40px] text-right">
         {{ duration }}
       </div>
     </div>
+    <!-- Playlist Popup Modal -->
+<div
+  v-if="showPlaylistModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50"
+>
+  <div class="bg-neutral-900 rounded-2xl w-[400px] max-h-[500px] p-5 border border-neutral-700 shadow-lg">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-white font-semibold text-lg">Add to Playlist</h2>
+      <button
+        @click="showPlaylistModal = false"
+        class="text-gray-400 hover:text-white text-xl font-bold"
+      >
+        &times;
+      </button>
+    </div>
+
+    <div v-if="userPlaylists.length === 0" class="text-gray-400 text-sm text-center py-6">
+      No playlists found.
+    </div>
+
+    <div v-else class="overflow-y-auto h-[360px] scrollbar-hidden pb-4">
+      <ul class="space-y-0">
+        <li
+          v-for="playlist in userPlaylists"
+          :key="playlist.id"
+          class="flex items-center justify-between hover:bg-neutral-800 px-4 py-2 rounded-md cursor-pointer"
+          @click="addToPlaylist(playlist.id)"
+        >
+          <div class="flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor"
+                 class="h-5 w-5 text-green-400">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 10h18M3 6h18M3 14h10m6 0h2m-8 4h8" />
+            </svg>
+            <span class="text-white font-medium">{{ playlist.title }}</span>
+          </div>
+          <span class="text-gray-400 text-xs">→</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
   </li>
 </template>
 
