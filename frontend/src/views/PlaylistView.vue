@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import SongRow from '../components/SongRow.vue';
 import ClockTimeThreeOutline from 'vue-material-design-icons/ClockTimeThreeOutline.vue';
+import Share from 'vue-material-design-icons/Share.vue';
 import apiClient from '../utils/axios';
 
 import { useSongStore } from '../stores/song';
@@ -12,11 +13,14 @@ const useSong = useSongStore();
 const { isPlaying, currentTrack, currentArtist } = storeToRefs(useSong);
 
 const route = useRoute();
+const router = useRouter();
+
 const collection = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const playlistData = ref(null);
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
+const user = ref(null);
 
 const playFunc = () => {
   if (currentTrack.value) {
@@ -28,6 +32,16 @@ const playFunc = () => {
   }
 };
 
+const fetchUser = () => {
+  const userData = localStorage.getItem('user_data');
+  if (userData) {
+    user.value = JSON.parse(userData);
+    console.log('User data:', user.value);
+  } else {
+    router.push('/login');
+  }
+};
+
 const albumCoverUrl = computed(() => {
   if (!collection.value?.tracks?.length) return '';
   const cover = currentTrack.value?.albumCover || collection.value.tracks[0]?.albumCover;
@@ -35,6 +49,7 @@ const albumCoverUrl = computed(() => {
 });
 
 const fetchData = async () => {
+  fetchUser();
   loading.value = true;
   error.value = null;
   collection.value = null;
@@ -83,7 +98,7 @@ onMounted(fetchData);
 watch(
   () => route.params.id,
   () => {
-    fetchData();
+    if (route.params.id) (fetchData())
   }
 );
 const copyLink = () => {
@@ -152,22 +167,20 @@ const formatDuration = (durationString) => {
           <span>{{ collection.tracks.length }} {{ collection.tracks.length === 1 ? 'song' : 'songs' }}</span>
         </div>
 
-  <!-- Centered Button -->
-  <div class="flex justify-center mt-4">
-    <button
-      @click="copyLink"
-      class="px-4 py-2 rounded-full bg-[#1DB954] text-white font-semibold 
-            flex items-center gap-2 hover:bg-[#1ed760] transition"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M4 12v.01M12 4v.01M20 12v.01M12 20v.01M12 12l8-8M12 12l-8-8M12 12l8 8M12 12l-8 8" />
-      </svg>
-      Share Playlist
-    </button>
-  </div>
-</div>
+        <!-- Centered Button -->
+        <div class="flex justify-center mt-4">
+
+          <button v-if="user.id == playlistData?.user_id"
+            @click="copyLink"
+            class="px-4 py-2 rounded-full bg-[#1DB954] text-white font-semibold 
+                  flex items-center gap-2 hover:bg-[#1ed760] transition"
+          >
+            Share Playlist
+            <Share fillColor="#FFFFFF" :size="18" />
+          </button>
+
+        </div>
+      </div>
 
         </div>
 
@@ -200,6 +213,8 @@ const formatDuration = (durationString) => {
                   :track="track"
                   :index="index + 1"
                   :duration="formatDuration(track.duration)"
+                  :canDelete="true"
+                  :playlistID="route.params.id"
                 />
               </li>
             </ul>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, toRefs, onMounted } from 'vue'
 import Heart from 'vue-material-design-icons/Heart.vue'
+import TrashCan from 'vue-material-design-icons/TrashCan.vue'
 import Play from 'vue-material-design-icons/Play.vue'
 import Pause from 'vue-material-design-icons/Pause.vue'
 import apiClient from '../utils/axios'
@@ -37,10 +38,13 @@ const props = defineProps({
   artist: Object,
   index: Number,
   duration: String,
-  canLiked: { type: Boolean, default: true }
+  canLiked: { type: Boolean, default: true },
+  canDelete: { type: Boolean, default: false },
+  playlistID: { type: String, default: null },
+  resetPlayerRadio: { type: Boolean, default: true },
 })
 
-const { track, artist, index, duration, canLiked } = toRefs(props)
+const { track, artist, index, duration, canLiked, canDelete, playlistID, resetPlayerRadio } = toRefs(props)
 
 // Fetch liked state on mount
 onMounted(async () => {
@@ -90,6 +94,26 @@ const openPlaylistModal = async (songId) => {
   }
 };
 
+const deleteSongFromPlaylist = async (songId) => {
+  try {
+    if (!songId) {
+      alert("Song ID not found!")
+      return
+    }
+
+    await apiClient.post(`/api/playlist/delete-song`, {
+      playlistId: playlistID.value,
+      songId: songId,
+    })
+
+    alert(" Song deleted from playlist!")
+    window.location.reload()
+  } catch (err) {
+    console.error("Failed to delete song:", err)
+    alert(" Failed to delete song from playlist.")
+  }
+};
+
 
 // add song to selected playlist
 const addToPlaylist = async (playlistId) => {
@@ -111,6 +135,18 @@ const addToPlaylist = async (playlistId) => {
     alert(" Failed to add song to playlist.")
   }
 }
+
+const playOrPauseThisSong = (artist, track) => {
+  useSong.playOrPauseThisSong(artist, track)
+}
+
+const loadSong = (artist, track) => {
+  if (resetPlayerRadio.value) {
+    useSong.isRadio = false;
+  }
+  useSong.loadSong(artist, track)
+}
+
 </script>
 <template>
   <li
@@ -126,13 +162,13 @@ const addToPlaylist = async (playlistId) => {
           v-if="!isPlaying"
           fillColor="#FFFFFF"
           :size="25"
-          @click="useSong.playOrPauseThisSong(artist, track)"
+          @click="playOrPauseThisSong(artist, track)"
         />
         <Play
           v-else-if="isPlaying && currentTrack.name !== track.name"
           fillColor="#FFFFFF"
           :size="25"
-          @click="useSong.loadSong(artist, track)"
+          @click="loadSong(artist, track)"
         />
         <Pause v-else fillColor="#FFFFFF" :size="25" @click="useSong.playOrPauseSong()" />
       </div>
@@ -173,6 +209,7 @@ const addToPlaylist = async (playlistId) => {
       <button v-if="canLiked" type="button" @click.stop="toggleLike">
         <Heart :fillColor="isLiked ? '#1BD760' : '#FFFFFF'" :size="20" />
       </button>
+
       <button type="button" @click.stop="openPlaylistModal(track.id)">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -184,6 +221,11 @@ const addToPlaylist = async (playlistId) => {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
       </button>
+
+      <button v-if="canDelete" type="button" class="h-5 w-5 text-white hover:text-green-500" @click.stop="deleteSongFromPlaylist(track.id)">
+        <TrashCan :size="20" />
+      </button>
+      
       <div class="text-xs text-gray-400 w-[40px] text-right">
         {{ duration }}
       </div>

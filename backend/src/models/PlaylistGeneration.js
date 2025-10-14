@@ -57,12 +57,14 @@ export const generateSongBasedPlaylist = async (songId, limit = 20, pool = 100) 
       WHERE song_id = $1
     ),
     ranked AS (
-      SELECT s.id, s.title, s.duration, s.album_id, s.encryption_key,
+      SELECT s.id, s.title as name, ar.artist_name as artist, s.duration, s.album_id, s.encryption_key,
              a.album_art_id AS albumCover,
              cosine_similarity(sf.vector, t.vector) AS similarity
       FROM song_features sf
       JOIN songs s ON sf.song_id = s.id
       JOIN albums a ON s.album_id = a.id
+      JOIN users u ON u.id = a.artist
+      JOIN artists ar ON u.id = ar.user_id
       CROSS JOIN target t
       WHERE sf.song_id != $1
       ORDER BY similarity DESC

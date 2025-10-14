@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import CryptoJS from "crypto-js";
+import apiClient from "../utils/axios";
 
 // --- Config ---
 const fileServerBaseUrl =
@@ -103,6 +104,7 @@ async function decryptAesCbcToArrayBuffer(encryptedArrayBuffer, ENCRYPTION_KEY_H
 
 export const useSongStore = defineStore("song", {
   state: () => ({
+    isRadio: false,
     isPlaying: false,
     isBuffering: false,
     volume: 80,
@@ -113,6 +115,7 @@ export const useSongStore = defineStore("song", {
     currentArtist: null,
     currentTrack: null,
     _fetchAbort: null, // AbortController for the active download
+    _isFetchingRecommendations: false, // Prevent duplicate fetches
   }),
 
   actions: {
@@ -268,15 +271,115 @@ export const useSongStore = defineStore("song", {
     },
 
     playOrPauseThisSong(artist, track) {
+      // Check if we're switching from radio to normal mode or changing artists
+      const isChangingContext =
+        !this.currentArtist ||
+        !artist ||
+        this.currentArtist.name !== artist.name;
+
+      this.isRadio = false;
+
       if (
         !this.audio ||
-        !this.audio.src ||
-        (this.currentTrack && this.currentTrack.id !== track.id)
+        (this.currentTrack && this.currentTrack.id !== track.id) ||
+        isChangingContext
       ) {
         this.loadSong(artist, track);
         return;
       }
       this.playOrPauseSong();
+    },
+
+    playOrPauseThisSongRadio: async function (track) {
+      try {
+        // If no audio or new track, start new radio session
+        if (
+          !this.audio ||
+          !this.audio.src ||
+          (this.currentTrack && this.currentTrack.id !== track.id)
+        ) {
+          // --- Fetch radio recommendations ---
+          const res = await apiClient.get(
+            `/api/recommend/getSongBasedRecommendations/${track.id}`
+          );
+          const data = res.data;
+
+          // fallback if no recommendations
+          const recommendations = (data?.recommendations || []).map((rec) => ({
+            id: rec.id,
+            name: rec.name,
+            artist: rec.artist,
+            duration: `${rec.duration.minutes};${rec.duration.seconds}`,
+            album: rec.album_id,
+            path: rec.id,
+            key: rec.encryption_key,
+            albumcover: rec.albumcover,
+          }));
+          
+          this.isRadio = true;
+
+          // --- Create a pseudo artist (radio playlist) ---
+          // --- Remove duplicates based on ID ---
+          const seen = new Set();
+          const uniqueTracks = [track, ...recommendations].filter(t => {
+            if (seen.has(t.id)) return false;
+            seen.add(t.id);
+            return true;
+          });
+
+          this.currentArtist = { tracks: uniqueTracks };
+
+          // --- Start playing from the selected track ---
+          await this.loadSong(this.currentArtist, track);
+          return;
+        }
+
+        // If the same track is already loaded, just toggle play/pause
+        this.playOrPauseSong();
+      } catch (error) {
+        console.error("Error starting radio mode:", error);
+      }
+    },
+
+    async _fetchMoreRecommendations() {
+      if (this._isFetchingRecommendations || !this.isRadio || !this.currentTrack) {
+        return;
+      }
+
+      try {
+        this._isFetchingRecommendations = true;
+        
+        // Use the current track as the seed for new recommendations
+        const res = await apiClient.get(
+          `/api/recommend/getSongBasedRecommendations/${this.currentTrack.id}`
+        );
+        const data = res.data;
+
+        const newRecommendations = (data?.recommendations || []).map((rec) => ({
+          id: rec.id,
+          name: rec.name,
+          artist: rec.artist,
+          duration: `${rec.duration.minutes};${rec.duration.seconds}`,
+          album: rec.album_id,
+          path: rec.id,
+          key: rec.encryption_key,
+          albumcover: rec.albumcover,
+        }));
+
+        // Filter out duplicates by checking existing track IDs
+        const existingIds = new Set(this.currentArtist.tracks.map(t => t.id));
+        const uniqueNewTracks = newRecommendations.filter(t => !existingIds.has(t.id));
+
+        // Append new recommendations to the playlist
+        if (uniqueNewTracks.length > 0) {
+          this.currentArtist.tracks.push(...uniqueNewTracks);
+          console.log(`Added ${uniqueNewTracks.length} new recommendations to radio playlist`);
+        }
+      } catch (error) {
+        console.error("Error fetching more recommendations:", error);
+      } finally {
+        this._isFetchingRecommendations = false;
+      }
     },
 
     prevSong() {
@@ -288,12 +391,20 @@ export const useSongStore = defineStore("song", {
       this.loadSong(this.currentArtist, this.currentArtist.tracks[prevIdx]);
     },
 
-    nextSong() {
+    async nextSong() {
       if (!this.currentArtist || !this.currentTrack) return;
+      
       const idx = this.currentArtist.tracks.findIndex(
         (t) => t.id === this.currentTrack.id
       );
       const nextIdx = (idx + 1) % this.currentArtist.tracks.length;
+
+      // Check if we're at the last song in radio mode
+      if (this.isRadio && nextIdx === this.currentArtist.tracks.length - 1) {
+        // Fetch more recommendations in the background before playing the last song
+        this._fetchMoreRecommendations();
+      }
+
       this.loadSong(this.currentArtist, this.currentArtist.tracks[nextIdx]);
     },
 
@@ -329,10 +440,12 @@ export const useSongStore = defineStore("song", {
       this.isPlaying = false;
       this.isBuffering = false;
       this.downloadProgress = 0;
+      this.isRadio = false;
       this._abortFetchIfAny();
       this._teardownAudio();
       this.currentArtist = null;
       this.currentTrack = null;
+      this._isFetchingRecommendations = false;
     },
 
     // --- internals ---

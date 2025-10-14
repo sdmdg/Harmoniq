@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import apiClient from '../utils/axios'
-import HomeCard from '../components/SongCard.vue'
+import SongCard from '../components/SongCard.vue'
 import QuickPickCard from '../components/SongCardRow.vue'
 import AlbumItem from '../components/AlbumCard.vue'
 import ArtistItem from '../components/ArtistCard.vue'
@@ -57,13 +57,14 @@ onMounted(fetchData)
       class="flex items-center space-x-4 overflow-x-auto"
       appear
     >
-      <HomeCard
+      <SongCard
         v-for="song in recentSongs"
         :key="song.id"
         :image="`${fileServerBaseUrl}/public/images/${song.albumcover}`"
         :title="song.name"
         :subTitle="song.artist"
         :track="song"
+        :is-radio="true"
       />
     </transition-group>
   </div>
@@ -88,6 +89,7 @@ onMounted(fetchData)
             :title="song.name"
             :subTitle="song.artist"
             :track="song"
+            :is-radio="true"
             class="transition-transform duration-300"
           />
         </transition-group>

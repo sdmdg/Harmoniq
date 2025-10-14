@@ -90,11 +90,12 @@ export const getPlaylistDetailsById = async (playlistId) => {
         p.id,  
             p.title,
             p.created_at,
-            u.user_name as created_by
+            u.user_name as created_by,
+            u.id as user_id
         FROM playlist p    
         JOIN users u ON p.user_id = u.id    
         WHERE p.id = $1
-        GROUP BY p.id, u.user_name`,
+        GROUP BY p.id, u.user_name, u.id`,
     [playlistId]
   );
   return result.rows[0];
@@ -160,3 +161,18 @@ export const deletePlaylistModel = async (playlistId) => {
         throw error;
     }
 };
+
+export async function deleteSongFromPlaylistModel(playlistId, songId) {
+    const sql = `
+    DELETE FROM playlist_songs
+    WHERE playlist_id = $1 AND song_id = $2
+    RETURNING playlist_id, song_id;
+    `;
+  try {
+    const result = await db.query(sql, [playlistId, songId]);
+    return { inserted: result.rowCount > 0 };
+  } catch (err) {
+    console.error("deleteSongFromPlaylist error:", err);
+    throw err;
+  }
+}

@@ -180,14 +180,17 @@ const shouldTruncate = computed(() => {
 
 const fetchArtistData = async () => {
   const artistId = route.params.id;
+  if (!artistId) {
+    return
+  }
   try {
     const response = await apiClient.get(`/api/artist/get/${artistId}`);
     artist.value = response.data;
     following.value = response.data.isFollowing;
     topTracks.value = response.data.topTracks;
     albums.value = response.data.albums;
-    user.value = response.data.user; // <-- important
-    isExpanded.value = false; // Reset expansion state on new artist
+    user.value = response.data.user;
+    isExpanded.value = false;
 
     const userDataString = localStorage.getItem('user_data');
     if (userDataString) {
