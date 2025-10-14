@@ -1,6 +1,6 @@
 // controllers/playlistController.js
 import {createPlaylist as createPlaylistModel,
-        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById, getPlaylistAlbumsModel,addSongToPlaylistModel,getPlaylistsForSongModel } from '../models/Playlist.js';
+        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById, getPlaylistAlbumsModel,addSongToPlaylistModel,getPlaylistsForSongModel,deletePlaylistModel } from '../models/Playlist.js';
 
 export const createPlaylist = async (req, res) => {
     try {
@@ -141,4 +141,19 @@ export const getPlaylistsForSong = async (req, res) => {
         console.error('Failed to get playlists for song:', error);
         res.status(500).json({ message: 'Server error while fetching playlists for song.' });
     }
+};
+export const deletePlaylist = async (req, res) => {
+    try {
+        const { playlistId } = req.params;
+        const userId = req.user.id; // User ID from the authenticated token
+        if (!playlistId) {
+            return res.status(400).json({ message: 'Playlist ID is required.' });
+        }   
+        // Call the model function to delete the playlist
+        await deletePlaylistModel(playlistId, userId);
+        res.status(200).json({ message: 'Playlist deleted successfully.' });
+    } catch (error) {
+        console.error('Failed to delete playlist:', error);
+        res.status(500).json({ message: 'Server error while deleting playlist.' });
+    }   
 };

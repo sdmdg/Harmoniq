@@ -144,3 +144,19 @@ export const getPlaylistsForSongModel = async (userId, songId) => {
         throw error;
     }
 };
+
+export const deletePlaylistModel = async (playlistId) => {
+    const query = `
+        DELETE FROM playlist
+        WHERE id = $1
+    `;
+    const values = [playlistId];
+
+    try {
+        const result = await db.query(query, values);
+        return result.rowCount > 0;
+    } catch (error) {
+        console.error('Error deleting playlist from database:', error);
+        throw error;
+    }
+};
