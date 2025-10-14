@@ -72,22 +72,23 @@ const toggleLike = async () => {
 
 const openPlaylistModal = async (songId) => {
   try {
-    selectedSongId.value = songId
-    const response = await apiClient.get("/api/playlist/get/all")
-    let playlists = response.data
-    console.log(playlists)
+    selectedSongId.value = songId;
+    const allResponse = await apiClient.get("/api/playlist/get/all");
+    const allPlaylists = allResponse.data;
 
-    // Filter playlists that do NOT already contain this song
-    playlists = playlists.filter(playlist => 
-      !playlist.tracks?.some(track => track.id === songId)
-    )
+    const includedResponse = await apiClient.get(`/api/playlist/${songId}/playlists`);
+    const playlistsWithSong = includedResponse.data;
 
-    userPlaylists.value = playlists
-    showPlaylistModal.value = true
+    const playlistsWithoutSong = allPlaylists.filter(
+      (playlist) => !playlistsWithSong.some((p) => p.id === playlist.id)
+    );
+
+    userPlaylists.value = playlistsWithoutSong;
+    showPlaylistModal.value = true;
   } catch (error) {
-    console.error("Failed to fetch user playlists:", error)
+    console.error("Failed to fetch user playlists:", error);
   }
-}
+};
 
 
 // add song to selected playlist
