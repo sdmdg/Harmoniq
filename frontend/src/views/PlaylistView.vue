@@ -86,6 +86,19 @@ watch(
     fetchData();
   }
 );
+const copyLink = () => {
+  // Get the current URL from the browser
+  const link = window.location.href;
+
+  // Copy the link to the clipboard
+  navigator.clipboard.writeText(link)
+    .then(() => {
+      alert('✅ Playlist link copied to clipboard!');
+    })
+    .catch((err) => {
+      console.error('Failed to copy link:', err);
+    });
+};
 
 // Function to format duration
 const formatDuration = (durationString) => {
@@ -118,27 +131,44 @@ const formatDuration = (durationString) => {
           </div>
 
           <!-- Playlist Info -->
-          <div class="space-y-2 max-w-xs">
-            <h1 class="text-2xl md:text-2xl font-bold text-white line-clamp-2">
-              {{ playlistData?.name || 'Playlist' }}
-            </h1>
-            
-            <p class="text-sm text-gray-300 font-semibold">
-              {{ playlistData?.creator || 'Unknown Creator' }}
-            </p>
+      <div class="space-y-2 max-w-xs">
+        <h1 class="text-2xl md:text-2xl font-bold text-white line-clamp-2">
+          {{ playlistData?.name || 'Playlist' }}
+        </h1>
+        
+        <p class="text-sm text-gray-300 font-semibold">
+          {{ playlistData?.creator || 'Unknown Creator' }}
+        </p>
 
-            <!-- Desktop Description -->
-            <p class="hidden md:block text-xs text-gray-400 mt-3">
-              Your personal collection of loved tracks, curated just for you.
-            </p>
+        <!-- Desktop Description -->
+        <p class="hidden md:block text-xs text-gray-400 mt-3">
+          Your personal collection of loved tracks, curated just for you.
+        </p>
 
-            <!-- Track Count -->
-            <div class="flex items-center justify-center gap-2 text-xs text-gray-400">
-              <span class="capitalize">{{ route.params.type || 'playlist' }}</span>
-              <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
-              <span>{{ collection.tracks.length }} {{ collection.tracks.length === 1 ? 'song' : 'songs' }}</span>
-            </div>
-          </div>
+        <!-- Track Count -->
+        <div class="flex items-center justify-center gap-2 text-xs text-gray-400">
+          <span class="capitalize">{{ route.params.type || 'playlist' }}</span>
+          <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
+          <span>{{ collection.tracks.length }} {{ collection.tracks.length === 1 ? 'song' : 'songs' }}</span>
+        </div>
+
+  <!-- Centered Button -->
+  <div class="flex justify-center mt-4">
+    <button
+      @click="copyLink"
+      class="px-4 py-2 rounded-full bg-[#1DB954] text-white font-semibold 
+            flex items-center gap-2 hover:bg-[#1ed760] transition"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M4 12v.01M12 4v.01M20 12v.01M12 20v.01M12 12l8-8M12 12l-8-8M12 12l8 8M12 12l-8 8" />
+      </svg>
+      Share Playlist
+    </button>
+  </div>
+</div>
+
         </div>
 
         <!-- Tracklist Section -->
