@@ -103,18 +103,37 @@ watch(
   }
 );
 const copyLink = () => {
-  // Get the current URL from the browser
   const link = window.location.href;
 
-  // Copy the link to the clipboard
-  navigator.clipboard.writeText(link)
-    .then(() => {
+  // Check if clipboard API is available
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(link)
+      .then(() => {
+        alert('✅ Playlist link copied to clipboard!');
+      })
+      .catch((err) => {
+        console.error('Failed to copy link:', err);
+        alert('❌ Failed to copy link to clipboard.');
+      });
+  } else {
+    // Fallback method (works over HTTP)
+    const textArea = document.createElement("textarea");
+    textArea.value = link;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-99999px";
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
       alert('✅ Playlist link copied to clipboard!');
-    })
-    .catch((err) => {
-      console.error('Failed to copy link:', err);
-    });
-}
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      alert('❌ Could not copy link.');
+    }
+    document.body.removeChild(textArea);
+  }
+};
+
 
 const copyPlaylist = async (playlistData) => {
   try {
