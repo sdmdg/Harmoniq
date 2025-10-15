@@ -176,3 +176,54 @@ export async function deleteSongFromPlaylistModel(playlistId, songId) {
     throw err;
   }
 }
+
+export async function copyPlaylistModel(originalPlaylistId, newOwnerUserId) {
+    const client = await db.connect();
+    try {
+        await client.query('BEGIN');
+
+        const originalPlaylistRes = await client.query(
+            'SELECT title, release_date FROM playlist WHERE id = $1',
+            [originalPlaylistId]
+        );
+
+        if (originalPlaylistRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            client.release();
+            return { success: false, message: 'Playlist not found' };
+        }
+
+        const { title, release_date } = originalPlaylistRes.rows[0];
+        const newPlaylistName = `${title}`;
+        const newPlaylistDate = release_date;
+
+        const newPlaylistRes = await client.query(
+            'INSERT INTO playlist (user_id, title, release_date) VALUES ($1, $2, $3) RETURNING id',
+            [newOwnerUserId, newPlaylistName, newPlaylistDate]
+        );
+
+        const newPlaylistId = newPlaylistRes.rows[0].id;
+
+        const songsRes = await client.query(
+            'SELECT song_id FROM playlist_songs WHERE playlist_id = $1',
+            [originalPlaylistId]
+        );
+
+        if (songsRes.rows.length > 0) {
+            const songIds = songsRes.rows.map(row => row.song_id);
+            const values = songIds.map((_, index) => `($1, $${index + 2})`).join(',');
+            const params = [newPlaylistId, ...songIds];
+            const copySongsSql = `INSERT INTO playlist_songs (playlist_id, song_id) VALUES ${values}`;
+            await client.query(copySongsSql, params);
+        }
+
+        await client.query('COMMIT');
+        return { success: true, newPlaylistId };
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("copyPlaylistModel error:", err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}

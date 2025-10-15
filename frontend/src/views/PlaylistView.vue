@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import SongRow from '../components/SongRow.vue';
 import ClockTimeThreeOutline from 'vue-material-design-icons/ClockTimeThreeOutline.vue';
 import Share from 'vue-material-design-icons/Share.vue';
+import Copy from 'vue-material-design-icons/Plus.vue';
 import apiClient from '../utils/axios';
 
 import { useSongStore } from '../stores/song';
@@ -113,7 +114,36 @@ const copyLink = () => {
     .catch((err) => {
       console.error('Failed to copy link:', err);
     });
+}
+
+const copyPlaylist = async (playlistData) => {
+  try {
+    if (!playlistData?.tracks?.id) {
+      alert("Invalid playlist data — no playlist ID found.");
+      return;
+    }
+
+    const res = await apiClient.post('/api/playlist/copy-playlist', {
+      playlistId: playlistData.tracks.id,
+    });
+
+    if (res.status === 201 && res.data?.message) {
+      alert(`✅ ${res.data.message}`);
+      console.log("New playlist ID:", res.data.newPlaylistId);
+      window.location.reload();
+      return res.data.newPlaylistId;
+    } else {
+      alert("⚠️ Failed to copy playlist. Please try again.");
+    }
+
+  } catch (err) {
+    console.error("Error copying playlist:", err);
+
+    const errorMessage = err.response?.data?.message || "Server error while copying playlist.";
+    alert(`❌ ${errorMessage}`);
+  }
 };
+
 
 // Function to format duration
 const formatDuration = (durationString) => {
@@ -156,7 +186,7 @@ const formatDuration = (durationString) => {
         </p>
 
         <!-- Desktop Description -->
-        <p class="hidden md:block text-xs text-gray-400 mt-3">
+        <p v-if="user.id == playlistData?.user_id" class="hidden md:block text-xs text-gray-400 mt-3">
           Your personal collection of loved tracks, curated just for you.
         </p>
 
@@ -170,7 +200,7 @@ const formatDuration = (durationString) => {
         <!-- Centered Button -->
         <div class="flex justify-center mt-4">
 
-          <button v-if="user.id == playlistData?.user_id"
+          <button v-if="user.id == playlistData?.user_id && collection.tracks.length > 0"
             @click="copyLink"
             class="px-4 py-2 rounded-full bg-[#1DB954] text-white font-semibold 
                   flex items-center gap-2 hover:bg-[#1ed760] transition"
@@ -178,7 +208,14 @@ const formatDuration = (durationString) => {
             Share Playlist
             <Share fillColor="#FFFFFF" :size="18" />
           </button>
-
+          <button v-if="user.id != playlistData?.user_id"
+            @click="copyPlaylist(playlistData)"
+            class="px-4 py-2 rounded-full bg-[#1DB954] text-white font-semibold 
+                  flex items-center gap-2 hover:bg-[#1ed760] transition"
+          >
+          <Copy fillColor="#FFFFFF" :size="18" />
+            Add to My Library
+          </button>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 // controllers/playlistController.js
-import {createPlaylist as createPlaylistModel,
+import {createPlaylist as createPlaylistModel, copyPlaylistModel, 
         getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById, getPlaylistAlbumsModel,addSongToPlaylistModel,getPlaylistsForSongModel,deletePlaylistModel, deleteSongFromPlaylistModel } from '../models/Playlist.js';
 
 export const createPlaylist = async (req, res) => {
@@ -171,4 +171,30 @@ export const deleteSongFromPlaylist = async (req, res) => {
         console.error('Failed to delete song from playlist:', error);
         res.status(500).json({ message: 'Server error while deleting song from playlist.' });
     }
-};  
+};
+export const copyPlaylist = async (req, res) => {
+    try {
+        const newOwnerUserId = req.user.id;
+        const { playlistId } = req.body;
+
+        // Basic validation to ensure a playlist ID was provided
+        if (!playlistId) {
+            return res.status(400).json({ message: 'Playlist ID is required.' });
+        }
+
+        const result = await copyPlaylistModel(playlistId, newOwnerUserId);
+
+        if (result.success) {
+            res.status(201).json({
+                message: 'Playlist copied successfully.',
+                newPlaylistId: result.newPlaylistId,
+            });
+        } else {
+            res.status(404).json({ message: 'Source playlist not found.' });
+        }
+
+    } catch (error) {
+        console.error('Failed to copy playlist in controller:', error);
+        res.status(500).json({ message: 'Server error while copying playlist.' });
+    }
+};
