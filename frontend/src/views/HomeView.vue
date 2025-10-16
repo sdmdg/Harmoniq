@@ -5,6 +5,9 @@ import SongCard from '../components/SongCard.vue'
 import QuickPickCard from '../components/SongCardRow.vue'
 import AlbumItem from '../components/AlbumCard.vue'
 import ArtistItem from '../components/ArtistCard.vue'
+import { useSongStore } from "../stores/song";
+import Music from 'vue-material-design-icons/Music.vue';
+const songStore = useSongStore()
 
 const recentSongs = ref([])
 const quickPicks = ref([])
@@ -13,8 +16,14 @@ const newReleases = ref([])
 const artists = ref([])
 const loading = ref(true)
 const error = ref(null)
+const randomText = ref("")
 
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000'
+const buttonTexts = [
+  "Start Your Mix",
+  "Play Smart Radio",
+  "Start Harmoniq Radio"
+]
 
 const fetchData = async () => {
   try {
@@ -36,13 +45,58 @@ const fetchData = async () => {
   }
 }
 
-onMounted(fetchData)
+onMounted(() => {
+  fetchData();
+  const randomIndex = Math.floor(Math.random() * buttonTexts.length)
+  randomText.value = buttonTexts[randomIndex]
+})
+
+const startRadio = () => {
+  if (recentSongs.value && recentSongs.value.length > 0) {
+    const randomSong = recentSongs.value[Math.floor(Math.random() * recentSongs.value.length)];
+    songStore.playOrPauseThisSongRadio(randomSong)
+    console.log("Radio started!")
+  } else {
+    console.warn("No recent songs available to start radio.")
+  }
+}
+
 </script>
 
 <template>
   <div v-if="loading || error" class="p-8">
     <div v-if="loading" class="text-gray-400">Loading...</div>
     <div v-else-if="error" class="text-red-500">{{ error }}</div>
+  </div>
+
+  <!-- Header with Start Radio Button -->
+  <div v-if="recentSongs?.length > 0" class="flex justify-between items-center px-8 pt-6">
+    <h1 class="text-white text-3xl font-bold">Home</h1>
+
+    <button
+      @click="startRadio"
+      class="relative overflow-hidden px-7 py-2.5 rounded-full font-semibold text-white
+            bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-600
+            shadow-lg transition-all transform hover:scale-105 hover:shadow-2xl
+            animate-gradient-move flex items-center gap-2 group"
+    >
+      <!-- Headphones Icon -->
+      <span class="text-lg transition-transform group-hover:rotate-12">
+        <Music
+          fillColor="#FFFFFF"
+          :size="24"
+        />
+        </span>
+
+      <!-- Text -->
+      <span class="relative z-10 tracking-wide">{{ randomText }}</span>
+
+      <!-- Shimmer Effect -->
+      <div
+        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 blur-sm animate-shimmer"
+      ></div>
+    </button>
+
   </div>
 
   <!-- Recent Songs -->
@@ -185,4 +239,26 @@ onMounted(fetchData)
   opacity: 0;
   transform: translateX(20px);
 }
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-move {
+  background-size: 200% 200%;
+  animation: gradientMove 4s ease infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s linear infinite;
+}
+
 </style>

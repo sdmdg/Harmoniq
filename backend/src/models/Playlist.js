@@ -50,7 +50,7 @@ export const getLikedSongs = async(userId)=>{
         join liked_songs ls on s.id = ls.song_id
         join albums a on s.album_id = a.id
         JOIN artists ar ON a.artist = ar.user_id
-        WHERE ls.user_id = $1;
+        WHERE ls.user_id = $1 AND a.is_blocked = false AND a.published = true AND s.encryption_key is not NULL;
     `;
     const values = [userId];
 
@@ -78,7 +78,7 @@ export const getPlaylistById = async (playlistId) => {
      JOIN playlist_songs ps ON s.id = ps.song_id
      JOIN albums a ON s.album_id = a.id
      JOIN artists ar ON a.artist = ar.user_id
-     WHERE ps.playlist_id = $1 AND a.is_blocked = false`,
+     WHERE ps.playlist_id = $1 AND a.is_blocked = false AND a.published = true AND s.encryption_key is not NULL`,
     [playlistId]
   );
 

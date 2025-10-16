@@ -27,7 +27,8 @@ export const getRecommendationsFiltered = async (userVector, filter, value, limi
            cosine_similarity(uv.vector, sf.vector) AS similarity
     FROM songs s
     JOIN song_features sf ON s.id = sf.song_id, user_vec uv
-    WHERE s.${filter} = $2
+    JOIN albums a ON s.album_id = a.id
+    WHERE s.${filter} = $2 AND a.published = true AND a.is_blocked = false AND s.encryption_key is not NULL
     ORDER BY similarity DESC
     LIMIT $3;
   `;
@@ -43,6 +44,9 @@ export const getTopRecommendations = async (userVector, limit = 10) => {
     )
     SELECT sf.song_id, cosine_similarity(uv.vector, sf.vector) AS similarity
     FROM song_features sf, user_vec uv
+    JOIN songs s ON sf.song_id = s.id
+    JOIN albums a ON s.album_id = a.id
+    WHERE a.published = true AND a.is_blocked = false AND s.encryption_key is not NULL
     ORDER BY similarity DESC
     LIMIT $2;
   `;
@@ -66,7 +70,7 @@ export const generateSongBasedPlaylist = async (songId, limit = 20, pool = 100) 
       JOIN users u ON u.id = a.artist
       JOIN artists ar ON u.id = ar.user_id
       CROSS JOIN target t
-      WHERE sf.song_id != $1
+      WHERE sf.song_id != $1 AND a.published = true AND a.is_blocked = false AND s.encryption_key is not NULL
       ORDER BY similarity DESC
       LIMIT $2
     )
