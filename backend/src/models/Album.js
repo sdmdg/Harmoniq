@@ -18,7 +18,7 @@ export async function createUser({ username, email, role, password }) {
   return result.rows[0];
 }
 
-export const fetchAlbumData = async (albumId) => {
+export const fetchAlbumData = async (albumId, isAdmin=true) => {
   // First, check if the album exists and get its details
   const albumQuery = `
         SELECT
@@ -30,10 +30,14 @@ export const fetchAlbumData = async (albumId) => {
             ar.artist_name AS "artistName"
         FROM albums a
         JOIN artists ar ON a.artist = ar.user_id
-        WHERE a.id = $1 AND a.is_blocked = false AND a.published = true;
+        WHERE a.id = $1
+          AND (
+            (a.is_blocked = false AND a.published = true)
+            OR ($2::boolean = true)
+          );
     `;
 
-  const albumResult = await pool.query(albumQuery, [albumId]);
+  const albumResult = await pool.query(albumQuery, [albumId, isAdmin]);
 
   // If no album is found, return null
   if (albumResult.rows.length === 0) {

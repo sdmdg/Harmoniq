@@ -200,8 +200,8 @@ const formatDuration = (durationString) => {
           {{ playlistData?.name || 'Playlist' }}
         </h1>
         
-        <p class="text-sm text-gray-300 font-semibold">
-          {{ playlistData?.creator || 'Unknown Creator' }}
+        <p v-if="user.id != playlistData?.user_id" class="text-sm text-gray-300 font-semibold">
+          From #{{ playlistData?.creator || 'Unknown Creator' }}
         </p>
 
         <!-- Desktop Description -->

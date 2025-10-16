@@ -452,7 +452,7 @@ const toggleSidebar = () => {
     >
     <!-- Accent Background -->
     <AccentBackground />
-      <div v-if="!hideTopNav()" class="mt-[70px] bg-opacity-0"></div>
+      <div v-if="!hideTopNav()" class="mt-[60px] bg-opacity-0"></div>
       <RouterView />
       <div v-if="!hidePlayer()" class="mb-[100px] bg-opacity-0"></div>
     </div>

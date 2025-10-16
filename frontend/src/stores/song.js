@@ -110,25 +110,53 @@ export const useSongStore = defineStore("song", {
     volume: 80,
     vol: 80,
     downloadProgress: 0, // 0..100 (best-effort; only if server sends Content-Length)
-    audio: null, // HTMLAudioElement
+
+    // NON-serializable runtime fields (NOT persisted)
+    audio: null, // HTMLAudioElement (excluded from persisted paths below)
     objectUrl: null, // current blob URL to revoke
+
+    // Serializable / persisted
     currentArtist: null,
     currentTrack: null,
+
+    // runtime-only fields
     _fetchAbort: null, // AbortController for the active download
     _isFetchingRecommendations: false, // Prevent duplicate fetches
   }),
 
   actions: {
+    // Helper to detect whether the store audio is a real HTMLAudioElement
+    isValidAudio() {
+      return (
+        this.audio &&
+        typeof this.audio.play === "function" &&
+        typeof this.audio.pause === "function"
+      );
+    },
+
+    // Ensure we have a working Audio() object (does NOT set src)
+    initAudio() {
+      if (!this.isValidAudio()) {
+        this.audio = new Audio();
+        this.audio.preload = "auto";
+        // We don't attach onended/onplay/onpause here because loadSong will set handlers
+      }
+    },
+
+    // Load a track (main entry)
     async loadSong(artist, track) {
+      // avoid overlapping loads
+      if (this.isBuffering) return;
+      this.isBuffering = true;
+
       // remember selection early (so UI can render titles/covers)
       this.currentArtist = artist;
       this.currentTrack = track;
 
-      // cancel any in-flight download and clean current audio
+      // cancel any in-flight download and clean current audio; wait teardown to finish
       this._abortFetchIfAny();
-      this._teardownAudio();
+      await this._teardownAudio();
 
-      this.isBuffering = true;
       this.downloadProgress = 0;
 
       try {
@@ -137,7 +165,6 @@ export const useSongStore = defineStore("song", {
 
         if (hasEncryptionKey) {
           // ---- ENCRYPTED SONG FLOW ----
-          // build encrypted file path safely
           const baseName = (track.path || "").replace(/\.mp3$/i, "");
           const url = `${fileServerBaseUrl}/public/songs/${baseName}.mp3.encrypted`;
 
@@ -196,8 +223,19 @@ export const useSongStore = defineStore("song", {
           const objectUrl = URL.createObjectURL(blob);
           this.objectUrl = objectUrl;
 
+          // Create the audio and attach handlers
           const audio = new Audio(objectUrl);
           audio.preload = "auto";
+
+          // Clear any previous handlers on old audio (should be torn down already)
+          if (this.isValidAudio()) {
+            try {
+              this.audio.onended = null;
+              this.audio.onpause = null;
+              this.audio.onplay = null;
+            } catch (_) {}
+          }
+
           audio.onended = () => this.nextSong();
           audio.onplay = () => {
             this.isPlaying = true;
@@ -218,7 +256,6 @@ export const useSongStore = defineStore("song", {
           }
         } else {
           // ---- NON-ENCRYPTED SONG FLOW ----
-          // build plain mp3 file path
           const baseName = (track.path || "").replace(/\.mp3$/i, "");
           const url = `${fileServerBaseUrl}/public/songs/${baseName}.mp3`;
 
@@ -226,6 +263,16 @@ export const useSongStore = defineStore("song", {
 
           const audio = new Audio(url);
           audio.preload = "auto";
+
+          // Clear any previous handlers on old audio (should be torn down already)
+          if (this.isValidAudio()) {
+            try {
+              this.audio.onended = null;
+              this.audio.onpause = null;
+              this.audio.onplay = null;
+            } catch (_) {}
+          }
+
           audio.onended = () => this.nextSong();
           audio.onplay = () => {
             this.isPlaying = true;
@@ -246,7 +293,7 @@ export const useSongStore = defineStore("song", {
           }
         }
       } catch (err) {
-        if (err?.name === "AbortError") return; // harmless: we switched tracks
+        if (err?.name === "AbortError") return;
         console.error("Failed to load song:", err);
         this.resetState();
       } finally {
@@ -255,18 +302,39 @@ export const useSongStore = defineStore("song", {
       }
     },
 
+    // Toggle play/pause safely
     playOrPauseSong() {
-      if (!this.audio) return;
-      if (this.audio.paused) {
-        this.audio
-          .play()
-          .then(() => {
-            this.isPlaying = true;
-          })
-          .catch(() => {});
-      } else {
-        this.audio.pause();
-        this.isPlaying = false;
+      // Ensure audio is a valid HTMLAudioElement
+      if (!this.isValidAudio()) {
+        // If we have a currentTrack, try to (re)load it; otherwise create a blank audio
+        if (this.currentTrack) {
+          // Recreate proper audio and start load for the same track
+          // Use the same loadSong path to ensure correct setup
+          this.loadSong(this.currentArtist, this.currentTrack);
+          return;
+        } else {
+          this.initAudio();
+        }
+      }
+
+      if (this.isBuffering) return;
+
+      try {
+        if (this.audio.paused) {
+          this.audio
+            .play()
+            .then(() => {
+              this.isPlaying = true;
+            })
+            .catch(() => {});
+        } else {
+          this.audio.pause();
+          this.isPlaying = false;
+        }
+      } catch (e) {
+        console.warn("playOrPauseSong error, recreating audio:", e);
+        // fallback: recreate audio and attempt to play
+        this.initAudio();
       }
     },
 
@@ -279,8 +347,11 @@ export const useSongStore = defineStore("song", {
 
       this.isRadio = false;
 
+      // Determine whether audio is valid
+      const hasValidAudio = this.isValidAudio();
+
       if (
-        !this.audio ||
+        !hasValidAudio ||
         (this.currentTrack && this.currentTrack.id !== track.id) ||
         isChangingContext
       ) {
@@ -292,9 +363,11 @@ export const useSongStore = defineStore("song", {
 
     playOrPauseThisSongRadio: async function (track) {
       try {
+        const hasValidAudio = this.isValidAudio();
+
         // If no audio or new track, start new radio session
         if (
-          !this.audio ||
+          !hasValidAudio ||
           !this.audio.src ||
           (this.currentTrack && this.currentTrack.id !== track.id)
         ) {
@@ -319,7 +392,6 @@ export const useSongStore = defineStore("song", {
           this.isRadio = true;
 
           // --- Create a pseudo artist (radio playlist) ---
-          // --- Remove duplicates based on ID ---
           const seen = new Set();
           const uniqueTracks = [track, ...recommendations].filter(t => {
             if (seen.has(t.id)) return false;
@@ -367,7 +439,7 @@ export const useSongStore = defineStore("song", {
         }));
 
         // Filter out duplicates by checking existing track IDs
-        const existingIds = new Set(this.currentArtist.tracks.map(t => t.id));
+        const existingIds = new Set((this.currentArtist?.tracks || []).map(t => t.id));
         const uniqueNewTracks = newRecommendations.filter(t => !existingIds.has(t.id));
 
         // Append new recommendations to the playlist
@@ -415,7 +487,7 @@ export const useSongStore = defineStore("song", {
     },
 
     seekTo(seconds) {
-      if (!this.audio || Number.isNaN(this.audio.duration)) return;
+      if (!this.isValidAudio() || Number.isNaN(this.audio.duration)) return;
       this.audio.currentTime = Math.max(
         0,
         Math.min(seconds, this.audio.duration)
@@ -423,16 +495,18 @@ export const useSongStore = defineStore("song", {
     },
 
     seekToPercent(p0to100) {
-      if (!this.audio || Number.isNaN(this.audio.duration)) return;
+      if (!this.isValidAudio() || Number.isNaN(this.audio.duration)) return;
       const sec =
         (Math.max(0, Math.min(100, p0to100)) / 100) * this.audio.duration;
       this.audio.currentTime = sec;
     },
 
     stop() {
-      if (!this.audio) return;
-      this.audio.pause();
-      this.audio.currentTime = 0;
+      if (!this.isValidAudio()) return;
+      try {
+        this.audio.pause();
+        this.audio.currentTime = 0;
+      } catch (_) {}
       this.isPlaying = false;
     },
 
@@ -455,24 +529,47 @@ export const useSongStore = defineStore("song", {
       } catch (_) {}
       this._fetchAbort = null;
     },
-    _teardownAudio() {
-      if (this.audio) {
+
+    async _teardownAudio() {
+      if (this.isValidAudio()) {
         try {
+          this.audio.onended = null;
+          this.audio.onpause = null;
+          this.audio.onplay = null;
+        } catch (_) {}
+
+        try {
+          // Stop playback and unload
           this.audio.pause();
         } catch (_) {}
         try {
-          this.audio.src = "";
+          this.audio.currentTime = 0;
         } catch (_) {}
-        this.audio = null;
-      }
-      if (this.objectUrl) {
         try {
-          URL.revokeObjectURL(this.objectUrl);
+          this.audio.src = "";
+          // calling load helps ensure the resource is released
+          this.audio.load();
         } catch (_) {}
+      }
+      this.audio = null;
+
+      if (this.objectUrl) {
+        try { URL.revokeObjectURL(this.objectUrl); } catch (_) {}
         this.objectUrl = null;
       }
-    },
+    }
   },
 
-  persist: true,
+  // Persist configuration
+  persist: {
+    paths: [
+      "isRadio",
+      "isPlaying",
+      "volume",
+      "vol",
+      "downloadProgress",
+      "currentArtist",
+      "currentTrack"
+    ]
+  },
 });

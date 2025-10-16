@@ -154,7 +154,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="my-upload-view min-h-screen bg-[#121212] text-white">
+  <div class="my-upload-view min-h-screen text-white">
     <header class="mx-auto max-w-6xl px-6 pt-10">
       <nav class="text-sm text-neutral-400 mb-3" aria-label="Breadcrumb">
         <ol class="flex items-center gap-2">
@@ -284,7 +284,6 @@ ul li:hover {
 <style scoped>
 /* Main Containers & Layout */
 .my-upload-view {
-  background-color: #000;
 }
 
 /* Custom Scrollbar */

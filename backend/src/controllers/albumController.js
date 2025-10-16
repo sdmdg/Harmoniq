@@ -20,9 +20,15 @@ import { sendEmailReleaseSong } from "../services/emailService.js";
 
 export const getAlbum = async (req, res) => {
   const { album_id } = req.params;
+  const role = req.user.role;
+  let is_admin = false;
+
+  if (role == "admin") {
+    is_admin = true;
+  }
 
   try {
-    const fullAlbum = await fetchAlbumData(album_id);
+    const fullAlbum = await fetchAlbumData(album_id, is_admin);
 
     if (!fullAlbum) {
       // The model returns null if the album is not found

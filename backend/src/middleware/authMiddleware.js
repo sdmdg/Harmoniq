@@ -16,8 +16,6 @@ export const protect = (roles = []) => {
       const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
       req.user = decoded;
 
-      console.log(decoded.role);
-
       // If roles are specified, check if the user's role is allowed
       if (roles.length && !roles.includes(decoded.role)) {
         return res.status(403).json({ message: "Forbidden: Insufficient role" });

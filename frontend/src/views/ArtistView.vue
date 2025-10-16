@@ -1,5 +1,10 @@
 <template>
-  <div class="relative w-full h-full bg-[#000000]">
+<div
+  class="min-h-screen"
+  :style="{
+    background: 'linear-gradient(to bottom, rgba(0,0,0,1) 35%, rgba(0,0,0,0) 100%)',
+  }"
+>
     <!-- Back Button -->
     <div class="absolute top-4 left-4 z-20">
       <button
@@ -287,5 +292,30 @@ watch(
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.my-upload-view {
+}
+/* Works in Chrome, Edge, and Safari */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000; /* scrollbar track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333; /* scrollbar thumb */
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Optional: Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333 #000; /* thumb color, track color */
 }
 </style>
