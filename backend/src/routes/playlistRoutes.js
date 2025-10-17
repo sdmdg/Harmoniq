@@ -6,11 +6,21 @@ import {
   getLikedSongs,
   getPlaylistDetails,
   getPlaylistAlbums,
+  addSongToPlaylist,
+  getPlaylistsForSong,
+  deletePlaylist,
+  deleteSongFromPlaylist,
+  copyPlaylist
 } from "../controllers/playlistController.js";
 import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
-router.post("/add", protect(["listener", "artist", "admin"]), createPlaylist);
+router.post("/add", protect(["listener", "artist", "admin"]), createPlaylist)
+router.post("/add-song", protect(["listener", "artist", "admin"]), addSongToPlaylist);
+router.post("/delete-song", protect(["listener", "artist", "admin"]), deleteSongFromPlaylist);
+router.post("/copy-playlist", protect(["listener", "artist", "admin"]), copyPlaylist);
+router.get('/:songId/playlists', protect(["listener","artist","admin"]), getPlaylistsForSong);
+router.delete('/delete/:playlistId', protect(["listener","artist","admin"]), deletePlaylist);
 router.get(
   "/get/all",
   protect(["listener", "artist", "admin"]),

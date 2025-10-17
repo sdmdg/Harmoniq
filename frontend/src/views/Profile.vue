@@ -249,9 +249,13 @@ onMounted(() => {
 
                 <!-- General Content -->
                 <div v-if="activeTab === 'general'" class="mt-4">
+                    <div class="mb-2">
+                        <h3 class="text-xl font-bold mb-4">Profile Info</h3>
+                    </div>
+    
                     <div class="mb-8">
-                        <h3 class="text-xl font-bold mb-4">Profile Image</h3>
-                        <div class="flex items-center space-x-4">
+                        <h3 class="text-l font-bold mb-4">Profile Image</h3>
+                        <div class="flex items-center space-x-4 mb-6">
                             <!-- Display current profile image or a placeholder -->
                             <img
                                 v-if="profileImageUrl"
@@ -282,6 +286,18 @@ onMounted(() => {
                                     Upload Image
                                 </button>
                             </form>
+                        </div>
+                        
+                        <!-- Username -->
+                        <div class="mb-2">
+                        <label class="block text-gray-400 text-sm font-semibold mb-1">Username</label>
+                        <p class="text-white text-sm">{{ user?.username }}</p>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-2">
+                        <label class="block text-gray-400 text-sm font-semibold mb-1">Email</label>
+                        <p class="text-white text-sm">{{ user?.email }}</p>
                         </div>
                     </div>
                     

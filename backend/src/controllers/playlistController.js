@@ -1,6 +1,6 @@
 // controllers/playlistController.js
-import {createPlaylist as createPlaylistModel,
-        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById, getPlaylistAlbumsModel } from '../models/Playlist.js';
+import {createPlaylist as createPlaylistModel, copyPlaylistModel, 
+        getUserPlaylists as getUserPlaylistsModel, getLikedSongs as getLikedSongsModel,getPlaylistById, getPlaylistDetailsById, getPlaylistAlbumsModel,addSongToPlaylistModel,getPlaylistsForSongModel,deletePlaylistModel, deleteSongFromPlaylistModel } from '../models/Playlist.js';
 
 export const createPlaylist = async (req, res) => {
     try {
@@ -95,6 +95,7 @@ export const getPlaylistDetails = async (req, res) => {
         const playlist = {
             name: tracks.title, // You can fetch playlist name if needed
             creator: tracks.created_by, // Or fetch actual artist/owner
+            user_id: tracks.user_id,
             tracks        };
         res.status(200).json(playlist);
     } catch (error) {
@@ -110,5 +111,90 @@ export const getPlaylistAlbums = async (req, res) => {
     } catch (error) {
         console.error("Get Playlist Albums Error:", error);
         res.status(500).json({ message: `Internal server error: ${error.message}` });
+    }
+};
+export const addSongToPlaylist = async (req, res) => {
+    try {
+        const { playlistId, songId } = req.body;
+        console.log(playlistId, songId);
+        if (!playlistId || !songId) {
+            return res.status(400).json({ message: 'Playlist ID and Song ID are required.' });
+        }    // Call the model function to add the song to the playlist
+        await addSongToPlaylistModel(playlistId, songId);
+        res.status(200).json({ message: 'Song added to playlist successfully.' });
+    } catch (error) {
+        console.error('Failed to add song to playlist:', error);
+        res.status(500).json({ message: 'Server error while adding song to playlist.' });
+    }
+};  
+export const getPlaylistsForSong = async (req, res) => {
+    try {
+        const { songId } = req.params;
+        const userId = req.user.id; // User ID from the authenticated token
+        if (!songId) {
+            return res.status(400).json({ message: 'Song ID is required.' });
+        }
+        // Call the model function to get playlists containing the song for this user
+        const playlists = await getPlaylistsForSongModel(userId, songId);
+        // Respond with the list of playlists
+        res.status(200).json(playlists);
+    } catch (error) {       
+        console.error('Failed to get playlists for song:', error);
+        res.status(500).json({ message: 'Server error while fetching playlists for song.' });
+    }
+};
+export const deletePlaylist = async (req, res) => {
+    try {
+        const { playlistId } = req.params;
+        const userId = req.user.id; // User ID from the authenticated token
+        if (!playlistId) {
+            return res.status(400).json({ message: 'Playlist ID is required.' });
+        }   
+        // Call the model function to delete the playlist
+        await deletePlaylistModel(playlistId, userId);
+        res.status(200).json({ message: 'Playlist deleted successfully.' });
+    } catch (error) {
+        console.error('Failed to delete playlist:', error);
+        res.status(500).json({ message: 'Server error while deleting playlist.' });
+    }   
+};
+export const deleteSongFromPlaylist = async (req, res) => {
+    try {
+        const { playlistId, songId } = req.body;
+        console.log(playlistId, songId);
+        if (!playlistId || !songId) {
+            return res.status(400).json({ message: 'Playlist ID and Song ID are required.' });
+        }    // Call the model function to delete the song from the playlist
+        await deleteSongFromPlaylistModel(playlistId, songId);
+        res.status(200).json({ message: 'Song delete from playlist successfully.' });
+    } catch (error) {
+        console.error('Failed to delete song from playlist:', error);
+        res.status(500).json({ message: 'Server error while deleting song from playlist.' });
+    }
+};
+export const copyPlaylist = async (req, res) => {
+    try {
+        const newOwnerUserId = req.user.id;
+        const { playlistId } = req.body;
+
+        // Basic validation to ensure a playlist ID was provided
+        if (!playlistId) {
+            return res.status(400).json({ message: 'Playlist ID is required.' });
+        }
+
+        const result = await copyPlaylistModel(playlistId, newOwnerUserId);
+
+        if (result.success) {
+            res.status(201).json({
+                message: 'Playlist copied successfully.',
+                newPlaylistId: result.newPlaylistId,
+            });
+        } else {
+            res.status(404).json({ message: 'Source playlist not found.' });
+        }
+
+    } catch (error) {
+        console.error('Failed to copy playlist in controller:', error);
+        res.status(500).json({ message: 'Server error while copying playlist.' });
     }
 };

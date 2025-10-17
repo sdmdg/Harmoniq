@@ -12,14 +12,19 @@ const props = defineProps({
   image: String,
   title: String,
   subTitle: String,
-  track: Object
+  track: Object,
+  isRadio: { type: Boolean, default: false }
 })
-const { image, title, subTitle, track } = toRefs(props)
+const { image, title, subTitle, track, isRadio } = toRefs(props)
 
 // Play a track
 const playTrack = (track) => {
   const artistInfo = track.artist || { name: "Unknown" }
-  songStore.playOrPauseThisSong(artistInfo, track)
+  if (isRadio.value) {
+    songStore.playOrPauseThisSongRadio(track)
+  } else {
+    songStore.playOrPauseThisSong(artistInfo, track)
+  }
 }
 
 // Format play count

@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import SongRow from '../components/SongRow.vue';
 import ClockTimeThreeOutline from 'vue-material-design-icons/ClockTimeThreeOutline.vue';
+import Share from 'vue-material-design-icons/Share.vue';
+import Copy from 'vue-material-design-icons/Plus.vue';
 import apiClient from '../utils/axios';
 
 import { useSongStore } from '../stores/song';
@@ -12,11 +14,14 @@ const useSong = useSongStore();
 const { isPlaying, currentTrack, currentArtist } = storeToRefs(useSong);
 
 const route = useRoute();
+const router = useRouter();
+
 const collection = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const playlistData = ref(null);
 const fileServerBaseUrl = import.meta.env.VITE_FILE_SERVER || 'http://localhost:3000';
+const user = ref(null);
 
 const playFunc = () => {
   if (currentTrack.value) {
@@ -28,6 +33,16 @@ const playFunc = () => {
   }
 };
 
+const fetchUser = () => {
+  const userData = localStorage.getItem('user_data');
+  if (userData) {
+    user.value = JSON.parse(userData);
+    console.log('User data:', user.value);
+  } else {
+    router.push('/login');
+  }
+};
+
 const albumCoverUrl = computed(() => {
   if (!collection.value?.tracks?.length) return '';
   const cover = currentTrack.value?.albumCover || collection.value.tracks[0]?.albumCover;
@@ -35,6 +50,7 @@ const albumCoverUrl = computed(() => {
 });
 
 const fetchData = async () => {
+  fetchUser();
   loading.value = true;
   error.value = null;
   collection.value = null;
@@ -83,9 +99,70 @@ onMounted(fetchData);
 watch(
   () => route.params.id,
   () => {
-    fetchData();
+    if (route.params.id) (fetchData())
   }
 );
+const copyLink = () => {
+  const link = window.location.href;
+
+  // Check if clipboard API is available
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(link)
+      .then(() => {
+        alert('✅ Playlist link copied to clipboard!');
+      })
+      .catch((err) => {
+        console.error('Failed to copy link:', err);
+        alert('❌ Failed to copy link to clipboard.');
+      });
+  } else {
+    // Fallback method (works over HTTP)
+    const textArea = document.createElement("textarea");
+    textArea.value = link;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-99999px";
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      alert('✅ Playlist link copied to clipboard!');
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      alert('❌ Could not copy link.');
+    }
+    document.body.removeChild(textArea);
+  }
+};
+
+
+const copyPlaylist = async (playlistData) => {
+  try {
+    if (!playlistData?.tracks?.id) {
+      alert("Invalid playlist data — no playlist ID found.");
+      return;
+    }
+
+    const res = await apiClient.post('/api/playlist/copy-playlist', {
+      playlistId: playlistData.tracks.id,
+    });
+
+    if (res.status === 201 && res.data?.message) {
+      alert(`✅ ${res.data.message}`);
+      console.log("New playlist ID:", res.data.newPlaylistId);
+      window.location.reload();
+      return res.data.newPlaylistId;
+    } else {
+      alert("⚠️ Failed to copy playlist. Please try again.");
+    }
+
+  } catch (err) {
+    console.error("Error copying playlist:", err);
+
+    const errorMessage = err.response?.data?.message || "Server error while copying playlist.";
+    alert(`❌ ${errorMessage}`);
+  }
+};
+
 
 // Function to format duration
 const formatDuration = (durationString) => {
@@ -118,27 +195,49 @@ const formatDuration = (durationString) => {
           </div>
 
           <!-- Playlist Info -->
-          <div class="space-y-2 max-w-xs">
-            <h1 class="text-2xl md:text-2xl font-bold text-white line-clamp-2">
-              {{ playlistData?.name || 'Playlist' }}
-            </h1>
-            
-            <p class="text-sm text-gray-300 font-semibold">
-              {{ playlistData?.creator || 'Unknown Creator' }}
-            </p>
+      <div class="space-y-2 max-w-xs">
+        <h1 class="text-2xl md:text-2xl font-bold text-white line-clamp-2">
+          {{ playlistData?.name || 'Playlist' }}
+        </h1>
+        
+        <p v-if="user.id != playlistData?.user_id" class="text-sm text-gray-300 font-semibold">
+          From #{{ playlistData?.creator || 'Unknown Creator' }}
+        </p>
 
-            <!-- Desktop Description -->
-            <p class="hidden md:block text-xs text-gray-400 mt-3">
-              Your personal collection of loved tracks, curated just for you.
-            </p>
+        <!-- Desktop Description -->
+        <p v-if="user.id == playlistData?.user_id" class="hidden md:block text-xs text-gray-400 mt-3">
+          Your personal collection of loved tracks, curated just for you.
+        </p>
 
-            <!-- Track Count -->
-            <div class="flex items-center justify-center gap-2 text-xs text-gray-400">
-              <span class="capitalize">{{ route.params.type || 'playlist' }}</span>
-              <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
-              <span>{{ collection.tracks.length }} {{ collection.tracks.length === 1 ? 'song' : 'songs' }}</span>
-            </div>
-          </div>
+        <!-- Track Count -->
+        <div class="flex items-center justify-center gap-2 text-xs text-gray-400">
+          <span class="capitalize">{{ route.params.type || 'playlist' }}</span>
+          <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
+          <span>{{ collection.tracks.length }} {{ collection.tracks.length === 1 ? 'song' : 'songs' }}</span>
+        </div>
+
+        <!-- Centered Button -->
+        <div class="flex justify-center mt-4">
+
+          <button v-if="user.id == playlistData?.user_id && collection.tracks.length > 0"
+            @click="copyLink"
+            class="px-4 py-2 rounded-full bg-[#1DB954] text-white font-semibold 
+                  flex items-center gap-2 hover:bg-[#1ed760] transition"
+          >
+            Share Playlist
+            <Share fillColor="#FFFFFF" :size="18" />
+          </button>
+          <button v-if="user.id != playlistData?.user_id"
+            @click="copyPlaylist(playlistData)"
+            class="px-4 py-2 rounded-full bg-[#1DB954] text-white font-semibold 
+                  flex items-center gap-2 hover:bg-[#1ed760] transition"
+          >
+          <Copy fillColor="#FFFFFF" :size="18" />
+            Add to My Library
+          </button>
+        </div>
+      </div>
+
         </div>
 
         <!-- Tracklist Section -->
@@ -170,6 +269,8 @@ const formatDuration = (durationString) => {
                   :track="track"
                   :index="index + 1"
                   :duration="formatDuration(track.duration)"
+                  :canDelete="true"
+                  :playlistID="route.params.id"
                 />
               </li>
             </ul>

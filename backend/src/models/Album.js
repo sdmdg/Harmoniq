@@ -18,7 +18,7 @@ export async function createUser({ username, email, role, password }) {
   return result.rows[0];
 }
 
-export const fetchAlbumData = async (albumId) => {
+export const fetchAlbumData = async (albumId, isAdmin=true) => {
   // First, check if the album exists and get its details
   const albumQuery = `
         SELECT
@@ -30,10 +30,14 @@ export const fetchAlbumData = async (albumId) => {
             ar.artist_name AS "artistName"
         FROM albums a
         JOIN artists ar ON a.artist = ar.user_id
-        WHERE a.id = $1 AND a.is_blocked = false AND a.published = true;
+        WHERE a.id = $1
+          AND (
+            (a.is_blocked = false AND a.published = true)
+            OR ($2::boolean = true)
+          );
     `;
 
-  const albumResult = await pool.query(albumQuery, [albumId]);
+  const albumResult = await pool.query(albumQuery, [albumId, isAdmin]);
 
   // If no album is found, return null
   if (albumResult.rows.length === 0) {
@@ -159,4 +163,33 @@ export const AlbumChangeVisibilityModel = async (albumId, userID, bool) => {
       RETURNING id, title AS name, is_blocked AS "isBlocked";`;
   const result = await pool.query(query, [albumId, userID, bool]);
   return result.rows[0];
+};
+
+export const getAlbumNotificationData = async (albumId) => {
+  const sql = `
+    SELECT
+      a.id AS album_id,
+      a.title AS album_name,
+      a.album_art_id AS album_cover,
+      ar.artist_name as artist_name,
+      ar.id AS artist_id,
+	  u.pic_path as artist_image
+    FROM albums a
+    JOIN users u ON a.artist = u.id
+	  JOIN artists ar ON u.id = ar.user_id
+    WHERE a.id = $1
+  `;
+  const result = await pool.query(sql, [albumId]);
+  return result.rows[0];
+};
+
+export const getFollowersModel = async (artistId) => {
+  const sql = `
+    SELECT u.email
+    FROM followers f
+    JOIN users u ON f.follower_id = u.id
+    WHERE f.followed_id = $1;
+  `;
+  const result = await pool.query(sql, [artistId]);
+  return result.rows;
 };

@@ -84,13 +84,6 @@ onUnmounted(() => {
   }
 });
 
-// Watch for route changes and refetch
-watch(
-  () => route.fullPath, // or route.params.id if only ID matters
-  () => {
-    fetchData();
-  }
-);
 
 // Function to format duration
 const formatDuration = (durationString) => {

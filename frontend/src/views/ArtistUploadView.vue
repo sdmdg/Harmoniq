@@ -1,5 +1,5 @@
 <template>
-  <div class="artist-upload-view min-h-screen bg-[#121212] text-white">
+  <div class="artist-upload-view min-h-screen text-white">
     <header class="mx-auto max-w-6xl px-6 pt-10">
       <nav class="text-sm text-neutral-400 mb-3" aria-label="Breadcrumb">
         <ol class="flex items-center gap-2">
@@ -387,7 +387,6 @@ onMounted(fetchAlbums);
 <style scoped>
 /* Main Containers & Layout */
 .artist-upload-view {
-  background-color: #000;
 }
 
 /* Form Elements Styling */

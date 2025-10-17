@@ -33,19 +33,25 @@ const deleteAlbum = async (albumId) => {
 
 // Public/Private album function
 const toggleAlbumVisibility = async (albumId, isPublic) => {
+  let is_send_noti = false;
   const message = isPublic
     ? "Are you sure you want to make this album private?"
     : "Are you sure you want to publish this album?";
 
   if (!confirm(message)) return;
-
+  if (!isPublic) {
+    is_send_noti = confirm("Do you want to send notifications to your followers?");
+  }
+  
+  
   try {
     // Call API to update album visibility
     await apiClient.patch(`/api/album/visibility/${albumId}`, {
       isPublic: !isPublic,
+      is_send_noti: is_send_noti
     });
 
-    // Optionally, update your local state if needed
+    // Optionally, update local state if needed
     const album = albums.value.find(a => a.id === albumId);
     if (album) album.isPublic = !isPublic;
 
@@ -148,7 +154,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="my-upload-view min-h-screen bg-[#121212] text-white">
+  <div class="my-upload-view min-h-screen text-white">
     <header class="mx-auto max-w-6xl px-6 pt-10">
       <nav class="text-sm text-neutral-400 mb-3" aria-label="Breadcrumb">
         <ol class="flex items-center gap-2">
@@ -278,7 +284,6 @@ ul li:hover {
 <style scoped>
 /* Main Containers & Layout */
 .my-upload-view {
-  background-color: #000;
 }
 
 /* Custom Scrollbar */

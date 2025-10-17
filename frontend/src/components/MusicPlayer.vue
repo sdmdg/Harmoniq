@@ -326,6 +326,7 @@ const toggleExpanded = () => {
                   :artist="currentArtist"
                   :index="idx + 1"
                   :duration="formatTime(track.duration)"
+                  :resetPlayerRadio="false"
                 />
               </ul>
             </div>
