@@ -296,6 +296,32 @@ const toggleExpanded = () => {
             class="rounded-md shadow-2xl w-64 h-64 md:w-56 md:h-56 mb-4 md:mb-6"
             :onerror="`this.onerror=null;this.src='/heart.jpeg'`"
           />
+          <div
+            v-if="isBuffering"
+            class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-md"
+          >
+          <svg
+            class="animate-spin h-5 w-5 md:h-6 md:w-6 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+          </svg>
+
+          </div>
           <div class="text-center mb-4">
             <div class="text-white font-semibold text-xl md:text-2xl mb-1">
               {{ currentTrack.name }}
