@@ -15,6 +15,8 @@ import { getRecentSongsByUser, getTrendingAlbums, getRecentReleases, getMostPlay
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
 export const getProPic = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -74,6 +76,14 @@ export const updatePassword = async (req, res) => {
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Incorrect current password.' });
+        }
+
+        // Password strength validation
+        if (!passwordPattern.test(newPassword)) {
+        return res.status(400).json({
+            message:
+            "Password must contain at least one lowercase letter, one uppercase letter, one symbol, one number, and be 8 or more characters long.",
+        });
         }
 
         // Hash the new password before saving

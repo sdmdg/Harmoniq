@@ -70,7 +70,7 @@ const startRadio = () => {
   </div>
 
   <!-- Header with Start Radio Button -->
-  <div v-if="recentSongs?.length > 0" class="flex justify-between items-center px-8 pt-6">
+  <div v-if="recentSongs?.length > 4" class="flex justify-between items-center px-8 pt-6">
     <h1 class="text-white text-3xl font-bold">Home</h1>
 
     <button

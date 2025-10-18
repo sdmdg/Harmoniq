@@ -1,10 +1,9 @@
 <script setup>
 import { ref } from 'vue';
 import apiClient from '../utils/axios';
-import { useRouter } from 'vue-router'; // For navigation
+import { useRouter } from 'vue-router';
 import ParticleBackground from '../components/ParticleBackground.vue';
 
-// Reactive variables for form inputs
 const username = ref('');
 const email = ref('');
 const password = ref('');
@@ -13,12 +12,22 @@ const errorMessage = ref('');
 
 const router = useRouter();
 
+// Password validation pattern
+const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
 const handleRegister = async () => {
     errorMessage.value = '';
 
-    // Client-side validation for password confirmation
+    // Client-side password confirmation check
     if (password.value !== confirmPassword.value) {
         errorMessage.value = 'Passwords do not match.';
+        return;
+    }
+
+    // Password strength validation
+    if (!passwordPattern.test(password.value)) {
+        errorMessage.value =
+            'Password must contain at least one lowercase letter, one uppercase letter, one symbol, one number, and be 8 or more characters long.';
         return;
     }
 
@@ -30,15 +39,12 @@ const handleRegister = async () => {
         });
 
         const { token, user } = response.data;
-
-
-        router.push('/login');
-
         console.log('Registration successful!', { token, user });
 
+        router.push('/login');
     } catch (error) {
         console.error('Registration failed:', error);
-        if (error.response && error.response.data && error.response.data.message) {
+        if (error.response?.data?.message) {
             errorMessage.value = error.response.data.message;
         } else {
             errorMessage.value = 'An unexpected error occurred during registration. Please try again.';
@@ -49,10 +55,8 @@ const handleRegister = async () => {
 
 <template>
     <div class="relative min-h-screen bg-black overflow-hidden">
-        <!-- Particle background component -->
         <ParticleBackground />
 
-        <!-- Registration form container, positioned above the canvas -->
         <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
             <div class="w-full max-w-md bg-[#181818] rounded-lg shadow-lg p-8">
                 <center><img src="/images/icons/logo.png" style="width: 80%;" alt="Logo"></center>
@@ -65,10 +69,10 @@ const handleRegister = async () => {
                         <input
                             type="text"
                             id="username"
-                            name="username"
                             placeholder="Choose a username"
-                            class="shadow-sm appearance-none border border-[#535353] rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-1 focus:ring-[#1ED760] bg-[#3E3E3E] placeholder-gray-400"
-                            v-model="username" required
+                            class="shadow-sm border border-[#535353] rounded w-full py-3 px-4 text-white focus:outline-none focus:ring-1 focus:ring-[#1ED760] bg-[#3E3E3E] placeholder-gray-400"
+                            v-model="username"
+                            required
                         />
                     </div>
 
@@ -78,10 +82,10 @@ const handleRegister = async () => {
                         <input
                             type="email"
                             id="email"
-                            name="email"
                             placeholder="your@example.com"
-                            class="shadow-sm appearance-none border border-[#535353] rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-1 focus:ring-[#1ED760] bg-[#3E3E3E] placeholder-gray-400"
-                            v-model="email" required
+                            class="shadow-sm border border-[#535353] rounded w-full py-3 px-4 text-white focus:outline-none focus:ring-1 focus:ring-[#1ED760] bg-[#3E3E3E] placeholder-gray-400"
+                            v-model="email"
+                            required
                         />
                     </div>
 
@@ -91,11 +95,14 @@ const handleRegister = async () => {
                         <input
                             type="password"
                             id="password"
-                            name="password"
                             placeholder="********"
-                            class="shadow-sm appearance-none border border-[#535353] rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-1 focus:ring-[#1ED760] bg-[#3E3E3E] placeholder-gray-400"
-                            v-model="password" required
+                            class="shadow-sm border border-[#535353] rounded w-full py-3 px-4 text-white focus:outline-none focus:ring-1 focus:ring-[#1ED760] bg-[#3E3E3E] placeholder-gray-400"
+                            v-model="password"
+                            required
                         />
+                        <p class="text-gray-400 text-xs mt-1">
+                            Password must contain one lowercase letter, one uppercase letter, one symbol, one number, and be at least 8 characters long.
+                        </p>
                     </div>
 
                     <!-- Confirm Password Field -->
@@ -104,13 +111,12 @@ const handleRegister = async () => {
                         <input
                             type="password"
                             id="confirmPassword"
-                            name="confirmPassword"
                             placeholder="********"
-                            class="shadow-sm appearance-none border border-[#535353] rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-1 focus:ring-[#1ED760] bg-[#3E3E3E] placeholder-gray-400"
-                            v-model="confirmPassword" required
+                            class="shadow-sm border border-[#535353] rounded w-full py-3 px-4 text-white focus:outline-none focus:ring-1 focus:ring-[#1ED760] bg-[#3E3E3E] placeholder-gray-400"
+                            v-model="confirmPassword"
+                            required
                         />
                     </div>
-
 
                     <p v-if="errorMessage" class="text-red-500 text-sm text-center mb-4">{{ errorMessage }}</p>
 
@@ -118,7 +124,7 @@ const handleRegister = async () => {
                     <div class="flex items-center justify-center">
                         <button
                             type="submit"
-                            class="bg-[#1ED760] hover:bg-[#1DB954] text-black font-bold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline w-full transition duration-200 ease-in-out"
+                            class="bg-[#1ED760] hover:bg-[#1DB954] text-black font-bold py-3 px-6 rounded-full w-full transition duration-200 ease-in-out"
                         >
                             Register
                         </button>

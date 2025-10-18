@@ -324,6 +324,9 @@ onMounted(() => {
                                 class="shadow-sm appearance-none border border-[#535353] rounded w-full py-3 px-4 text-white leading-tight focus:outline-none focus:ring-1 focus:ring-[#1ED760] bg-[#3E3E3E] placeholder-gray-400"
                                 v-model="newPassword" required
                             />
+                            <p class="text-gray-400 text-xs mt-1">
+                                Password must contain one lowercase letter, one uppercase letter, one symbol, one number, and be at least 8 characters long.
+                            </p>
                         </div>
                         <div class="mb-6">
                             <label for="confirmNewPassword" class="block text-gray-300 text-sm font-semibold mb-2">Confirm New Password</label>

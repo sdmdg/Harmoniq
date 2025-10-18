@@ -93,7 +93,7 @@ const fetchUser = async () => {
       console.error("Failed to fetch profile image:", error);
     }
   } else {
-    router.push("/login");
+    //router.push("/login");
   }
 };
 

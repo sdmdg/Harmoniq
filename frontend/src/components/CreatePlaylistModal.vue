@@ -122,7 +122,7 @@ const fetchUser = () => {
     user.value = JSON.parse(userData);
     console.log('User data:', user.value);
   } else {
-    router.push('/login');
+    //router.push('/login');
   }
 };
 

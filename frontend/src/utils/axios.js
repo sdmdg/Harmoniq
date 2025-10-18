@@ -41,7 +41,7 @@ apiClient.interceptors.response.use(
       // Redirect to login page
       // Use router.currentRoute.value.name to prevent infinite redirect if already on login
       if (router.currentRoute.value.name !== 'login') {
-        router.push({ name: 'login' });
+        //router.push({ name: 'login' });
       }
     }
     // If it's a 403 Forbidden error (insufficient permissions)
