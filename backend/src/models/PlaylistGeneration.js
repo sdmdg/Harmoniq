@@ -26,9 +26,13 @@ export const getRecommendationsFiltered = async (userVector, filter, value, limi
     SELECT s.id, s.title, s.genre, s.mood,
            cosine_similarity(uv.vector, sf.vector) AS similarity
     FROM songs s
-    JOIN song_features sf ON s.id = sf.song_id, user_vec uv
+    JOIN song_features sf ON s.id = sf.song_id
     JOIN albums a ON s.album_id = a.id
-    WHERE s.${filter} = $2 AND a.published = true AND a.is_blocked = false AND s.encryption_key is not NULL
+    CROSS JOIN user_vec uv
+    WHERE s.${filter} = $2
+      AND a.published = true
+      AND a.is_blocked = false
+      AND s.encryption_key IS NOT NULL
     ORDER BY similarity DESC
     LIMIT $3;
   `;

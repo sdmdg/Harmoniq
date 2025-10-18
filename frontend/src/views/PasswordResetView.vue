@@ -17,6 +17,9 @@
             class="w-full py-3 px-4 bg-[#3E3E3E] border border-[#535353] rounded text-white focus:outline-none focus:ring-1 focus:ring-[#1ED760]"
             required
           />
+          <p class="text-gray-400 text-xs mt-1">
+            Password must contain one lowercase letter, one uppercase letter, one symbol, one number, and be at least 8 characters long.
+          </p>
         </div>
 
         <div>
@@ -48,6 +51,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRoute, useRouter } from 'vue-router'
+const backendServerBaseUrl = import.meta.env.VITE_BACKEND_SERVER;
 
 const route = useRoute()
 const router = useRouter()
@@ -73,7 +77,7 @@ const submitPassword = async () => {
   }
 
   try {
-    const res = await axios.post('http://localhost:5000/api/auth/pwd-change', {
+    const res = await axios.post(`${backendServerBaseUrl}/api/auth/pwd-change`, {
       new_password: newPassword.value,
       token
     })

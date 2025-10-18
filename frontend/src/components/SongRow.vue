@@ -46,6 +46,33 @@ const props = defineProps({
 
 const { track, artist, index, duration, canLiked, canDelete, playlistID, resetPlayerRadio } = toRefs(props)
 
+const formattedDuration = (track) => {
+  if (!track.duration) return '00:00'
+
+  // Try parsing duration in various possible formats
+  let totalSeconds = 0
+
+  if (typeof duration.value === 'number') {
+    totalSeconds = duration.value
+  } else if (typeof duration.value === 'string') {
+    // If already in "MM:SS" or "M:S" format
+    const parts = duration.value.split(':').map(p => parseInt(p))
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      totalSeconds = parts[0] * 60 + parts[1]
+    } else if (!isNaN(parseInt(duration.value))) {
+      // Maybe it's just total seconds
+      totalSeconds = parseInt(duration.value)
+    } else {
+      return '00:00'
+    }
+  }
+
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = Math.floor(totalSeconds % 60)
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
+
 // Fetch liked state on mount
 onMounted(async () => {
   fetchUser()
@@ -227,7 +254,7 @@ const loadSong = (artist, track) => {
       </button>
       
       <div class="text-xs text-gray-400 w-[40px] text-right">
-        {{ duration }}
+        {{ formattedDuration(track) }}
       </div>
     </div>
     <!-- Playlist Popup Modal -->

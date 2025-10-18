@@ -5,49 +5,66 @@ import { findUserByEmail, createUser, findUserById, updatePasswordInDb} from '..
 
 import { sendEmail } from "../services/emailService.js";
 
+const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
 export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
-
-    // Basic validation for required fields from client
+    // Basic validation for required fields
     if (!username || !email || !password) {
       return res.status(400).json({ message: "Username, email, and password are required." });
     }
 
-    const existingUser = await findUserByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists with this email.' });
+    // Password strength validation
+    if (!passwordPattern.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must contain at least one lowercase letter, one uppercase letter, one symbol, one number, and be 8 or more characters long.",
+      });
     }
 
+    // Check for existing user
+    const existingUser = await findUserByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ message: "A user already exists with this email." });
+    }
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    // Ensure createUser receives the hashed password
-    const newUser = await createUser({ username, email, role:"listener", password: hashedPassword });
 
-    const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    // Create new user
+    const newUser = await createUser({
+      username,
+      email,
+      role: "listener",
+      password: hashedPassword,
+    });
 
-    // --- Email ---
-    sendEmail("welcome", {
-      name: username,
-      sender: "Harmoniq Team"
-    }, email, "Welcome to Harmoniq 🎶");
+    // Generate JWT
+    const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
+    // Send welcome email
+    sendEmail(
+      "welcome",
+      { name: username, sender: "Harmoniq Team" },
+      email,
+      "Welcome to Harmoniq 🎶"
+    );
 
+    // Success response
     res.status(200).json({
       token,
       user: {
         id: newUser.id,
         username: newUser.user_name,
         role: newUser.role,
-        email: email
-      }
+        email,
+      },
     });
-
   } catch (error) {
-    console.error('Register Error:', error);
-    // Provide a more generic error message to the client for security
-    res.status(500).json({ message: `Internal server error during registration.` });
+    console.error("Register Error:", error);
+    res.status(500).json({ message: "Internal server error during registration." });
   }
 };
 
@@ -96,6 +113,13 @@ export const pwdChangeWithToken = async (req, res) => {
       return res.status(400).json({ message: 'Invalid or expired token.' });
     }
 
+    // Password strength validation
+    if (!passwordPattern.test(new_password)) {
+      return res.status(400).json({
+        message:
+          "Password must contain at least one lowercase letter, one uppercase letter, one symbol, one number, and be 8 or more characters long.",
+      });
+    }
 
     // Find user request
     const request = decoded.request;

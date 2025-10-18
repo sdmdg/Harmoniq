@@ -27,6 +27,31 @@ const playTrack = (track) => {
   }
 }
 
+const formattedDuration = (duration) => {
+  if (!duration) return '00:00'
+
+  // Try parsing duration in various possible formats
+  let totalSeconds = 0
+
+  if (typeof duration === 'number') {
+    totalSeconds = duration
+  } else if (typeof duration === 'string') {
+    // If already in "MM:SS" or "M:S" format
+    const parts = duration.split(':').map(p => parseInt(p))
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      totalSeconds = parts[0] * 60 + parts[1]
+    } else if (!isNaN(parseInt(duration))) {
+      // Maybe it's just total seconds
+      totalSeconds = parseInt(duration)
+    } else {
+      return '00:00'
+    }
+  }
+
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = Math.floor(totalSeconds % 60)
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
 
 // Format play count
 const formatPlays = (count) => {
@@ -82,7 +107,7 @@ const formatPlays = (count) => {
       <div class="flex items-center gap-3 text-gray-400 text-[12px]">
 
         <span>
-          {{ track.duration.replace(";", ":") }}
+          {{ formattedDuration(track.duration.replace(";", ":")) }}
         </span>
       </div>
     </div>
